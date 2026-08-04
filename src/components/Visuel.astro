@@ -35,11 +35,15 @@ interface Props {
   /**
    * `cover` (par défaut) remplit le cadre, quitte à rogner les bords — adapté
    * aux photos rectangulaires pleines (Hall, Village, Exposants).
-   * `contain` montre l'image entière sans rognage — réservé au visuel du hero,
-   * qui est un détourage à fond transparent : le panneau `bg-*` du conteneur
-   * sert alors de fond, sans bande visible autour du groupe.
+   * `contain` montre l'image entière sans rognage — réservé au visuel du hero :
+   * le panneau porte alors la teinte `fondImage` en arrière-plan, pour qu'aucune
+   * bande de couleur différente ne se voie autour du groupe quel que soit le
+   * ratio du conteneur (celui-ci varie fortement selon la largeur d'écran).
    */
   fit?: 'cover' | 'contain';
+  /** Fond du panneau quand `fit="contain"` et l'image est présente — doit
+   *  reprendre la teinte des bords de la photo pour un raccord invisible. */
+  fondImage?: string;
 }
 
 const {
@@ -52,6 +56,7 @@ const {
   class: className = '',
   position = 'object-center',
   fit = 'cover',
+  fondImage,
 } = Astro.props;
 
 const disponible = fs.existsSync(path.join(process.cwd(), 'public', src.replace(/^\//, '')));
@@ -71,7 +76,10 @@ const repli = {
 }[tone];
 ---
 
-<div class:list={['relative overflow-hidden', repli.fond, className]}>
+<div
+  class:list={['relative overflow-hidden', disponible && fit === 'contain' ? '' : repli.fond, className]}
+  style={disponible && fit === 'contain' && fondImage ? `background-color: ${fondImage}` : undefined}
+>
   {
     disponible ? (
       <img
