@@ -24,6 +24,13 @@ const eventSchema = {
     name: 'LabEvents',
   },
 };
+
+const chiffresCles = [
+  { value: '2 jours', label: 'de rencontres' },
+  { value: 'Environ 3 000', label: 'visiteurs attendus' },
+  { value: '2 univers', label: 'complémentaires' },
+  { value: 'Entrée', label: 'libre et gratuite' },
+];
 ---
 
 <BaseLayout
@@ -34,15 +41,295 @@ const eventSchema = {
     <script type="application/ld+json" set:html={JSON.stringify(eventSchema)} />
   </Fragment>
 
+  <!-- HERO -->
+  <section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
+    <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-orange">
+          30 &amp; 31 octobre 2026 — Nouméa
+        </p>
+        <h1 class="mt-4 text-3xl font-bold text-marine sm:text-5xl">
+          Salon de l'Emploi &amp; de la Formation
+        </h1>
+        <p class="mt-6 max-w-xl text-base text-encre sm:text-lg">
+          Deux jours pour rencontrer les recruteurs, découvrir les formations du territoire et
+          explorer les métiers qui recrutent.
+        </p>
+
+        <ul class="mt-8 space-y-3 text-sm font-medium text-encre sm:text-base">
+          <li class="flex items-center gap-3">
+            <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-marine/10 text-marine" aria-hidden="true">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="5" width="18" height="16" rx="2" />
+                <path stroke-linecap="round" d="M3 10h18M8 3v4M16 3v4" />
+              </svg>
+            </span>
+            30 &amp; 31 octobre 2026
+          </li>
+          <li class="flex items-center gap-3">
+            <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-marine/10 text-marine" aria-hidden="true">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z" />
+                <circle cx="12" cy="10" r="2.5" />
+              </svg>
+            </span>
+            Salle d'exposition de Nouville — Nouméa
+          </li>
+          <li class="flex items-center gap-3">
+            <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-marine/10 text-marine" aria-hidden="true">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12 2.5 2.5 4.5-4.5" />
+              </svg>
+            </span>
+            Entrée libre et gratuite
+          </li>
+        </ul>
+
+        <div class="mt-10 flex flex-col gap-3 sm:flex-row">
+          <a
+            href="/exposer"
+            class="inline-flex items-center justify-center rounded-md bg-orange px-6 py-3 text-base font-semibold text-blanc transition-opacity hover:opacity-90"
+          >
+            Devenir exposant
+          </a>
+          <a
+            href="/preparer-ma-visite"
+            class="inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3 text-base font-semibold text-marine transition-colors hover:bg-marine hover:text-blanc"
+          >
+            Préparer ma visite
+          </a>
+        </div>
+      </div>
+
+      <div class="relative rounded-3xl bg-marine p-8 sm:p-10" aria-hidden="true">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2 rounded-2xl bg-blanc/10 p-6">
+            <span class="text-xs font-semibold uppercase tracking-widest text-brume/70">
+              Hall Emploi-Formation
+            </span>
+            <div class="mt-4 h-2 w-2/3 rounded-full bg-orange"></div>
+            <div class="mt-2 h-2 w-1/2 rounded-full bg-orange/60"></div>
+          </div>
+          <div class="rounded-2xl bg-village/20 p-6">
+            <span class="text-xs font-semibold uppercase tracking-widest text-brume/70">
+              Village
+            </span>
+            <div class="mt-4 h-2 w-3/4 rounded-full bg-village"></div>
+          </div>
+          <div class="rounded-2xl bg-blanc/10 p-6">
+            <div class="h-2 w-2/3 rounded-full bg-blanc/50"></div>
+            <div class="mt-2 h-2 w-1/2 rounded-full bg-blanc/30"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- POURQUOI VENIR -->
+  <section class="bg-brume">
+    <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <h2 class="text-2xl font-bold text-marine sm:text-3xl">Pourquoi venir au salon ?</h2>
+
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <article class="rounded-2xl bg-blanc p-6 shadow-sm">
+          <span class="flex h-11 w-11 items-center justify-center rounded-full bg-orange/10 text-orange" aria-hidden="true">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="8" cy="8" r="3" />
+              <circle cx="17" cy="9" r="2.5" />
+              <path stroke-linecap="round" d="M2.5 20a5.5 5.5 0 0 1 11 0M14.5 20a4.2 4.2 0 0 1 7-3.1" />
+            </svg>
+          </span>
+          <h3 class="mt-4 text-lg font-semibold text-marine">Rencontrer les recruteurs</h3>
+          <p class="mt-2 text-sm text-encre">
+            Échangez directement avec les entreprises, présentez votre parcours et découvrez
+            leurs besoins.
+          </p>
+        </article>
+
+        <article class="rounded-2xl bg-blanc p-6 shadow-sm">
+          <span class="flex h-11 w-11 items-center justify-center rounded-full bg-orange/10 text-orange" aria-hidden="true">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 2 8l10 5 10-5-10-5Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 10.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-5.5" />
+            </svg>
+          </span>
+          <h3 class="mt-4 text-lg font-semibold text-marine">Découvrir les formations</h3>
+          <p class="mt-2 text-sm text-encre">
+            Identifiez les parcours proposés en Nouvelle-Calédonie et les débouchés associés.
+          </p>
+        </article>
+
+        <article class="rounded-2xl bg-blanc p-6 shadow-sm">
+          <span class="flex h-11 w-11 items-center justify-center rounded-full bg-orange/10 text-orange" aria-hidden="true">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="m14.5 9.5-2 5-5 2 2-5 5-2Z" />
+            </svg>
+          </span>
+          <h3 class="mt-4 text-lg font-semibold text-marine">Explorer les métiers</h3>
+          <p class="mt-2 text-sm text-encre">
+            Découvrez des secteurs, des environnements professionnels et des métiers parfois
+            méconnus.
+          </p>
+        </article>
+
+        <article class="rounded-2xl bg-blanc p-6 shadow-sm">
+          <span class="flex h-11 w-11 items-center justify-center rounded-full bg-orange/10 text-orange" aria-hidden="true">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 18h6M10 21h4" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3a6 6 0 0 0-3.5 10.9c.6.4.9 1 .9 1.7V16h5.2v-.4c0-.7.3-1.3.9-1.7A6 6 0 0 0 12 3Z" />
+            </svg>
+          </span>
+          <h3 class="mt-4 text-lg font-semibold text-marine">Construire votre projet</h3>
+          <p class="mt-2 text-sm text-encre">
+            Bénéficiez de conseils pour votre orientation, votre recherche d'emploi ou votre
+            reconversion.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEUX UNIVERS COMPLÉMENTAIRES -->
   <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-    <p class="text-sm font-semibold uppercase tracking-wide text-orange">
-      30 et 31 octobre 2026 — Salle d'exposition de Nouville, Nouméa
-    </p>
-    <h1 class="mt-4 text-3xl font-bold text-marine sm:text-5xl">
-      {'{{À COMPLÉTER : accroche principale — contenu du Lot 1}}'}
-    </h1>
-    <p class="mt-6 max-w-2xl text-base text-encre sm:text-lg">
-      Entrée libre et gratuite. Deux univers : Hall Emploi-Formation et Village Maintenance &amp; Industrie.
-    </p>
+    <h2 class="text-2xl font-bold text-marine sm:text-3xl">Deux univers complémentaires</h2>
+
+    <div class="mt-10 grid gap-6 lg:grid-cols-2">
+      <article class="flex flex-col rounded-2xl bg-marine p-8 text-blanc">
+        <span class="text-xs font-semibold uppercase tracking-widest text-orange">
+          Univers 1
+        </span>
+        <h3 class="mt-3 text-xl font-bold">Hall Emploi-Formation</h3>
+        <p class="mt-3 flex-1 text-sm text-brume sm:text-base">
+          Entreprises qui recrutent, organismes de formation et acteurs de l'accompagnement
+          réunis dans un même espace.
+        </p>
+        <a
+          href="/le-salon"
+          class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-orange px-5 py-2.5 text-sm font-semibold text-blanc transition-opacity hover:opacity-90"
+        >
+          Découvrir le salon
+        </a>
+      </article>
+
+      <article class="flex flex-col rounded-2xl border-2 border-village bg-village/5 p-8">
+        <span class="text-xs font-semibold uppercase tracking-widest text-village">
+          Univers 2
+        </span>
+        <h3 class="mt-3 text-xl font-bold text-marine">Village Maintenance &amp; Industrie</h3>
+        <p class="mt-3 flex-1 text-sm text-encre sm:text-base">
+          Un espace consacré aux métiers techniques et industriels, aux entreprises de la
+          filière et aux formations qui y conduisent.
+        </p>
+        <a
+          href="/village"
+          class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-village px-5 py-2.5 text-sm font-semibold text-blanc transition-opacity hover:opacity-90"
+        >
+          Découvrir le Village
+        </a>
+      </article>
+    </div>
+  </section>
+
+  <!-- CHIFFRES CLÉS -->
+  <section class="bg-marine">
+    <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <div class="grid grid-cols-2 gap-8 text-center lg:grid-cols-4">
+        {
+          chiffresCles.map((chiffre) => (
+            <div>
+              <p class="text-2xl font-bold text-orange sm:text-3xl">{chiffre.value}</p>
+              <p class="mt-1 text-sm text-brume">{chiffre.label}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPOSANTS -->
+  <section class="bg-brume">
+    <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <div class="grid items-center gap-8 lg:grid-cols-3">
+        <div class="lg:col-span-2">
+          <h2 class="text-2xl font-bold text-marine sm:text-3xl">
+            Recrutez, présentez vos formations et développez votre visibilité
+          </h2>
+          <p class="mt-4 max-w-2xl text-encre">
+            Entreprises, organismes de formation, institutions et acteurs de l'accompagnement :
+            participez à un événement conçu pour favoriser les rencontres directes avec les
+            publics du territoire.
+          </p>
+        </div>
+        <div class="lg:text-right">
+          <a
+            href="/exposer"
+            class="inline-flex items-center justify-center rounded-md bg-orange px-6 py-3 text-base font-semibold text-blanc transition-opacity hover:opacity-90"
+          >
+            Découvrir les offres exposants
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFORMATIONS PRATIQUES -->
+  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+    <h2 class="text-2xl font-bold text-marine sm:text-3xl">Informations pratiques</h2>
+
+    <div class="mt-8 grid gap-8 lg:grid-cols-2 lg:items-center">
+      <ul class="space-y-4 text-base text-encre">
+        <li class="flex items-center gap-3">
+          <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-marine/10 text-marine" aria-hidden="true">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path stroke-linecap="round" d="M3 10h18M8 3v4M16 3v4" />
+            </svg>
+          </span>
+          30 et 31 octobre 2026
+        </li>
+        <li class="flex items-center gap-3">
+          <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-marine/10 text-marine" aria-hidden="true">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3.5 2" />
+            </svg>
+          </span>
+          9 h à 17 h
+        </li>
+        <li class="flex items-center gap-3">
+          <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-marine/10 text-marine" aria-hidden="true">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z" />
+              <circle cx="12" cy="10" r="2.5" />
+            </svg>
+          </span>
+          Salle d'exposition de Nouville, Nouméa
+        </li>
+        <li class="flex items-center gap-3">
+          <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-marine/10 text-marine" aria-hidden="true">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12 2.5 2.5 4.5-4.5" />
+            </svg>
+          </span>
+          Entrée libre et gratuite
+        </li>
+      </ul>
+
+      <div class="rounded-2xl bg-brume p-8 lg:p-10">
+        <p class="text-encre">
+          Retrouvez tous les conseils pour organiser votre venue : accès, durée de visite et
+          repères pour circuler entre les deux univers du salon.
+        </p>
+        <a
+          href="/preparer-ma-visite"
+          class="mt-6 inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3 text-base font-semibold text-marine transition-colors hover:bg-marine hover:text-blanc"
+        >
+          Préparer ma visite
+        </a>
+      </div>
+    </div>
   </section>
 </BaseLayout>
