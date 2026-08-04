@@ -52,7 +52,7 @@ Le site doit être **réutilisable pour les éditions futures**.
 ## 4. Stack technique (validée)
 
 - **Astro** (dernière version stable), sortie **statique** (`output: 'static'`).
-- **Tailwind CSS** pour le style, via la config officielle Astro.
+- **Tailwind CSS v4** pour le style, via le plugin officiel `@tailwindcss/vite` (méthode actuelle recommandée — `@astrojs/tailwind` est dépréciée pour Tailwind v4, ne pas la réintroduire). Configuration **CSS-first** : les tokens vivent dans `src/styles/global.css` via la directive `@theme`, pas dans un fichier `tailwind.config.js`.
 - **React en îlots** UNIQUEMENT pour les briques réellement interactives (filtre exposants, filtre programme). Le reste reste statique. Ne pas transformer le site en SPA.
 - **Formulaires (V1)** : service de formulaire externe (Web3Forms ou Formspree). **Aucun fournisseur n'est retenu tant que ses limites de soumissions, sa gestion des données, sa protection antispam et son coût au-delà du quota gratuit n'ont pas été validés par Philippe.** Décision à prendre impérativement avant le lancement du Lot 2. **Pas de Supabase, pas de base de données en V1.**
 - **Contenus dynamiques** (exposants, programme) : **Astro Content Collections** (fichiers de données), pas de base.
@@ -74,7 +74,7 @@ Le site doit être **réutilisable pour les éditions futures**.
 
 ## 5. Charte graphique (design tokens)
 
-Valeurs de départ **à confirmer par Philippe** — définies dans `tailwind.config` comme tokens, jamais en valeurs arbitraires dans les composants.
+Valeurs de départ **à confirmer par Philippe** — définies comme tokens dans `src/styles/global.css` (directive `@theme`, Tailwind v4), jamais en valeurs arbitraires dans les composants.
 
 | Rôle | Token | Valeur de départ (à confirmer) |
 |---|---|---|
@@ -88,6 +88,17 @@ Valeurs de départ **à confirmer par Philippe** — définies dans `tailwind.co
 Principes visuels : **mobile-first**, grands titres, interface claire et aérée, photos de personnes et de gestes professionnels concrets. **Distinction visuelle nette** entre Hall Emploi-Formation (marine/orange) et Village Maintenance & Industrie (accent `village`).
 
 Le mockup de direction artistique fourni par Philippe (aperçu des 7 pages) sert de **référence d'inspiration** pour la hiérarchie visuelle et la densité d'information — pas de gabarit à reproduire pixel pour pixel. Il ne remplace pas les tokens ci-dessus, qu'il faut respecter.
+
+**Référence graphique principale : `public/references/preview-pages-site.png`.**
+Pour la page d'accueil, la vignette « 1. ACCUEIL » de ce fichier constitue la **référence prioritaire**. Le rendu ne doit pas être reproduit pixel par pixel, mais doit reprendre :
+- la densité visuelle ;
+- la composition ;
+- le rapport texte/image ;
+- la hiérarchie ;
+- les blocs colorés ;
+- le caractère événementiel.
+
+Le fichier doit être présent dans le dépôt à ce chemin avant qu'une session Claude Code ne s'y réfère.
 
 ---
 
