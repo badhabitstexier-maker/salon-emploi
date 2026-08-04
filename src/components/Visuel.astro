@@ -1,0 +1,101 @@
+---
+/*
+  Emplacement visuel de la homepage.
+
+  Affiche l'image si elle est présente dans `public/` au moment du build ;
+  sinon, affiche un panneau graphique marine cohérent avec la direction
+  artistique (aplat + trame diagonale + arcs), et non un bloc gris technique.
+
+  Le remplacement est donc sans intervention de code : il suffit de déposer le
+  fichier au chemin attendu et de relancer le build.
+
+  Les dimensions sont toujours déclarées et l'image est posée en absolu dans un
+  conteneur dont la hauteur vient des classes utilitaires : aucun décalage de
+  mise en page, que l'image soit présente ou non.
+*/
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props {
+  /** Chemin public de l'image, ex. `/images/hero-salon.webp`. */
+  src: string;
+  /** Texte alternatif — décrit la photo attendue. */
+  alt: string;
+  /** Dimensions intrinsèques attendues, en pixels. */
+  width: number;
+  height: number;
+  /** Teinte des arcs décoratifs du panneau de repli. */
+  tone?: 'orange' | 'village';
+  /** `eager` pour le visuel du hero, `lazy` pour les autres. */
+  loading?: 'eager' | 'lazy';
+  /** Classes du conteneur : c'est lui qui porte le format (aspect, hauteur). */
+  class?: string;
+  /** Position du cadrage, ex. `object-top`. */
+  position?: string;
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  tone = 'orange',
+  loading = 'lazy',
+  class: className = '',
+  position = 'object-center',
+} = Astro.props;
+
+const disponible = fs.existsSync(path.join(process.cwd(), 'public', src.replace(/^\//, '')));
+
+if (!disponible) {
+  console.warn(`[visuel] image absente, panneau de repli affiché : public${src}`);
+}
+
+/*
+  Deux habillages de repli, pour que le panneau reste dans l'univers de la
+  section qui l'accueille : marine/orange par défaut, vert/marine pour le
+  Village Maintenance & Industrie.
+*/
+const repli = {
+  orange: { fond: 'bg-marine', trame: 'text-blanc', arcs: 'text-orange', libelle: 'text-brume/80' },
+  village: { fond: 'bg-village', trame: 'text-marine', arcs: 'text-marine', libelle: 'text-marine/70' },
+}[tone];
+---
+
+<div class:list={['relative overflow-hidden', repli.fond, className]}>
+  {
+    disponible ? (
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        loading={loading}
+        decoding="async"
+        class:list={['absolute inset-0 h-full w-full object-cover', position]}
+      />
+    ) : (
+      <div class="absolute inset-0" aria-hidden="true">
+        <div class:list={['trame absolute inset-0 opacity-70', repli.trame]} />
+
+        <svg
+          class:list={['absolute -bottom-1/4 -right-1/4 h-full w-full opacity-40', repli.arcs]}
+          viewBox="0 0 200 200"
+          fill="none"
+          stroke="currentColor"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <circle cx="100" cy="100" r="30" stroke-width="2" />
+          <circle cx="100" cy="100" r="55" stroke-width="2" />
+          <circle cx="100" cy="100" r="80" stroke-width="2" />
+        </svg>
+
+        <div class="absolute inset-x-0 bottom-0 px-4 py-2.5">
+          <p class:list={['font-titre text-xs font-semibold uppercase tracking-widest', repli.libelle]}>
+            Visuel à venir
+          </p>
+        </div>
+      </div>
+    )
+  }
+</div>

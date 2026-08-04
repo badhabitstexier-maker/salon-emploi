@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import MediaPlaceholder from '../components/MediaPlaceholder.astro';
+import Visuel from '../components/Visuel.astro';
 
 const eventSchema = {
   '@context': 'https://schema.org',
@@ -26,12 +26,31 @@ const eventSchema = {
   },
 };
 
-/*
-  Section « Ils seront présents » : passer à false pour la masquer entièrement
-  tant qu'aucun exposant n'est confirmé (cf. CLAUDE.md section 3).
-  Aucun logo n'est affiché tant que Philippe n'a pas validé la liste.
-*/
-const afficherPresence = true;
+/* ------------------------------------------------------------------------
+   SECTION « ILS SERONT PRÉSENTS » — MASQUÉE PAR DÉFAUT
+   ------------------------------------------------------------------------
+   CLAUDE.md section 3 : aucun logo de partenaire, sponsor ou entreprise ne
+   doit apparaître tant que le partenariat n'est pas confirmé nommément par
+   Philippe. La section est donc désactivée, et aucun logo factice ni bloc
+   « logo à venir » n'est affiché.
+
+   POUR LA RÉACTIVER, deux gestes :
+   1. renseigner `exposantsConfirmes` avec les exposants validés — chaque
+      entrée attend un logo déposé dans public/images/exposants/ ;
+   2. passer `afficherPresence` à true.
+
+   La section ne s'affiche que si les deux conditions sont réunies : une liste
+   vide ne peut donc pas produire une bande vide en production.
+   ------------------------------------------------------------------------ */
+const afficherPresence = false;
+
+interface ExposantConfirme {
+  nom: string;
+  /** Chemin public du logo, ex. `/images/exposants/nom.svg`. */
+  logo: string;
+}
+
+const exposantsConfirmes: ExposantConfirme[] = [];
 
 /*
   Quatre promesses — reprise du langage de la planche : verbe en capitales,
@@ -137,23 +156,25 @@ const infosPratiques = [
   -->
   <section class="relative overflow-hidden bg-marine text-blanc">
     <div class="absolute inset-y-0 right-0 hidden w-5/12 lg:block xl:w-1/2">
-      <MediaPlaceholder
+      <Visuel
         class="decoupe-diagonale h-full w-full"
-        shape="pleine"
-        tone="clair"
-        label="Montage : recruteurs, candidats, formation et métiers techniques (photo détourée sur fond marine)"
+        src="/images/hero-salon.webp"
+        alt="Recruteurs, candidats et professionnels des métiers techniques réunis au Salon de l'Emploi & de la Formation"
+        width={1600}
+        height={1400}
+        loading="eager"
       />
     </div>
 
     <div class="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:py-24">
       <div class="lg:max-w-lg xl:max-w-xl">
-        <h1 class="text-4xl font-black uppercase leading-none tracking-tight sm:text-5xl xl:text-6xl">
+        <h1 class="font-titre text-5xl font-bold uppercase leading-none sm:text-6xl xl:text-7xl">
           Salon<br />
           de l'Emploi <span class="text-orange">&amp;</span><br />
           de la Formation
         </h1>
 
-        <p class="mt-6 text-2xl font-black uppercase tracking-tight text-orange sm:text-3xl">
+        <p class="mt-6 font-titre text-3xl font-bold uppercase text-orange sm:text-4xl">
           30 &amp; 31 octobre 2026
         </p>
 
@@ -170,23 +191,26 @@ const infosPratiques = [
         <div class="mt-8 flex flex-col gap-3 sm:flex-row">
           <a
             href="/exposer"
-            class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+            class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
           >
             Devenir exposant
           </a>
           <a
             href="/preparer-ma-visite"
-            class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
+            class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
           >
             Préparer ma visite
           </a>
         </div>
       </div>
 
-      <MediaPlaceholder
-        class="mt-10 aspect-video w-full lg:hidden"
-        tone="clair"
-        label="Montage : recruteurs, candidats, formation et métiers techniques"
+      <Visuel
+        class="mt-10 aspect-video w-full rounded-2xl lg:hidden"
+        src="/images/hero-salon.webp"
+        alt="Recruteurs, candidats et professionnels des métiers techniques réunis au Salon de l'Emploi & de la Formation"
+        width={1600}
+        height={1400}
+        loading="eager"
       />
     </div>
   </section>
@@ -197,7 +221,7 @@ const infosPratiques = [
   -->
   <section class="bg-blanc">
     <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
-      <h2 class="text-center text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
         Pourquoi venir au salon ?
       </h2>
 
@@ -215,10 +239,10 @@ const infosPratiques = [
                 aria-hidden="true"
                 set:html={promesse.icone}
               />
-              <h3 class="mt-5 text-lg font-black uppercase tracking-tight text-marine">
+              <h3 class="mt-5 font-titre text-2xl font-bold uppercase leading-none text-marine">
                 {promesse.verbe}
               </h3>
-              <p class="mt-1 text-base font-semibold text-marine">{promesse.complement}</p>
+              <p class="mt-1 font-titre text-lg font-semibold text-marine">{promesse.complement}</p>
               <p class="mt-3 text-sm leading-relaxed text-encre">{promesse.texte}</p>
             </article>
           ))
@@ -229,23 +253,21 @@ const infosPratiques = [
 
   {
     /* ==================== ILS SERONT PRÉSENTS =======================
-       Bande centrée, placeholders neutres — aucun logo tant que la liste
-       n'est pas confirmée nommément (CLAUDE.md section 3).
+       Structure conservée mais MASQUÉE par défaut : voir le bloc de
+       configuration en tête de fichier. Elle n'affiche que des logos
+       réellement confirmés — jamais de vignette « logo à venir ».
     */
-    afficherPresence && (
+    afficherPresence && exposantsConfirmes.length > 0 && (
       <section class="border-t border-marine/10 bg-brume">
         <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <h2 class="text-center text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+          <h2 class="text-center font-titre text-2xl font-bold uppercase tracking-tight text-marine sm:text-3xl">
             Ils seront présents
           </h2>
-          <p class="mx-auto mt-3 max-w-lg text-center text-sm text-encre">
-            La liste des exposants sera publiée au fur et à mesure des confirmations.
-          </p>
 
-          <ul class="mt-9 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {Array.from({ length: 5 }).map(() => (
-              <li class="flex h-20 items-center justify-center rounded-lg border border-dashed border-marine/25 bg-blanc px-2 text-center text-xs font-bold uppercase tracking-wide text-marine/45">
-                Logo à venir
+          <ul class="mt-9 grid grid-cols-2 items-center gap-6 sm:grid-cols-3 lg:grid-cols-5">
+            {exposantsConfirmes.map((exposant) => (
+              <li class="flex h-20 items-center justify-center">
+                <img src={exposant.logo} alt={exposant.nom} class="max-h-16 w-auto" loading="lazy" />
               </li>
             ))}
           </ul>
@@ -253,7 +275,7 @@ const infosPratiques = [
           <div class="mt-9 text-center">
             <a
               href="/exposants"
-              class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+              class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
             >
               Voir tous les exposants
             </a>
@@ -269,7 +291,7 @@ const infosPratiques = [
   -->
   <section class="border-t border-marine/10 bg-blanc">
     <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
-      <h2 class="text-center text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
         Deux univers complémentaires
       </h2>
 
@@ -277,7 +299,7 @@ const infosPratiques = [
         <article class="flex flex-col overflow-hidden rounded-2xl border border-marine/15 bg-brume">
           <div class="flex flex-1 flex-col p-6 sm:p-8">
             <p class="text-xs font-bold uppercase tracking-widest text-orange">Univers 1</p>
-            <h3 class="mt-2 text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+            <h3 class="mt-2 font-titre text-2xl font-bold uppercase text-marine sm:text-3xl">
               Hall Emploi-Formation
             </h3>
             <div class="mt-3 h-1 w-12 rounded-full bg-orange" aria-hidden="true"></div>
@@ -287,23 +309,24 @@ const infosPratiques = [
             </p>
             <a
               href="/le-salon"
-              class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-marine px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+              class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-marine px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
             >
               Découvrir le salon
             </a>
           </div>
-          <MediaPlaceholder
+          <Visuel
             class="h-44 w-full sm:h-52"
-            shape="pleine"
-            tone="marine"
-            label="Vue du hall : allées, stands et visiteurs"
+            src="/images/hall-emploi-formation.webp"
+            alt="Allées du Hall Emploi-Formation : stands d'entreprises et visiteurs en échange"
+            width={1200}
+            height={450}
           />
         </article>
 
         <article class="flex flex-col overflow-hidden rounded-2xl bg-village">
           <div class="flex flex-1 flex-col p-6 sm:p-8">
             <p class="text-xs font-bold uppercase tracking-widest text-marine">Univers 2</p>
-            <h3 class="mt-2 text-xl font-black uppercase tracking-tight text-blanc sm:text-2xl">
+            <h3 class="mt-2 font-titre text-2xl font-bold uppercase text-blanc sm:text-3xl">
               Village Maintenance &amp; Industrie
             </h3>
             <div class="mt-3 h-1 w-12 rounded-full bg-marine" aria-hidden="true"></div>
@@ -313,16 +336,18 @@ const infosPratiques = [
             </p>
             <a
               href="/village"
-              class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-marine px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+              class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-marine px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
             >
               Découvrir le Village
             </a>
           </div>
-          <MediaPlaceholder
+          <Visuel
             class="h-44 w-full sm:h-52"
-            shape="pleine"
-            tone="contraste"
-            label="Atelier technique : soudure, maintenance industrielle"
+            src="/images/village-maintenance-industrie.webp"
+            alt="Atelier du Village Maintenance & Industrie : geste technique en démonstration"
+            width={1200}
+            height={450}
+            tone="village"
           />
         </article>
       </div>
@@ -350,10 +375,10 @@ const infosPratiques = [
                 aria-hidden="true"
                 set:html={chiffre.icone}
               />
-              <span class="mt-4 block text-4xl font-black leading-none tracking-tight text-marine sm:text-5xl">
+              <span class="mt-4 block font-titre text-5xl font-bold leading-none text-marine sm:text-6xl">
                 {chiffre.value}
               </span>
-              <span class="mt-2 block text-sm font-black uppercase tracking-wide text-marine">
+              <span class="mt-2 block font-titre text-lg font-bold uppercase leading-none tracking-wide text-marine">
                 {chiffre.unite}
               </span>
               <span class="mt-1 block text-sm text-encre">{chiffre.label}</span>
@@ -374,7 +399,7 @@ const infosPratiques = [
     >
       <div class="order-1 lg:col-span-7">
         <p class="text-xs font-bold uppercase tracking-widest text-orange">Devenir exposant</p>
-        <h2 class="mt-3 text-2xl font-black uppercase leading-tight tracking-tight sm:text-3xl">
+        <h2 class="mt-3 font-titre text-3xl font-bold uppercase leading-tight sm:text-4xl">
           Recrutez, présentez vos formations et développez votre visibilité
         </h2>
         <div class="mt-4 h-1 w-14 rounded-full bg-orange" aria-hidden="true"></div>
@@ -385,16 +410,18 @@ const infosPratiques = [
         </p>
         <a
           href="/exposer"
-          class="mt-7 inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+          class="mt-7 inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
         >
           Découvrir les offres exposants
         </a>
       </div>
 
-      <MediaPlaceholder
-        class="order-2 aspect-[4/3] lg:col-span-5"
-        tone="clair"
-        label="Stand exposant en activité : échange entre un recruteur et un visiteur"
+      <Visuel
+        class="order-2 aspect-[4/3] rounded-2xl lg:col-span-5"
+        src="/images/exposants-salon.webp"
+        alt="Stand exposant en activité : échange entre un recruteur et un visiteur du salon"
+        width={1200}
+        height={900}
       />
     </div>
   </section>
@@ -405,7 +432,7 @@ const infosPratiques = [
   -->
   <section class="bg-blanc">
     <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
-      <h2 class="text-center text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
         Informations pratiques
       </h2>
 
@@ -426,7 +453,7 @@ const infosPratiques = [
                 <span class="text-xs font-bold uppercase tracking-widest text-marine/60">
                   {info.label}
                 </span>
-                <span class="text-base font-bold leading-snug text-marine">{info.valeur}</span>
+                <span class="font-titre text-lg font-bold leading-snug text-marine">{info.valeur}</span>
               </li>
             ))
           }
@@ -436,7 +463,7 @@ const infosPratiques = [
       <div class="mt-9 text-center">
         <a
           href="/preparer-ma-visite"
-          class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+          class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
         >
           Préparer ma visite
         </a>
