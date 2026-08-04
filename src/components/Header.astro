@@ -1,0 +1,115 @@
+---
+const navLinks = [
+  { href: '/', label: 'Accueil' },
+  { href: '/le-salon', label: 'Le salon' },
+  { href: '/village', label: 'Village' },
+  { href: '/exposants', label: 'Exposants' },
+  { href: '/programme', label: 'Programme' },
+  { href: '/preparer-ma-visite', label: 'Préparer ma visite' },
+];
+
+const currentPath = Astro.url.pathname;
+
+function isActive(href: string) {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+}
+---
+
+<header class="sticky top-0 z-50 bg-marine text-blanc shadow-md">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+    <a href="/" class="text-base font-bold leading-tight sm:text-lg">
+      Salon de l'Emploi &amp; de la Formation
+      <span class="block text-xs font-normal text-brume sm:inline sm:text-sm">Nouméa · 2026</span>
+    </a>
+
+    <nav class="hidden lg:block" aria-label="Navigation principale">
+      <ul class="flex items-center gap-6 text-sm font-medium">
+        {
+          navLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class:list={[
+                  'transition-colors hover:text-orange',
+                  isActive(link.href) ? 'text-orange' : 'text-blanc',
+                ]}
+                aria-current={isActive(link.href) ? 'page' : undefined}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a
+      href="/exposer"
+      class="hidden rounded-md bg-orange px-4 py-2 text-sm font-semibold text-blanc transition-opacity hover:opacity-90 lg:inline-block"
+    >
+      Devenir exposant
+    </a>
+
+    <button
+      id="menu-toggle"
+      type="button"
+      class="inline-flex items-center justify-center rounded-md p-2 text-blanc lg:hidden"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      aria-label="Ouvrir le menu"
+    >
+      <svg id="icon-open" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+      <svg id="icon-close" class="hidden h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <nav id="mobile-menu" class="hidden border-t border-white/10 lg:hidden" aria-label="Navigation mobile">
+    <ul class="flex flex-col gap-1 px-4 py-3 text-base font-medium">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class:list={[
+                'block rounded-md px-3 py-2 transition-colors hover:bg-white/10',
+                isActive(link.href) ? 'text-orange' : 'text-blanc',
+              ]}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+      <li class="pt-2">
+        <a
+          href="/exposer"
+          class="block rounded-md bg-orange px-3 py-2 text-center font-semibold text-blanc"
+        >
+          Devenir exposant
+        </a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  const iconOpen = document.getElementById('icon-open');
+  const iconClose = document.getElementById('icon-close');
+
+  toggle?.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    menu?.classList.toggle('hidden');
+    iconOpen?.classList.toggle('hidden');
+    iconClose?.classList.toggle('hidden');
+    toggle.setAttribute('aria-label', expanded ? 'Ouvrir le menu' : 'Fermer le menu');
+  });
+</script>

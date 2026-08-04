@@ -1,0 +1,32 @@
+---
+import Seo from '../components/Seo.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <Seo title={title} description={description} />
+    <slot name="head" />
+  </head>
+  <body class="flex min-h-screen flex-col overflow-x-hidden">
+    <Header />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
