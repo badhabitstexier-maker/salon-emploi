@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const eventSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: "Salon de l'Emploi & de la Formation 2026",
+  startDate: '2026-10-30',
+  endDate: '2026-10-31',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  eventStatus: 'https://schema.org/EventScheduled',
+  location: {
+    '@type': 'Place',
+    name: "Salle d'exposition de Nouville",
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Nouméa',
+      addressCountry: 'NC',
+    },
+  },
+  isAccessibleForFree: true,
+  organizer: {
+    '@type': 'Organization',
+    name: 'LabEvents',
+  },
+};
+---
+
+<BaseLayout
+  title="Accueil"
+  description="Salon de l'Emploi & de la Formation 2026 à Nouméa : 30 et 31 octobre, Salle d'exposition de Nouville. Entrée libre et gratuite."
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(eventSchema)} />
+  </Fragment>
+
+  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-orange">
+      30 et 31 octobre 2026 — Salle d'exposition de Nouville, Nouméa
+    </p>
+    <h1 class="mt-4 text-3xl font-bold text-marine sm:text-5xl">
+      {'{{À COMPLÉTER : accroche principale — contenu du Lot 1}}'}
+    </h1>
+    <p class="mt-6 max-w-2xl text-base text-encre sm:text-lg">
+      Entrée libre et gratuite. Deux univers : Hall Emploi-Formation et Village Maintenance &amp; Industrie.
+    </p>
+  </section>
+</BaseLayout>

@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Design tokens — Charte graphique Salon de l'Emploi & de la Formation 2026 (CLAUDE.md section 5) */
+@theme {
+  --color-marine: #10233f;
+  --color-blanc: #ffffff;
+  --color-brume: #f5f7fa;
+  --color-orange: #f26a2a;
+  --color-village: #2fa36b;
+  --color-encre: #1a2233;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-blanc text-encre;
+}

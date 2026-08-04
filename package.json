@@ -1,0 +1,20 @@
+{
+  "name": "salon-emploi",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Site du Salon de l'Emploi & de la Formation 2026 — Nouméa",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.1.6",
+    "astro-robots-txt": "^1.0.0",
+    "tailwindcss": "^4.3.3"
+  }
+}
