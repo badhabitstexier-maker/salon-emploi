@@ -1,42 +1,54 @@
 ---
 const navLinks = [
-  { href: '/', label: 'Accueil' },
   { href: '/le-salon', label: 'Le salon' },
-  { href: '/village', label: 'Village' },
+  { href: '/village', label: 'Village Maintenance' },
   { href: '/exposants', label: 'Exposants' },
   { href: '/programme', label: 'Programme' },
   { href: '/preparer-ma-visite', label: 'Préparer ma visite' },
+  { href: '/exposer', label: 'Exposer' },
 ];
 
 const currentPath = Astro.url.pathname;
 
 function isActive(href: string) {
-  if (href === '/') return currentPath === '/';
   return currentPath.startsWith(href);
 }
 ---
 
-<header class="sticky top-0 z-50 bg-marine text-blanc shadow-md">
-  <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-    <a href="/" class="min-w-0 flex-1 text-sm font-bold leading-snug sm:flex-none sm:text-lg">
-      <span class="block sm:inline">Salon de l'Emploi &amp; de la Formation</span>
-      <span class="block text-xs font-normal text-brume sm:ml-3 sm:inline sm:text-sm">Nouméa · 2026</span>
+<header class="sticky top-0 z-50 bg-marine text-blanc shadow-lg">
+  <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:gap-6">
+    {/*
+      Bloc-titre typographique sur trois lignes, repris de la planche de
+      références (esperluette en accent). Remplace le logo officiel tant qu'il
+      n'a pas été fourni.
+    */}
+    <a
+      href="/"
+      class="flex-none text-xs font-black uppercase leading-none tracking-tight"
+      aria-label="Accueil — Salon de l'Emploi & de la Formation 2026"
+    >
+      <span class="block text-base leading-none sm:text-lg">Salon</span>
+      <span class="mt-0.5 block leading-none">De l'Emploi <span class="text-orange">&amp;</span></span>
+      <span class="mt-0.5 block leading-none">De la Formation</span>
     </a>
 
-    <nav class="hidden lg:block" aria-label="Navigation principale">
-      <ul class="flex items-center gap-6 text-sm font-medium">
+    <nav class="ml-auto hidden lg:block" aria-label="Navigation principale">
+      <ul class="flex items-center gap-x-4 text-xs font-bold uppercase tracking-wide xl:gap-x-6">
         {
           navLinks.map((link) => (
             <li>
               <a
                 href={link.href}
                 class:list={[
-                  'transition-colors hover:text-orange',
+                  'relative block whitespace-nowrap py-1 transition-colors hover:text-orange',
                   isActive(link.href) ? 'text-orange' : 'text-blanc',
                 ]}
                 aria-current={isActive(link.href) ? 'page' : undefined}
               >
                 {link.label}
+                {isActive(link.href) && (
+                  <span class="absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-orange" aria-hidden="true" />
+                )}
               </a>
             </li>
           ))
@@ -46,7 +58,7 @@ function isActive(href: string) {
 
     <a
       href="/exposer"
-      class="hidden rounded-md bg-orange px-4 py-2 text-sm font-semibold text-blanc transition-opacity hover:opacity-90 lg:inline-block"
+      class="ml-auto hidden whitespace-nowrap rounded-md bg-village px-5 py-2 text-xs font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90 lg:ml-0 lg:inline-block"
     >
       Devenir exposant
     </a>
@@ -54,30 +66,42 @@ function isActive(href: string) {
     <button
       id="menu-toggle"
       type="button"
-      class="inline-flex flex-shrink-0 items-center justify-center rounded-md p-2 text-blanc lg:hidden"
+      class="ml-auto inline-flex flex-shrink-0 items-center justify-center rounded-md p-2 text-blanc lg:hidden"
       aria-expanded="false"
       aria-controls="mobile-menu"
       aria-label="Ouvrir le menu"
     >
-      <svg id="icon-open" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg id="icon-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
-      <svg id="icon-close" class="hidden h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg id="icon-close" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
   </div>
 
-  <nav id="mobile-menu" class="hidden border-t border-white/10 lg:hidden" aria-label="Navigation mobile">
-    <ul class="flex flex-col gap-1 px-4 py-3 text-base font-medium">
+  <nav id="mobile-menu" class="hidden border-t border-blanc/10 bg-marine lg:hidden" aria-label="Navigation mobile">
+    <ul class="flex flex-col gap-1 px-4 py-3 text-sm font-bold uppercase tracking-wide sm:px-6">
+      <li>
+        <a
+          href="/"
+          class:list={[
+            'block rounded-md px-3 py-2.5 transition-colors hover:bg-blanc/10',
+            currentPath === '/' ? 'bg-blanc/5 text-orange' : 'text-blanc',
+          ]}
+          aria-current={currentPath === '/' ? 'page' : undefined}
+        >
+          Accueil
+        </a>
+      </li>
       {
         navLinks.map((link) => (
           <li>
             <a
               href={link.href}
               class:list={[
-                'block rounded-md px-3 py-2 transition-colors hover:bg-white/10',
-                isActive(link.href) ? 'text-orange' : 'text-blanc',
+                'block rounded-md px-3 py-2.5 transition-colors hover:bg-blanc/10',
+                isActive(link.href) ? 'bg-blanc/5 text-orange' : 'text-blanc',
               ]}
               aria-current={isActive(link.href) ? 'page' : undefined}
             >
@@ -89,10 +113,13 @@ function isActive(href: string) {
       <li class="pt-2">
         <a
           href="/exposer"
-          class="block rounded-md bg-orange px-3 py-2 text-center font-semibold text-blanc"
+          class="block rounded-md bg-village px-3 py-3 text-center text-blanc"
         >
           Devenir exposant
         </a>
+      </li>
+      <li class="px-3 pb-1 pt-3 text-xs font-medium normal-case tracking-normal text-brume/70">
+        30 &amp; 31 octobre 2026 · Salle d'exposition de Nouville, Nouméa · Entrée libre et gratuite
       </li>
     </ul>
   </nav>

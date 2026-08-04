@@ -17,3 +17,26 @@ html {
 body {
   @apply bg-blanc text-encre;
 }
+
+/*
+  Trame diagonale — texture légère appliquée aux emplacements visuels en attente
+  de photos. Utilise `currentColor` pour rester pilotée par les tokens de charte.
+*/
+.trame {
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, currentColor 16%, transparent) 0 2px,
+    transparent 2px 12px
+  );
+}
+
+/*
+  Découpe diagonale du visuel du hero — reprend la coupe oblique entre l'aplat
+  marine et la photo sur la vignette « 1. ACCUEIL » de la planche de références.
+  Appliquée uniquement à partir de lg, où le visuel occupe la partie droite.
+*/
+@media (min-width: 64rem) {
+  .decoupe-diagonale {
+    clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
