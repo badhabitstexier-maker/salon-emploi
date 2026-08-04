@@ -1,0 +1,58 @@
+---
+/*
+  Emplacement visuel en attente de photo.
+  Tant que Philippe n'a pas fourni les visuels du salon, ces blocs tiennent la
+  composition tout en indiquant explicitement le visuel attendu.
+  À remplacer par <Image /> (astro:assets) dès réception des photos.
+*/
+interface Props {
+  /** Description du visuel attendu (sert aussi de brief photo). */
+  label: string;
+  /** Adaptation au fond de la section. */
+  tone?: 'clair' | 'marine' | 'contraste';
+  class?: string;
+}
+
+const { label, tone = 'marine', class: className = '' } = Astro.props;
+
+const tones = {
+  // sur fond marine
+  clair: 'border-blanc/25 bg-blanc/5 text-brume',
+  // sur fond blanc ou brume
+  marine: 'border-marine/25 bg-marine/5 text-marine',
+  // sur bandeau coloré (village / orange)
+  contraste: 'border-marine/30 bg-marine/10 text-marine',
+};
+---
+
+<div
+  class:list={[
+    'relative flex items-center justify-center overflow-hidden rounded-2xl border border-dashed',
+    tones[tone],
+    className,
+  ]}
+  role="img"
+  aria-label={`Emplacement visuel à fournir : ${label}`}
+>
+  <div class="trame absolute inset-0" aria-hidden="true"></div>
+
+  <div class="relative flex max-w-xs flex-col items-center gap-2 px-4 py-6 text-center">
+    <svg
+      class="h-7 w-7 opacity-70"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="1.6"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"
+      />
+      <circle cx="12" cy="13" r="3.5" />
+    </svg>
+    <span class="text-xs font-bold uppercase tracking-widest opacity-80">Visuel à fournir</span>
+    <span class="text-xs leading-snug opacity-90">{label}</span>
+  </div>
+</div>

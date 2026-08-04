@@ -16,27 +16,61 @@ function isActive(href: string) {
 }
 ---
 
-<header class="sticky top-0 z-50 bg-marine text-blanc shadow-md">
-  <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-    <a href="/" class="min-w-0 flex-1 text-sm font-bold leading-snug sm:flex-none sm:text-lg">
-      <span class="block sm:inline">Salon de l'Emploi &amp; de la Formation</span>
-      <span class="block text-xs font-normal text-brume sm:ml-3 sm:inline sm:text-sm">Nouméa · 2026</span>
+<!-- Bandeau événementiel : rappel permanent des faits clés (non collant) -->
+<div class="hidden bg-orange text-blanc md:block">
+  <div
+    class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4 py-1.5 text-xs font-bold uppercase tracking-wide sm:px-6"
+  >
+    <span>30 &amp; 31 octobre 2026</span>
+    <span aria-hidden="true" class="opacity-60">•</span>
+    <span>Salle d'exposition de Nouville — Nouméa</span>
+    <span aria-hidden="true" class="opacity-60">•</span>
+    <span>Entrée libre et gratuite</span>
+  </div>
+</div>
+
+<header class="sticky top-0 z-50 bg-marine text-blanc shadow-lg">
+  <div class="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6 lg:h-16 lg:gap-6">
+    <a href="/" class="flex min-w-0 flex-shrink-0 items-center gap-2.5" aria-label="Accueil du salon">
+      <span
+        class="flex h-9 w-9 flex-none items-center justify-center rounded-md bg-orange text-sm font-black leading-none text-blanc lg:h-10 lg:w-10"
+        aria-hidden="true">SE</span
+      >
+      {/*
+        Bloc-titre à deux régimes : version compacte sur deux lignes quand la
+        place manque (mobile, et créneau lg où la nav desktop apparaît),
+        version sur une ligne quand la largeur le permet (sm→md et xl+).
+      */}
+      <span class="min-w-0 leading-tight">
+        <span class="block text-xs font-extrabold uppercase tracking-tight sm:hidden lg:block xl:hidden">
+          Salon de l'Emploi<br />&amp; de la Formation
+        </span>
+        <span
+          class="hidden whitespace-nowrap text-sm font-extrabold uppercase tracking-tight sm:block lg:hidden xl:block xl:text-base"
+        >
+          Salon de l'Emploi &amp; de la Formation
+        </span>
+        <span class="hidden text-xs font-medium text-brume/70 sm:block lg:hidden xl:block">Nouméa · 2026</span>
+      </span>
     </a>
 
-    <nav class="hidden lg:block" aria-label="Navigation principale">
-      <ul class="flex items-center gap-6 text-sm font-medium">
+    <nav class="ml-auto hidden lg:block" aria-label="Navigation principale">
+      <ul class="flex items-center gap-x-5 text-sm font-semibold xl:gap-x-7">
         {
           navLinks.map((link) => (
             <li>
               <a
                 href={link.href}
                 class:list={[
-                  'transition-colors hover:text-orange',
+                  'relative block whitespace-nowrap py-1 transition-colors hover:text-orange',
                   isActive(link.href) ? 'text-orange' : 'text-blanc',
                 ]}
                 aria-current={isActive(link.href) ? 'page' : undefined}
               >
                 {link.label}
+                {isActive(link.href) && (
+                  <span class="absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-orange" aria-hidden="true" />
+                )}
               </a>
             </li>
           ))
@@ -46,7 +80,7 @@ function isActive(href: string) {
 
     <a
       href="/exposer"
-      class="hidden rounded-md bg-orange px-4 py-2 text-sm font-semibold text-blanc transition-opacity hover:opacity-90 lg:inline-block"
+      class="ml-auto hidden whitespace-nowrap rounded-md bg-village px-4 py-2 text-sm font-bold text-blanc transition-opacity hover:opacity-90 lg:ml-0 lg:inline-block"
     >
       Devenir exposant
     </a>
@@ -54,30 +88,30 @@ function isActive(href: string) {
     <button
       id="menu-toggle"
       type="button"
-      class="inline-flex flex-shrink-0 items-center justify-center rounded-md p-2 text-blanc lg:hidden"
+      class="ml-auto inline-flex flex-shrink-0 items-center justify-center rounded-md p-2 text-blanc lg:hidden"
       aria-expanded="false"
       aria-controls="mobile-menu"
       aria-label="Ouvrir le menu"
     >
-      <svg id="icon-open" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg id="icon-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
-      <svg id="icon-close" class="hidden h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg id="icon-close" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
   </div>
 
-  <nav id="mobile-menu" class="hidden border-t border-white/10 lg:hidden" aria-label="Navigation mobile">
-    <ul class="flex flex-col gap-1 px-4 py-3 text-base font-medium">
+  <nav id="mobile-menu" class="hidden border-t border-blanc/10 bg-marine lg:hidden" aria-label="Navigation mobile">
+    <ul class="flex flex-col gap-1 px-4 py-3 text-base font-semibold sm:px-6">
       {
         navLinks.map((link) => (
           <li>
             <a
               href={link.href}
               class:list={[
-                'block rounded-md px-3 py-2 transition-colors hover:bg-white/10',
-                isActive(link.href) ? 'text-orange' : 'text-blanc',
+                'block rounded-md px-3 py-2 transition-colors hover:bg-blanc/10',
+                isActive(link.href) ? 'bg-blanc/5 text-orange' : 'text-blanc',
               ]}
               aria-current={isActive(link.href) ? 'page' : undefined}
             >
@@ -87,12 +121,12 @@ function isActive(href: string) {
         ))
       }
       <li class="pt-2">
-        <a
-          href="/exposer"
-          class="block rounded-md bg-orange px-3 py-2 text-center font-semibold text-blanc"
-        >
+        <a href="/exposer" class="block rounded-md bg-village px-3 py-2.5 text-center font-bold text-blanc">
           Devenir exposant
         </a>
+      </li>
+      <li class="px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-brume/70 md:hidden">
+        30 &amp; 31 octobre 2026 · Nouville, Nouméa · Entrée libre
       </li>
     </ul>
   </nav>

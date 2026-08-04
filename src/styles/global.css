@@ -17,3 +17,15 @@ html {
 body {
   @apply bg-blanc text-encre;
 }
+
+/*
+  Trame diagonale — texture légère appliquée aux emplacements visuels en attente
+  de photos. Utilise `currentColor` pour rester pilotée par les tokens de charte.
+*/
+.trame {
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, currentColor 16%, transparent) 0 2px,
+    transparent 2px 12px
+  );
+}
