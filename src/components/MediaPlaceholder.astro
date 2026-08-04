@@ -1,8 +1,9 @@
 ---
 /*
   Emplacement visuel en attente de photo.
-  Tant que Philippe n'a pas fourni les visuels du salon, ces blocs tiennent la
-  composition tout en indiquant explicitement le visuel attendu.
+  La planche de références (public/references/preview-pages-site.png) repose
+  largement sur la photo : tant que les visuels ne sont pas fournis, ces blocs
+  tiennent la composition en indiquant explicitement le visuel attendu.
   À remplacer par <Image /> (astro:assets) dès réception des photos.
 */
 interface Props {
@@ -10,24 +11,32 @@ interface Props {
   label: string;
   /** Adaptation au fond de la section. */
   tone?: 'clair' | 'marine' | 'contraste';
+  /** `carte` = bloc arrondi bordé ; `pleine` = zone pleine sans bord (hero, cartes univers). */
+  shape?: 'carte' | 'pleine';
   class?: string;
 }
 
-const { label, tone = 'marine', class: className = '' } = Astro.props;
+const { label, tone = 'marine', shape = 'carte', class: className = '' } = Astro.props;
 
 const tones = {
   // sur fond marine
   clair: 'border-blanc/25 bg-blanc/5 text-brume',
   // sur fond blanc ou brume
   marine: 'border-marine/25 bg-marine/5 text-marine',
-  // sur bandeau coloré (village / orange)
+  // sur aplat coloré (village) — texte marine pour rester lisible sur le vert
   contraste: 'border-marine/30 bg-marine/10 text-marine',
+};
+
+const shapes = {
+  carte: 'rounded-2xl border border-dashed',
+  pleine: '',
 };
 ---
 
 <div
   class:list={[
-    'relative flex items-center justify-center overflow-hidden rounded-2xl border border-dashed',
+    'relative flex items-center justify-center overflow-hidden',
+    shapes[shape],
     tones[tone],
     className,
   ]}

@@ -33,56 +33,68 @@ const eventSchema = {
 */
 const afficherPresence = true;
 
+/*
+  Quatre promesses — reprise du langage de la planche : verbe en capitales,
+  complément court, pictogramme plein, colonnes séparées par un filet.
+  Le pictogramme « Explorer » est en vert, comme sur la planche.
+*/
 const promesses = [
   {
-    num: '01',
-    titre: 'Rencontrer les recruteurs',
+    verbe: 'Rencontrer',
+    complement: 'les recruteurs',
     texte:
       "Échangez directement avec les entreprises, présentez votre parcours et découvrez leurs besoins.",
-    icone: `<circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path stroke-linecap="round" d="M2.5 20a5.5 5.5 0 0 1 11 0M14.5 20a4.2 4.2 0 0 1 7-3.1" />`,
+    accent: 'orange',
+    icone: `<circle cx="12" cy="7.5" r="4.2" /><path d="M3.5 21a8.5 8.5 0 0 1 17 0Z" />`,
   },
   {
-    num: '02',
-    titre: 'Découvrir les formations',
-    texte:
-      'Identifiez les parcours proposés en Nouvelle-Calédonie et les débouchés associés.',
-    icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3 2 8l10 5 10-5-10-5Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 10.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-5.5" />`,
+    verbe: 'Découvrir',
+    complement: 'les formations',
+    texte: 'Identifiez les parcours proposés en Nouvelle-Calédonie et les débouchés associés.',
+    accent: 'orange',
+    icone: `<path d="M12 3 1 9l3 1.6V17h2v-5.3l6 3.3 11-6-11-6Z" /><path d="M7 13.6V17c0 1.7 2.2 3 5 3s5-1.3 5-3v-3.4l-5 2.7-5-2.7Z" />`,
   },
   {
-    num: '03',
-    titre: 'Explorer les métiers',
+    verbe: 'Explorer',
+    complement: 'les métiers',
     texte:
       'Découvrez des secteurs, des environnements professionnels et des métiers parfois méconnus.',
-    icone: `<circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m14.5 9.5-2 5-5 2 2-5 5-2Z" />`,
+    accent: 'village',
+    icone: `<path fill-rule="evenodd" d="M10 2h4l.35 2.6c.6.2 1.18.54 1.7.94l2.4-1.05 2 3.46-1.95 1.6a7.9 7.9 0 0 1 0 1.9l1.95 1.6-2 3.46-2.4-1.05c-.52.4-1.1.73-1.7.94L14 22h-4l-.35-2.6a6.6 6.6 0 0 1-1.7-.94l-2.4 1.05-2-3.46 1.95-1.6a7.9 7.9 0 0 1 0-1.9L3.55 10.95l2-3.46 2.4 1.05c.52-.4 1.1-.73 1.7-.94L10 2Zm2 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" clip-rule="evenodd" />`,
   },
   {
-    num: '04',
-    titre: 'Construire votre projet',
+    verbe: 'Construire',
+    complement: 'votre projet',
     texte:
       "Bénéficiez de conseils pour votre orientation, votre recherche d'emploi ou votre reconversion.",
-    icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 18h6M10 21h4" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 3a6 6 0 0 0-3.5 10.9c.6.4.9 1 .9 1.7V16h5.2v-.4c0-.7.3-1.3.9-1.7A6 6 0 0 0 12 3Z" />`,
+    accent: 'orange',
+    icone: `<path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 3.6a6.4 6.4 0 1 1 0 12.8 6.4 6.4 0 0 1 0-12.8Z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M12 8.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" clip-rule="evenodd" />`,
   },
 ];
 
 const chiffresCles = [
   {
-    value: '2 jours',
+    value: '2',
+    unite: 'Jours',
     label: 'de rencontres',
     icone: `<rect x="3" y="5" width="18" height="16" rx="2" /><path stroke-linecap="round" d="M3 10h18M8 3v4M16 3v4" />`,
   },
   {
-    value: 'Environ 3 000',
-    label: 'visiteurs attendus',
+    value: '3 000',
+    unite: 'Visiteurs',
+    label: 'attendus (environ)',
     icone: `<circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path stroke-linecap="round" d="M2.5 20a5.5 5.5 0 0 1 11 0M14.5 20a4.2 4.2 0 0 1 7-3.1" />`,
   },
   {
-    value: '2 univers',
+    value: '2',
+    unite: 'Univers',
     label: 'complémentaires',
     icone: `<path stroke-linecap="round" stroke-linejoin="round" d="m12 3 9 5-9 5-9-5 9-5Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m3 14 9 5 9-5" />`,
   },
   {
-    value: 'Entrée',
-    label: 'libre et gratuite',
+    value: '100 %',
+    unite: 'Gratuit',
+    label: 'entrée libre',
     icone: `<circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12 2.5 2.5 4.5-4.5" />`,
   },
 ];
@@ -104,8 +116,8 @@ const infosPratiques = [
     icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" />`,
   },
   {
-    label: 'Accès',
-    valeur: 'Entrée libre et gratuite',
+    label: 'Entrée',
+    valeur: 'Libre et gratuite',
     icone: `<circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12 2.5 2.5 4.5-4.5" />`,
   },
 ];
@@ -119,61 +131,38 @@ const infosPratiques = [
     <script type="application/ld+json" set:html={JSON.stringify(eventSchema)} />
   </Fragment>
 
-  <!-- ============================== HERO ============================== -->
+  <!-- ============================== HERO ==============================
+       Aplat marine à gauche, visuel en découpe diagonale à droite à partir
+       de lg — composition reprise de la vignette « 1. ACCUEIL ».
+  -->
   <section class="relative overflow-hidden bg-marine text-blanc">
-    <div
-      class="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-orange/25 blur-3xl"
-      aria-hidden="true"
-    >
-    </div>
-    <div
-      class="pointer-events-none absolute -bottom-40 left-1/4 h-80 w-80 rounded-full bg-village/25 blur-3xl"
-      aria-hidden="true"
-    >
+    <div class="absolute inset-y-0 right-0 hidden w-5/12 lg:block xl:w-1/2">
+      <MediaPlaceholder
+        class="decoupe-diagonale h-full w-full"
+        shape="pleine"
+        tone="clair"
+        label="Montage : recruteurs, candidats, formation et métiers techniques (photo détourée sur fond marine)"
+      />
     </div>
 
-    <div
-      class="relative mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-20"
-    >
-      <div class="lg:col-span-7">
-        <p
-          class="inline-flex items-center gap-2 rounded-full bg-blanc/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brume"
-        >
-          Nouméa · Nouvelle-Calédonie
-        </p>
-
-        <h1 class="mt-5 text-4xl font-black uppercase leading-tight sm:text-5xl xl:text-6xl">
-          Salon de l'<span class="text-orange">Emploi</span><br />
-          &amp; de la <span class="text-orange">Formation</span>
+    <div class="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:py-24">
+      <div class="lg:max-w-lg xl:max-w-xl">
+        <h1 class="text-4xl font-black uppercase leading-none tracking-tight sm:text-5xl xl:text-6xl">
+          Salon<br />
+          de l'Emploi <span class="text-orange">&amp;</span><br />
+          de la Formation
         </h1>
 
-        <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3">
-          <p class="bg-orange px-4 py-2 text-xl font-black uppercase tracking-wide text-blanc sm:text-2xl">
-            30 &amp; 31 octobre 2026
-          </p>
-          <p class="text-sm font-bold uppercase tracking-widest text-village">Entrée libre et gratuite</p>
-        </div>
-
-        <p class="mt-6 flex items-start gap-2 text-sm font-semibold text-brume sm:text-base">
-          <svg
-            class="mt-0.5 h-5 w-5 flex-none text-orange"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"
-            />
-            <circle cx="12" cy="10" r="2.5" />
-          </svg>
-          Salle d'exposition de Nouville — Nouméa
+        <p class="mt-6 text-2xl font-black uppercase tracking-tight text-orange sm:text-3xl">
+          30 &amp; 31 octobre 2026
         </p>
 
-        <p class="mt-5 max-w-xl text-base text-brume sm:text-lg">
+        <p class="mt-4 text-sm font-bold uppercase leading-relaxed tracking-wide text-brume">
+          Salle d'exposition de Nouville, Nouméa<br />
+          Entrée libre et gratuite
+        </p>
+
+        <p class="mt-6 max-w-md text-base text-brume sm:text-lg">
           Deux jours pour rencontrer les recruteurs, découvrir les formations du territoire et
           explorer les métiers qui recrutent.
         </p>
@@ -181,85 +170,55 @@ const infosPratiques = [
         <div class="mt-8 flex flex-col gap-3 sm:flex-row">
           <a
             href="/exposer"
-            class="inline-flex items-center justify-center rounded-md bg-orange px-6 py-3.5 text-base font-bold text-blanc transition-opacity hover:opacity-90"
+            class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
           >
             Devenir exposant
           </a>
           <a
             href="/preparer-ma-visite"
-            class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 text-base font-bold text-blanc transition-colors hover:bg-blanc hover:text-marine"
+            class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
           >
             Préparer ma visite
           </a>
         </div>
-
-        <ul class="mt-10 grid gap-3 sm:grid-cols-2">
-          <li class="border-l-4 border-orange bg-blanc/5 px-4 py-3 text-sm font-bold uppercase tracking-wide">
-            Hall Emploi-Formation
-          </li>
-          <li class="border-l-4 border-village bg-blanc/5 px-4 py-3 text-sm font-bold uppercase tracking-wide">
-            Village Maintenance &amp; Industrie
-          </li>
-        </ul>
       </div>
 
-      <div class="lg:col-span-5">
-        <div class="mx-auto grid max-w-lg grid-cols-2 gap-3 lg:max-w-none">
-          <MediaPlaceholder
-            class="col-span-2 aspect-[4/3]"
-            tone="clair"
-            label="Photo d'ambiance : visiteurs et recruteurs en échange sur un stand"
-          />
-          <MediaPlaceholder
-            class="aspect-square"
-            tone="clair"
-            label="Atelier ou formation en situation"
-          />
-          <MediaPlaceholder
-            class="aspect-square"
-            tone="clair"
-            label="Geste technique : maintenance et industrie"
-          />
-        </div>
-      </div>
+      <MediaPlaceholder
+        class="mt-10 aspect-video w-full lg:hidden"
+        tone="clair"
+        label="Montage : recruteurs, candidats, formation et métiers techniques"
+      />
     </div>
   </section>
 
-  <!-- ====================== QUATRE PROMESSES ========================= -->
-  <section class="bg-brume">
-    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-20">
-      <p class="text-xs font-bold uppercase tracking-widest text-orange">Visiteurs</p>
-      <h2 class="mt-2 text-2xl font-extrabold text-marine sm:text-4xl">Pourquoi venir au salon ?</h2>
+  <!-- ====================== QUATRE PROMESSES =========================
+       Bande infographique : colonnes centrées séparées par un filet fin,
+       pictogrammes pleins, pas de cartes ni d'ombres (langage de la planche).
+  -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+        Pourquoi venir au salon ?
+      </h2>
 
-      <div
-        class="mt-8 grid gap-px overflow-hidden rounded-2xl bg-marine/10 shadow-sm sm:grid-cols-2 lg:mt-10 lg:grid-cols-4"
-      >
+      <div class="mt-10 grid gap-px bg-marine/10 sm:grid-cols-2 lg:grid-cols-4">
         {
           promesses.map((promesse) => (
-            <article class="relative bg-blanc p-6 lg:p-7">
-              <span
-                class="absolute right-5 top-4 text-3xl font-black leading-none text-marine/10"
+            <article class="flex flex-col items-center bg-blanc px-5 py-8 text-center">
+              <svg
+                class:list={[
+                  'h-11 w-11',
+                  promesse.accent === 'village' ? 'text-village' : 'text-marine',
+                ]}
+                viewBox="0 0 24 24"
+                fill="currentColor"
                 aria-hidden="true"
-              >
-                {promesse.num}
-              </span>
-              <span
-                class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange/10 text-orange"
-                aria-hidden="true"
-              >
-                <svg
-                  class="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  set:html={promesse.icone}
-                />
-              </span>
-              <h3 class="mt-5 text-base font-extrabold uppercase tracking-tight text-marine">
-                {promesse.titre}
+                set:html={promesse.icone}
+              />
+              <h3 class="mt-5 text-lg font-black uppercase tracking-tight text-marine">
+                {promesse.verbe}
               </h3>
-              <div class="mt-3 h-1 w-10 rounded-full bg-orange" aria-hidden="true" />
+              <p class="mt-1 text-base font-semibold text-marine">{promesse.complement}</p>
               <p class="mt-3 text-sm leading-relaxed text-encre">{promesse.texte}</p>
             </article>
           ))
@@ -269,130 +228,135 @@ const infosPratiques = [
   </section>
 
   {
-    /* ==================== ILS SERONT PRÉSENTS ======================= */
+    /* ==================== ILS SERONT PRÉSENTS =======================
+       Bande centrée, placeholders neutres — aucun logo tant que la liste
+       n'est pas confirmée nommément (CLAUDE.md section 3).
+    */
     afficherPresence && (
-      <section class="border-y border-marine/10 bg-blanc">
-        <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-          <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-widest text-orange">Exposants</p>
-              <h2 class="mt-2 text-2xl font-extrabold text-marine sm:text-3xl">Ils seront présents</h2>
-              <p class="mt-2 max-w-xl text-sm text-encre">
-                La liste des exposants sera publiée au fur et à mesure des confirmations.
-              </p>
-            </div>
-            <a
-              href="/exposants"
-              class="inline-flex w-fit items-center justify-center rounded-md border-2 border-marine px-5 py-2.5 text-sm font-bold text-marine transition-colors hover:bg-marine hover:text-blanc"
-            >
-              Voir les exposants
-            </a>
-          </div>
+      <section class="border-t border-marine/10 bg-brume">
+        <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+          <h2 class="text-center text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+            Ils seront présents
+          </h2>
+          <p class="mx-auto mt-3 max-w-lg text-center text-sm text-encre">
+            La liste des exposants sera publiée au fur et à mesure des confirmations.
+          </p>
 
-          <ul class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {Array.from({ length: 6 }).map(() => (
-              <li class="flex h-20 items-center justify-center rounded-xl border border-dashed border-marine/30 bg-brume px-2 text-center text-xs font-bold uppercase tracking-wide text-marine/50">
+          <ul class="mt-9 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {Array.from({ length: 5 }).map(() => (
+              <li class="flex h-20 items-center justify-center rounded-lg border border-dashed border-marine/25 bg-blanc px-2 text-center text-xs font-bold uppercase tracking-wide text-marine/45">
                 Logo à venir
               </li>
             ))}
           </ul>
+
+          <div class="mt-9 text-center">
+            <a
+              href="/exposants"
+              class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+            >
+              Voir tous les exposants
+            </a>
+          </div>
         </div>
       </section>
     )
   }
 
-  <!-- ========================= DEUX UNIVERS ========================== -->
-  <section id="univers" aria-labelledby="univers-titre">
-    <h2 id="univers-titre" class="sr-only">Deux univers complémentaires</h2>
+  <!-- ========================= DEUX UNIVERS ==========================
+       Deux cartes à parité, texte en haut et zone image en pied — reprise
+       du bloc « Deux espaces complémentaires » de la planche.
+  -->
+  <section class="border-t border-marine/10 bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+        Deux univers complémentaires
+      </h2>
 
-    <!-- Univers 1 — Hall Emploi-Formation (marine / orange) -->
-    <div class="bg-marine text-blanc">
-      <div
-        class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20"
-      >
-        <div class="lg:order-1">
-          <p class="text-xs font-bold uppercase tracking-widest text-orange">Univers 1</p>
-          <h3 class="mt-2 text-2xl font-extrabold uppercase leading-tight sm:text-4xl">
-            Hall Emploi-Formation
-          </h3>
-          <div class="mt-4 h-1.5 w-16 rounded-full bg-orange" aria-hidden="true"></div>
-          <p class="mt-5 max-w-xl text-base text-brume sm:text-lg">
-            Entreprises qui recrutent, organismes de formation et acteurs de l'accompagnement
-            réunis dans un même espace.
-          </p>
-          <a
-            href="/le-salon"
-            class="mt-7 inline-flex items-center justify-center rounded-md bg-orange px-6 py-3 text-base font-bold text-blanc transition-opacity hover:opacity-90"
-          >
-            Découvrir le salon
-          </a>
-        </div>
+      <div class="mt-10 grid gap-6 lg:grid-cols-2">
+        <article class="flex flex-col overflow-hidden rounded-2xl border border-marine/15 bg-brume">
+          <div class="flex flex-1 flex-col p-6 sm:p-8">
+            <p class="text-xs font-bold uppercase tracking-widest text-orange">Univers 1</p>
+            <h3 class="mt-2 text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+              Hall Emploi-Formation
+            </h3>
+            <div class="mt-3 h-1 w-12 rounded-full bg-orange" aria-hidden="true"></div>
+            <p class="mt-4 flex-1 text-sm text-encre sm:text-base">
+              Entreprises qui recrutent, organismes de formation et acteurs de l'accompagnement
+              réunis dans un même espace.
+            </p>
+            <a
+              href="/le-salon"
+              class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-marine px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+            >
+              Découvrir le salon
+            </a>
+          </div>
+          <MediaPlaceholder
+            class="h-44 w-full sm:h-52"
+            shape="pleine"
+            tone="marine"
+            label="Vue du hall : allées, stands et visiteurs"
+          />
+        </article>
 
-        <MediaPlaceholder
-          class="aspect-[4/3] lg:order-2"
-          tone="clair"
-          label="Stand entreprise : recruteur et candidat en entretien"
-        />
-      </div>
-    </div>
-
-    <!-- Univers 2 — Village Maintenance & Industrie (vert) -->
-    <div class="bg-village text-marine">
-      <div
-        class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20"
-      >
-        <MediaPlaceholder
-          class="order-2 aspect-[4/3] lg:order-1"
-          tone="contraste"
-          label="Atelier technique : maintenance industrielle en action"
-        />
-
-        <div class="order-1 lg:order-2">
-          <p class="text-xs font-bold uppercase tracking-widest text-marine">Univers 2</p>
-          <h3 class="mt-2 text-2xl font-extrabold uppercase leading-tight text-blanc sm:text-4xl">
-            Village Maintenance &amp; Industrie
-          </h3>
-          <div class="mt-4 h-1.5 w-16 rounded-full bg-marine" aria-hidden="true"></div>
-          <p class="mt-5 max-w-xl text-base sm:text-lg">
-            Un espace consacré aux métiers techniques et industriels, aux entreprises de la
-            filière et aux formations qui y conduisent.
-          </p>
-          <a
-            href="/village"
-            class="mt-7 inline-flex items-center justify-center rounded-md bg-marine px-6 py-3 text-base font-bold text-blanc transition-opacity hover:opacity-90"
-          >
-            Découvrir le Village
-          </a>
-        </div>
+        <article class="flex flex-col overflow-hidden rounded-2xl bg-village">
+          <div class="flex flex-1 flex-col p-6 sm:p-8">
+            <p class="text-xs font-bold uppercase tracking-widest text-marine">Univers 2</p>
+            <h3 class="mt-2 text-xl font-black uppercase tracking-tight text-blanc sm:text-2xl">
+              Village Maintenance &amp; Industrie
+            </h3>
+            <div class="mt-3 h-1 w-12 rounded-full bg-marine" aria-hidden="true"></div>
+            <p class="mt-4 flex-1 text-sm text-marine sm:text-base">
+              Un espace consacré aux métiers techniques et industriels, aux entreprises de la
+              filière et aux formations qui y conduisent.
+            </p>
+            <a
+              href="/village"
+              class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-marine px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+            >
+              Découvrir le Village
+            </a>
+          </div>
+          <MediaPlaceholder
+            class="h-44 w-full sm:h-52"
+            shape="pleine"
+            tone="contraste"
+            label="Atelier technique : soudure, maintenance industrielle"
+          />
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- ========================= CHIFFRES CLÉS ========================= -->
-  <section class="bg-marine" aria-labelledby="chiffres-titre">
-    <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-16">
-      <p id="chiffres-titre" class="text-xs font-bold uppercase tracking-widest text-orange">
-        Le salon en bref
-      </p>
+  <!-- ========================= CHIFFRES CLÉS =========================
+       Bandeau chiffré au langage de la page « Le salon » de la planche :
+       pictogramme en filet, nombre très large, unité puis précision.
+  -->
+  <section class="border-t border-marine/10 bg-brume" aria-labelledby="chiffres-titre">
+    <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <h2 id="chiffres-titre" class="sr-only">Le salon en chiffres</h2>
 
-      <ul class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-blanc/15 lg:grid-cols-4">
+      <ul class="grid grid-cols-2 gap-px bg-marine/10 lg:grid-cols-4">
         {
           chiffresCles.map((chiffre) => (
-            <li class="bg-marine px-4 py-7 text-center sm:px-6">
-              <span class="mx-auto flex h-10 w-10 items-center justify-center text-orange" aria-hidden="true">
-                <svg
-                  class="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  set:html={chiffre.icone}
-                />
-              </span>
-              <span class="mt-2 block text-xl font-black uppercase leading-tight text-blanc sm:text-2xl">
+            <li class="flex flex-col items-center bg-brume px-4 py-8 text-center">
+              <svg
+                class="h-8 w-8 text-marine"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+                set:html={chiffre.icone}
+              />
+              <span class="mt-4 block text-4xl font-black leading-none tracking-tight text-marine sm:text-5xl">
                 {chiffre.value}
               </span>
-              <span class="mt-1 block text-sm text-brume">{chiffre.label}</span>
+              <span class="mt-2 block text-sm font-black uppercase tracking-wide text-marine">
+                {chiffre.unite}
+              </span>
+              <span class="mt-1 block text-sm text-encre">{chiffre.label}</span>
             </li>
           ))
         }
@@ -400,79 +364,83 @@ const infosPratiques = [
     </div>
   </section>
 
-  <!-- ========================= BLOC EXPOSANTS ======================== -->
-  <section class="bg-orange text-marine">
+  <!-- ========================= BLOC EXPOSANTS ========================
+       Bande marine, accent orange, CTA vert — même hiérarchie que le bloc
+       commercial de la page « Exposer » de la planche.
+  -->
+  <section class="bg-marine text-blanc">
     <div
-      class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:py-20"
+      class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:py-16"
     >
-      <MediaPlaceholder
-        class="order-2 aspect-[4/3] lg:order-1 lg:col-span-5"
-        tone="contraste"
-        label="Vue d'un stand exposant sur le salon"
-      />
-
-      <div class="order-1 lg:order-2 lg:col-span-7">
-        <p class="text-xs font-bold uppercase tracking-widest text-marine">Devenir exposant</p>
-        <h2 class="mt-2 text-2xl font-extrabold leading-tight sm:text-4xl">
+      <div class="order-1 lg:col-span-7">
+        <p class="text-xs font-bold uppercase tracking-widest text-orange">Devenir exposant</p>
+        <h2 class="mt-3 text-2xl font-black uppercase leading-tight tracking-tight sm:text-3xl">
           Recrutez, présentez vos formations et développez votre visibilité
         </h2>
-        <div class="mt-4 h-1.5 w-16 rounded-full bg-marine" aria-hidden="true"></div>
-        <p class="mt-5 max-w-2xl text-base sm:text-lg">
+        <div class="mt-4 h-1 w-14 rounded-full bg-orange" aria-hidden="true"></div>
+        <p class="mt-5 max-w-2xl text-base text-brume sm:text-lg">
           Entreprises, organismes de formation, institutions et acteurs de l'accompagnement :
           participez à un événement conçu pour favoriser les rencontres directes avec les
           publics du territoire.
         </p>
         <a
           href="/exposer"
-          class="mt-7 inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 text-base font-bold text-blanc transition-opacity hover:opacity-90"
+          class="mt-7 inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
         >
           Découvrir les offres exposants
         </a>
       </div>
+
+      <MediaPlaceholder
+        class="order-2 aspect-[4/3] lg:col-span-5"
+        tone="clair"
+        label="Stand exposant en activité : échange entre un recruteur et un visiteur"
+      />
     </div>
   </section>
 
-  <!-- ===================== INFORMATIONS PRATIQUES ==================== -->
-  <section class="bg-brume">
-    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-20">
-      <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h2 class="text-2xl font-extrabold text-marine sm:text-4xl">Informations pratiques</h2>
-          <div class="mt-4 h-1.5 w-16 rounded-full bg-orange" aria-hidden="true"></div>
-        </div>
+  <!-- ===================== INFORMATIONS PRATIQUES ====================
+       Encadré synthétique à pictogrammes, dans l'esprit du bloc « Infos
+       pratiques » de la page « Préparer ma visite » de la planche.
+  -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center text-xl font-black uppercase tracking-tight text-marine sm:text-2xl">
+        Informations pratiques
+      </h2>
+
+      <div class="mt-10 overflow-hidden rounded-2xl border border-marine/15">
+        <ul class="grid gap-px bg-marine/10 sm:grid-cols-2 lg:grid-cols-4">
+          {
+            infosPratiques.map((info) => (
+              <li class="flex flex-col gap-3 bg-blanc p-6">
+                <svg
+                  class="h-7 w-7 text-orange"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  aria-hidden="true"
+                  set:html={info.icone}
+                />
+                <span class="text-xs font-bold uppercase tracking-widest text-marine/60">
+                  {info.label}
+                </span>
+                <span class="text-base font-bold leading-snug text-marine">{info.valeur}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="mt-9 text-center">
         <a
           href="/preparer-ma-visite"
-          class="inline-flex w-fit items-center justify-center rounded-md bg-marine px-6 py-3 text-base font-bold text-blanc transition-opacity hover:opacity-90"
+          class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
         >
           Préparer ma visite
         </a>
       </div>
-
-      <ul
-        class="mt-8 grid gap-px overflow-hidden rounded-2xl bg-marine/10 shadow-sm sm:grid-cols-2 lg:mt-10 lg:grid-cols-4"
-      >
-        {
-          infosPratiques.map((info) => (
-            <li class="flex flex-col gap-3 bg-blanc p-6">
-              <span
-                class="flex h-11 w-11 items-center justify-center rounded-xl bg-marine text-blanc"
-                aria-hidden="true"
-              >
-                <svg
-                  class="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  set:html={info.icone}
-                />
-              </span>
-              <span class="text-xs font-bold uppercase tracking-widest text-orange">{info.label}</span>
-              <span class="text-base font-semibold leading-snug text-marine">{info.valeur}</span>
-            </li>
-          ))
-        }
-      </ul>
     </div>
   </section>
 </BaseLayout>

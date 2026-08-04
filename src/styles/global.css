@@ -29,3 +29,14 @@ body {
     transparent 2px 12px
   );
 }
+
+/*
+  Découpe diagonale du visuel du hero — reprend la coupe oblique entre l'aplat
+  marine et la photo sur la vignette « 1. ACCUEIL » de la planche de références.
+  Appliquée uniquement à partir de lg, où le visuel occupe la partie droite.
+*/
+@media (min-width: 64rem) {
+  .decoupe-diagonale {
+    clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
