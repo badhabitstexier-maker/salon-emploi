@@ -4,6 +4,7 @@
 > Objectif de ce fichier : garder le cap, éviter le sur-engineering, tenir le périmètre V1.
 > v2 — intègre les corrections ChatGPT + arbitrages Philippe du 04/08/2026.
 > v3 — 05/08/2026 : Web3Forms validé comme fournisseur de formulaire pour la V1 (voir section 4) ; Lot 2 terminé et validé techniquement ; Lot 3 (Le salon + Village) en cours.
+> v4 — 05/08/2026 : Lot 3 terminé et validé (correction des CTA du hero `/le-salon` incluse) ; Lot 4 (Annuaire des exposants) en cours. Aucun exposant n'est encore confirmé ou publié dans le dépôt — aucune entreprise, institution ou organisme de formation ne doit être inventé. Les données exposants sont gérées par une Content Collection Astro statique (fichiers de données locaux, pas de base de données). Lots 5 et 6 non commencés.
 
 ---
 
@@ -177,9 +178,23 @@ Critères de validation :
 
 **→ MISE EN LIGNE V1 possible à ce stade.**
 
-### Lot 4 — Exposants (Content Collection + filtres)
-### Lot 5 — Programme (Content Collection + filtres)
-### Lot 6 — Préparer ma visite
+### Lot 4 — Exposants (Content Collection + filtres) — 🚧 EN COURS (05/08/2026)
+Contenu : annuaire `/exposants` (recherche, filtres, tri, état vide qualitatif), fiches individuelles `/exposants/[slug]`, Content Collection `exposants` typée, documentation `docs/EXPOSANTS.md` pour l'ajout des futurs exposants.
+
+**Aucun exposant n'est confirmé à ce stade.** Aucune entreprise, institution, organisme de formation ou structure d'accompagnement ne doit être inventée ni publiée dans le dépôt final. Le lot doit fonctionner correctement — y compris son état vide — sans aucune fiche exposant réelle.
+
+Critères de validation :
+- [ ] Collection `exposants` typée (Content Collection Astro, fichiers de données statiques — pas de base de données).
+- [ ] Documentation `docs/EXPOSANTS.md` créée et à jour.
+- [ ] Page `/exposants` complète (hero, compteur, recherche/filtres, grille, état vide, bloc commercial final).
+- [ ] État vide qualitatif tant qu'aucun exposant n'est publié.
+- [ ] Fiches individuelles `/exposants/[slug]` fonctionnelles, fiches `publie: false` exclues du build public.
+- [ ] Aucun exposant fictif dans le dépôt final (données de test supprimées avant commit).
+- [ ] Distinction visuelle Hall / Village respectée.
+- [ ] Build (`npm run build`) sans erreur.
+
+### Lot 5 — Programme (Content Collection + filtres) — non commencé
+### Lot 6 — Préparer ma visite — non commencé
 ### Lot 7 (plus tard) — intégration du CMS d'édition (Keystatic)
 
 ---
