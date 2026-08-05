@@ -3,6 +3,7 @@
 > Constitution du projet pour Claude Code. À lire au début de **chaque** session.
 > Objectif de ce fichier : garder le cap, éviter le sur-engineering, tenir le périmètre V1.
 > v2 — intègre les corrections ChatGPT + arbitrages Philippe du 04/08/2026.
+> v3 — 05/08/2026 : Web3Forms validé comme fournisseur de formulaire pour la V1 (voir section 4) ; Lot 2 terminé et validé techniquement ; Lot 3 (Le salon + Village) en cours.
 
 ---
 
@@ -45,7 +46,7 @@ Le site doit être **réutilisable pour les éditions futures**.
 
 **Nom de domaine validé (04/08/2026) : `salonemploi.nc`.** URL canonique : `https://www.salonemploi.nc` (voir note technique section 4 sur la cohérence www/apex). Le site n'est plus hébergé en sous-domaine de nounou.nc — ce nom de domaine est définitif dès la V1.
 
-**Fournisseur de formulaire : décision non encore prise (« je ne sais pas »).** Ce n'est pas bloquant pour le Lot 0. À trancher impérativement avant le lancement du Lot 2, selon les critères de la section 4 (soumissions, stockage, antispam, conformité, coût). Si besoin, je peux comparer Web3Forms et Formspree point par point le moment venu.
+**Fournisseur de formulaire : décision prise (05/08/2026) — Web3Forms retenu pour la V1.** Les formulaires exposant et visiteur du Lot 2 ont été testés avec succès en local (envoi + confirmation). La clé d'accès réelle est stockée uniquement dans `.env` local (jamais commitée — `.env` est ignoré par Git, voir `.env.example` pour le format attendu) et ne doit jamais être recopiée dans ce fichier ni ailleurs dans le dépôt.
 
 ---
 
@@ -54,7 +55,7 @@ Le site doit être **réutilisable pour les éditions futures**.
 - **Astro** (dernière version stable), sortie **statique** (`output: 'static'`).
 - **Tailwind CSS v4** pour le style, via le plugin officiel `@tailwindcss/vite` (méthode actuelle recommandée — `@astrojs/tailwind` est dépréciée pour Tailwind v4, ne pas la réintroduire). Configuration **CSS-first** : les tokens vivent dans `src/styles/global.css` via la directive `@theme`, pas dans un fichier `tailwind.config.js`.
 - **React en îlots** UNIQUEMENT pour les briques réellement interactives (filtre exposants, filtre programme). Le reste reste statique. Ne pas transformer le site en SPA.
-- **Formulaires (V1)** : service de formulaire externe (Web3Forms ou Formspree). **Aucun fournisseur n'est retenu tant que ses limites de soumissions, sa gestion des données, sa protection antispam et son coût au-delà du quota gratuit n'ont pas été validés par Philippe.** Décision à prendre impérativement avant le lancement du Lot 2. **Pas de Supabase, pas de base de données en V1.**
+- **Formulaires (V1)** : **Web3Forms**, validé par Philippe le 05/08/2026. La clé d'accès vit uniquement dans `.env` local (jamais dans Git). Formulaires exposant et visiteur fonctionnels et testés en local (Lot 2). **Pas de Supabase, pas de base de données en V1.**
 - **Contenus dynamiques** (exposants, programme) : **Astro Content Collections** (fichiers de données), pas de base.
 - **CMS d'édition** : aucun au départ (édition à la main des fichiers de contenu). Keystatic sera ajouté plus tard, dans un lot dédié (Lot 7).
 - **Node** : 20 LTS ou 22.
@@ -157,22 +158,22 @@ Critères de validation :
 - [ ] Responsive vérifié mobile + desktop.
 - [ ] Aucun logo de partenaire non confirmé affiché.
 
-### Lot 2 — Exposer/Contact (débloque la commercialisation)
-Pré-requis : fournisseur de formulaire choisi et validé (section 4).
+### Lot 2 — Exposer/Contact (débloque la commercialisation) — ✅ TERMINÉ ET VALIDÉ (05/08/2026)
+Pré-requis : fournisseur de formulaire choisi et validé (section 4). ✅ Web3Forms.
 Contenu : bénéfices exposants, formules, dossier PDF téléchargeable, formulaire fonctionnel (visiteur + exposant), page de confirmation.
 
 Critères de validation :
-- [ ] Le formulaire envoie effectivement un email et affiche une confirmation.
-- [ ] Le dossier exposant PDF est téléchargeable (ou placeholder si non fourni — à signaler explicitement).
-- [ ] Aucune information tarifaire non confirmée n'est publiée en dur.
+- [x] Le formulaire envoie effectivement un email et affiche une confirmation (testé en local, formulaires exposant et visiteur).
+- [x] Le dossier exposant PDF est téléchargeable (ou placeholder si non fourni — à signaler explicitement).
+- [x] Aucune information tarifaire non confirmée n'est publiée en dur.
 
-### Lot 3 — Le salon + Village
+### Lot 3 — Le salon + Village — ✅ TERMINÉ ET VALIDÉ (05/08/2026)
 Contenu réel, distinction visuelle nette entre les deux univers.
 
 Critères de validation :
-- [ ] Contenu réel intégré.
-- [ ] Contrôle mobile complet sur les deux pages.
-- [ ] Mention AMD conforme à la clause de la section 2.
+- [x] Contenu réel intégré.
+- [x] Contrôle mobile complet sur les deux pages.
+- [x] Mention AMD conforme à la clause de la section 2 (aucune mention de l'AMD sur les deux pages).
 
 **→ MISE EN LIGNE V1 possible à ce stade.**
 

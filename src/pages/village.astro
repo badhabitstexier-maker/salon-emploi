@@ -1,15 +1,295 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Visuel from '../components/Visuel.astro';
+
+/*
+  Palette dominante verte (token `village`, cf. CLAUDE.md section 5), avec un
+  bloc plus foncé (`village-dark`, ajouté dans global.css) pour la section
+  commerciale — même logique de contraste que le bloc marine de la homepage.
+*/
+
+const univers = [
+  'Maintenance industrielle',
+  'Mécanique et électromécanique',
+  'Électricité et électrotechnique',
+  'Automatisme et pilotage des équipements',
+  'Production et conduite de procédés',
+  'Méthodes, qualité et sécurité',
+  'Énergie et infrastructures techniques',
+];
+
+const axes = [
+  {
+    titre: 'Des métiers',
+    texte: 'Découvrir la réalité des fonctions techniques et industrielles.',
+    icone: `<circle cx="10.5" cy="10.5" r="6.5" /><path stroke-linecap="round" d="m20 20-4.7-4.7" />`,
+  },
+  {
+    titre: 'Des compétences',
+    texte: 'Identifier les savoir-faire recherchés et les qualités nécessaires.',
+    icone: `<path stroke-linecap="round" stroke-linejoin="round" d="m12 2.5 2.7 6 6.3.6-4.8 4.2 1.4 6.2L12 16.5l-5.6 3 1.4-6.2-4.8-4.2 6.3-.6L12 2.5Z" />`,
+  },
+  {
+    titre: 'Des formations',
+    texte: 'Comprendre les parcours possibles pour accéder à ces métiers.',
+    icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3 1 9l3 1.6V17h2v-5.3l6 3.3 11-6-11-6Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M7 13.6V17c0 1.7 2.2 3 5 3s5-1.3 5-3v-3.4" />`,
+  },
+  {
+    titre: 'Des opportunités',
+    texte: 'Échanger avec les acteurs présents sur leurs besoins et leurs perspectives.',
+    icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M4 8.5h13m0 0-4-4m4 4-4 4" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 15.5H7m0 0 4 4m-4-4 4-4" />`,
+  },
+];
+
+const publics = [
+  "Aux jeunes en recherche d'orientation",
+  'Aux demandeurs d’emploi',
+  'Aux salariés en reconversion',
+  'Aux personnes attirées par les métiers techniques',
+  'Aux professionnels et entreprises de la filière',
+  'Aux familles souhaitant mieux comprendre ces parcours',
+];
+
+const infosPratiques = [
+  {
+    label: 'Univers',
+    valeur: 'Village Maintenance & Industrie',
+    icone: `<path stroke-linecap="round" stroke-linejoin="round" d="m12 3 9 5-9 5-9-5 9-5Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m3 14 9 5 9-5" />`,
+  },
+  {
+    label: 'Dates',
+    valeur: '30 et 31 octobre 2026',
+    icone: `<rect x="3" y="5" width="18" height="16" rx="2" /><path stroke-linecap="round" d="M3 10h18M8 3v4M16 3v4" />`,
+  },
+  {
+    label: 'Lieu',
+    valeur: "Salle d'exposition de Nouville — Nouméa",
+    icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" />`,
+  },
+  {
+    label: 'Accès',
+    valeur: "Inclus dans l'entrée gratuite du salon",
+    icone: `<circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12 2.5 2.5 4.5-4.5" />`,
+  },
+];
 ---
 
 <BaseLayout
   title="Village Maintenance & Industrie"
-  description="Le Village Maintenance & Industrie du Salon de l'Emploi & de la Formation 2026 à Nouméa, en lien avec l'AMD."
+  description="Découvrez les métiers techniques, industriels et de la maintenance au Salon de l'Emploi & de la Formation 2026 à Nouméa."
 >
-  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-    <h1 class="text-3xl font-bold text-village sm:text-4xl">Village Maintenance &amp; Industrie</h1>
-    <p class="mt-6 max-w-2xl text-encre">
-      {'{{À COMPLÉTER : présentation du Village Maintenance & Industrie — contenu du Lot 3}}'}
-    </p>
+  <!-- ============================== HERO ==============================
+       Dominante verte (bg-village), texte en marine — reprend le traitement
+       déjà utilisé pour le bloc « Univers Village » de la page /exposer,
+       seul précédent de texte sur fond vert du site (meilleur contraste que
+       du blanc sur ce vert).
+  -->
+  <section class="bg-village text-marine">
+    <div
+      class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:py-20"
+    >
+      <div class="lg:col-span-7">
+        <p class="text-xs font-bold uppercase tracking-widest text-marine/70">
+          Village Maintenance &amp; Industrie
+        </p>
+        <h1 class="mt-3 max-w-xl font-titre text-4xl font-bold uppercase leading-none sm:text-5xl xl:text-6xl">
+          Découvrez les métiers qui font fonctionner l'industrie
+        </h1>
+
+        <p class="mt-6 max-w-xl text-base sm:text-lg">
+          Au cœur du salon, le Village Maintenance &amp; Industrie met en lumière les métiers
+          techniques, les compétences recherchées et les parcours de formation liés aux activités
+          industrielles.
+        </p>
+        <p class="mt-4 max-w-xl text-base sm:text-lg">
+          Un espace destiné à mieux comprendre les environnements professionnels, les savoir-faire
+          et les possibilités d'emploi et de formation de ces secteurs.
+        </p>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <a
+            href="/preparer-ma-visite"
+            class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+          >
+            Préparer ma visite
+          </a>
+          <a
+            href="/exposer#demande-exposant"
+            class="inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
+          >
+            Exposer dans le Village
+          </a>
+        </div>
+      </div>
+
+      <Visuel
+        class="aspect-[4/3] rounded-2xl lg:col-span-5"
+        src="/images/village-maintenance-industrie.webp"
+        alt="Deux techniciens examinant un moteur au Village Maintenance & Industrie"
+        width={1672}
+        height={941}
+        loading="eager"
+        position="object-[center_18%]"
+        tone="village"
+      />
+    </div>
+  </section>
+
+  <!-- =================== POURQUOI UN VILLAGE DÉDIÉ ? =================== -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Des métiers essentiels, souvent méconnus
+      </h2>
+      <p class="mx-auto mt-5 max-w-3xl text-center text-encre">
+        La maintenance et l'industrie regroupent des métiers indispensables au fonctionnement des
+        équipements, des installations et des organisations. Ces activités mobilisent des
+        compétences techniques, de la rigueur, de l'adaptation et un travail collectif permanent.
+      </p>
+      <p class="mx-auto mt-4 max-w-3xl text-center text-encre">
+        Le Village permet de rendre ces métiers plus visibles, plus concrets et plus accessibles
+        aux publics en recherche d'orientation, de formation ou d'emploi.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============== LES GRANDS UNIVERS PROFESSIONNELS ============== -->
+  <section class="border-t border-marine/10 bg-brume">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Des compétences au service de la production et des équipements
+      </h2>
+
+      <ul class="mx-auto mt-10 grid max-w-4xl gap-4 sm:grid-cols-2">
+        {
+          univers.map((famille) => (
+            <li class="flex items-center gap-3 rounded-xl border border-village/30 bg-blanc px-5 py-4 text-sm font-semibold text-marine sm:text-base">
+              <span class="h-2 w-2 flex-shrink-0 rounded-full bg-village" aria-hidden="true" />
+              {famille}
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="mx-auto mt-6 max-w-2xl text-center text-sm italic text-encre/70">
+        Les métiers et secteurs effectivement représentés seront précisés avec la liste des
+        exposants.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================ CE QUE LES VISITEURS POURRONT DÉCOUVRIR ================ -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Voir, comprendre et échanger
+      </h2>
+
+      <div class="mt-10 grid gap-px bg-marine/10 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          axes.map((axe) => (
+            <article class="flex flex-col items-center bg-blanc px-5 py-8 text-center">
+              <svg
+                class="h-9 w-9 text-village"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.6"
+                aria-hidden="true"
+                set:html={axe.icone}
+              />
+              <h3 class="mt-4 font-titre text-xl font-bold uppercase leading-none text-marine">
+                {axe.titre}
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed text-encre">{axe.texte}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= POUR QUELS PUBLICS ? ======================= -->
+  <section class="border-t border-marine/10 bg-brume">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Le Village s'adresse notamment
+      </h2>
+
+      <ul class="mx-auto mt-10 grid max-w-4xl gap-4 sm:grid-cols-2">
+        {
+          publics.map((publicVise) => (
+            <li class="flex items-center gap-3 rounded-xl border border-village/30 bg-blanc px-5 py-4 text-sm font-semibold text-marine sm:text-base">
+              <span class="h-2 w-2 flex-shrink-0 rounded-full bg-village" aria-hidden="true" />
+              {publicVise}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== ENTREPRISES ET ORGANISMES ===================== -->
+  <section class="bg-village-dark text-blanc">
+    <div class="mx-auto max-w-3xl px-4 py-14 text-center sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase sm:text-4xl">
+        Faites découvrir vos métiers et vos savoir-faire
+      </h2>
+      <p class="mx-auto mt-5 max-w-2xl text-brume">
+        Le Village Maintenance &amp; Industrie permet aux entreprises, organismes de formation et
+        acteurs de la filière de présenter leurs métiers, leurs besoins en compétences et leurs
+        parcours.
+      </p>
+      <a
+        href="/exposer#demande-exposant"
+        class="mt-8 inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+      >
+        Exposer dans le Village
+      </a>
+    </div>
+  </section>
+
+  <!-- ===================== INFORMATIONS PRATIQUES ====================== -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Informations pratiques
+      </h2>
+
+      <div class="mt-10 overflow-hidden rounded-2xl border border-village/25">
+        <ul class="grid gap-px bg-village/15 sm:grid-cols-2 lg:grid-cols-4">
+          {
+            infosPratiques.map((info) => (
+              <li class="flex flex-col gap-3 bg-blanc p-6">
+                <svg
+                  class="h-7 w-7 text-village"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  aria-hidden="true"
+                  set:html={info.icone}
+                />
+                <span class="text-xs font-bold uppercase tracking-widest text-marine/60">
+                  {info.label}
+                </span>
+                <span class="font-titre text-lg font-bold leading-snug text-marine">
+                  {info.valeur}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="mt-9 text-center">
+        <a
+          href="/le-salon"
+          class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+        >
+          Découvrir l'ensemble du salon
+        </a>
+      </div>
+    </div>
   </section>
 </BaseLayout>
