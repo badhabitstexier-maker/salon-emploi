@@ -32,6 +32,9 @@
   --color-brume: #f5f7fa;
   --color-orange: #f26a2a;
   --color-village: #2fa36b;
+  /* Variante foncée du vert Village, dérivée du token ci-dessus (aucun hex
+     indépendant) — réservée aux blocs de contraste fort (Lot 3, page /village). */
+  --color-village-dark: color-mix(in srgb, var(--color-village) 55%, #000000);
   --color-encre: #1a2233;
 
   /*
