@@ -17,7 +17,7 @@ const totalVillage = exposants.filter((e) => e.data.univers === 'village').lengt
 const secteurs = secteursDisponibles(exposants);
 
 const infosSalon = [
-  'Hall Emploi & Formation',
+  'Hall Emploi-Formation',
   'Village Maintenance & Industrie',
   '30 et 31 octobre 2026',
   'Nouville — Nouméa',
@@ -39,9 +39,6 @@ const infosSalon = [
       <p class="mt-6 max-w-2xl text-base text-brume sm:text-lg">
         Entreprises, organismes de formation, institutions et structures d'accompagnement seront
         réunis pour présenter leurs métiers, leurs parcours et leurs opportunités.
-      </p>
-      <p class="mt-4 max-w-2xl text-sm italic text-brume/80">
-        La liste des exposants sera enrichie au fur et à mesure des confirmations.
       </p>
 
       <ul class="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-semibold uppercase tracking-wide text-brume sm:flex sm:flex-wrap sm:gap-x-8">
@@ -66,13 +63,16 @@ const infosSalon = [
     </div>
   </section>
 
-  <!-- ============================ COMPTEUR ============================= -->
-  <section class="border-b border-marine/10 bg-brume">
-    <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-      {
-        total > 0 ? (
+  <!-- ============================ COMPTEUR =============================
+       N'apparaît que lorsqu'il y a un décompte réel à afficher : sinon
+       message redondant avec l'état vide de la section suivante.
+  -->
+  {
+    total > 0 && (
+      <section class="border-b border-marine/10 bg-brume">
+        <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p class="text-center text-sm font-semibold text-marine sm:text-base">
-            <span class="font-titre text-lg font-bold text-orange">{total}</span>{' '}
+            <span class="font-titre text-lg font-bold text-orange-dark">{total}</span>{' '}
             {total > 1 ? 'exposants confirmés' : 'exposant confirmé'}
             {(totalHall > 0 || totalVillage > 0) && (
               <span class="text-encre/70">
@@ -81,14 +81,10 @@ const infosSalon = [
               </span>
             )}
           </p>
-        ) : (
-          <p class="text-center text-sm font-semibold text-marine sm:text-base">
-            La liste des exposants sera publiée progressivement à l'approche du salon.
-          </p>
-        )
-      }
-    </div>
-  </section>
+        </div>
+      </section>
+    )
+  }
 
   {
     total > 0 ? (
