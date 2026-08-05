@@ -1,15 +1,632 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+/*
+  Contenu source : docs/CONTENU_PREPARER_MA_VISITE.md (texte définitif validé
+  par Philippe le 05/08/2026, repris tel quel). Arbitrages actés dans ce même
+  document :
+  1. CTA principal du hero = « Consulter le programme » (secondaire = « Voir
+     les exposants »).
+  2. Aucune inscription nécessaire pour visiter.
+  3. E-mail de contact = labevents@icloud.com.
+  4. Guide imprimable = feuille de style @media print sur la page elle-même
+     (pas de PDF), déclenchée par window.print().
+
+  Icônes en trait (même style que le-salon.astro / village.astro / exposer.astro) :
+  fill="none", stroke="currentColor", viewBox 0 0 24 24.
+*/
+
+const emptyCheckIcon = `<rect x="3.5" y="3.5" width="17" height="17" rx="3" />`;
+
+const checklist = [
+  {
+    titre: 'Définissez votre objectif.',
+    texte:
+      'Emploi, formation, orientation, reconversion, ou simplement découvrir des métiers : le savoir vous aide à cibler.',
+  },
+  {
+    titre: 'Repérez les exposants et le programme.',
+    texte: "Dès qu'ils sont en ligne, identifiez ceux qui comptent pour vous.",
+    liens: [
+      { label: 'Exposants', href: '/exposants' },
+      { label: 'Programme', href: '/programme' },
+    ],
+  },
+  {
+    titre: 'Préparez deux ou trois questions.',
+    texte: 'Les plus utiles sont dans la section plus bas.',
+  },
+  {
+    titre: 'Pensez à vos documents.',
+    texte:
+      'Si vous cherchez un emploi, plusieurs exemplaires de votre CV peuvent être utiles — sans que ce soit indispensable.',
+  },
+  {
+    titre: 'Prévoyez du temps.',
+    texte:
+      'Assez pour échanger sans courir, en gardant de la place pour les découvertes imprévues.',
+  },
+];
+
+const etapes = [
+  {
+    numero: '1',
+    titre: 'Identifier',
+    texte: 'Repérez les exposants, formations et temps forts qui correspondent à votre objectif.',
+  },
+  {
+    numero: '2',
+    titre: 'Prioriser',
+    texte: 'Commencez par ce qui compte le plus pour vous. Le reste viendra ensuite, au fil de la visite.',
+  },
+  {
+    numero: '3',
+    titre: 'Échanger',
+    texte:
+      'Allez vers les exposants, posez vos questions, prenez des notes. Un échange préparé vaut mieux que dix visites rapides.',
+  },
+  {
+    numero: '4',
+    titre: 'Donner une suite',
+    texte:
+      "Récupérez les coordonnées utiles et notez les prochaines étapes convenues. C'est souvent après le salon que tout se joue.",
+  },
+];
+
+const profils = [
+  {
+    id: 'profil-emploi',
+    titre: 'Si vous cherchez un emploi',
+    questions: [
+      'Quels profils recherchez-vous ?',
+      'Quelles compétences comptent le plus pour vous ?',
+      'Comment déposer une candidature ?',
+      'Quels sont vos besoins en recrutement actuellement ?',
+      'Quelle suite donner après le salon ?',
+    ],
+  },
+  {
+    id: 'profil-formation',
+    titre: 'Si vous cherchez une formation',
+    questions: [
+      'À quels métiers cette formation prépare-t-elle ?',
+      'Quels sont les prérequis ?',
+      'Combien de temps dure le parcours ?',
+      "Comment se déroule l'admission ?",
+      'Quels débouchés à la sortie ?',
+    ],
+  },
+  {
+    id: 'profil-orientation',
+    titre: 'Si vous êtes en orientation ou reconversion',
+    questions: [
+      'Quels métiers correspondent à mon projet ?',
+      'Quelles compétences puis-je valoriser ?',
+      'Par quelles étapes commencer ?',
+      'Quels parcours ou accompagnements existent ?',
+      "Qui peut m'aider à approfondir mon projet ?",
+    ],
+  },
+];
+
+const infosConfirmees = [
+  {
+    label: 'Dates',
+    valeur: 'Vendredi 30 et samedi 31 octobre 2026',
+    icone: `<rect x="3" y="5" width="18" height="16" rx="2" /><path stroke-linecap="round" d="M3 10h18M8 3v4M16 3v4" />`,
+  },
+  {
+    label: 'Lieu',
+    valeur: "Salle d'exposition de Nouville — Nouméa",
+    icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" />`,
+  },
+  {
+    label: 'Entrée',
+    valeur: 'Libre et gratuite',
+    icone: `<circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12 2.5 2.5 4.5-4.5" />`,
+  },
+  {
+    label: 'Public',
+    valeur: 'Tout public',
+    icone: `<circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path stroke-linecap="round" d="M2.5 20a5.5 5.5 0 0 1 11 0M14.5 20a4.2 4.2 0 0 1 7-3.1" />`,
+  },
+];
+
+const infosAConfirmer = [
+  { label: 'Horaires', texte: 'Information prochainement disponible.' },
+  { label: 'Accès et transport', texte: 'Modalités en cours de confirmation.' },
+  { label: 'Stationnement', texte: 'Information prochainement disponible.' },
+  { label: 'Restauration', texte: 'Information prochainement disponible.' },
+  { label: 'Accueil des groupes', texte: 'Modalités prochainement disponibles.' },
+  {
+    label: 'Accessibilité',
+    texte: 'Les informations détaillées seront précisées avant l’événement. Pour signaler un besoin particulier, contactez l’organisation.',
+    contact: true,
+  },
+  {
+    label: 'Plan du salon',
+    texte: "Publié dès que l'implantation des espaces et des stands sera finalisée.",
+  },
+];
+
+const faq = [
+  {
+    q: "L'entrée est-elle vraiment gratuite ?",
+    a: "Oui, l'entrée est libre et gratuite, les deux jours, pour tout public.",
+  },
+  {
+    q: 'Faut-il s’inscrire avant de venir ?',
+    a: 'Non, aucune inscription n’est nécessaire pour visiter le salon.',
+  },
+  {
+    q: "Le salon est-il réservé aux demandeurs d'emploi ?",
+    a: "Non. Il s'adresse aussi bien aux personnes en formation, en orientation ou en reconversion qu'aux curieux souhaitant découvrir des métiers, dont ceux de l'industrie et de la maintenance.",
+  },
+  {
+    q: 'Où voir les exposants et le programme ?',
+    a: 'Les deux seront publiés sur ce site à l’approche de l’événement.',
+    liens: [
+      { label: 'Exposants', href: '/exposants' },
+      { label: 'Programme', href: '/programme' },
+    ],
+  },
+  {
+    q: "Comment contacter l'organisation ?",
+    a: 'Par le formulaire de contact ou directement par e-mail.',
+    contact: true,
+  },
+];
 ---
 
 <BaseLayout
   title="Préparer ma visite"
-  description="Informations pratiques pour préparer votre visite au Salon de l'Emploi & de la Formation 2026 à Nouméa."
+  description="Checklist, méthode et informations pratiques pour préparer votre visite au Salon de l'Emploi & de la Formation 2026 à Nouméa, les 30 et 31 octobre."
 >
-  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-    <h1 class="text-3xl font-bold text-marine sm:text-4xl">Préparer ma visite</h1>
-    <p class="mt-6 max-w-2xl text-encre">
-      {'{{À COMPLÉTER : informations pratiques — contenu du Lot 6}}'}
-    </p>
+  <!-- ============================== HERO ==============================
+       Exclu de l'impression : n'apporte rien sur une page papier.
+  -->
+  <section class="bg-marine text-blanc print:hidden">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-20">
+      <p class="text-xs font-bold uppercase tracking-widest text-orange">Préparer ma visite</p>
+      <h1 class="mt-3 max-w-3xl font-titre text-4xl font-bold uppercase leading-none sm:text-5xl xl:text-6xl">
+        Tirez le meilleur de votre visite
+      </h1>
+
+      <p class="mt-6 max-w-2xl text-base text-brume sm:text-lg">
+        Deux jours, deux univers, des dizaines d'exposants. Quelques minutes de préparation
+        suffisent pour repartir avec les bons contacts et les bonnes réponses. Voici comment.
+      </p>
+
+      <ul class="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-semibold uppercase tracking-wide text-brume sm:flex sm:flex-wrap sm:gap-x-8">
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
+          30 et 31 octobre 2026
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
+          Salle d'exposition de Nouville
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
+          Entrée gratuite
+        </li>
+      </ul>
+
+      <!--
+        Hiérarchie des CTA imposée : principal = Consulter le programme,
+        secondaire = Voir les exposants (arbitrage Philippe du 05/08/2026).
+      -->
+      <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+        <a
+          href="/programme"
+          class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 text-center font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+        >
+          Consulter le programme
+        </a>
+        <a
+          href="/exposants"
+          class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 text-center font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
+        >
+          Voir les exposants
+        </a>
+      </div>
+    </div>
   </section>
+
+  <!-- ===================== AVANT DE VENIR : CHECKLIST ===================== -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">Avant de venir</h2>
+      <p class="mt-4 max-w-2xl text-encre">
+        Rien d'obligatoire ici — juste ce qui rend une visite plus utile. Cochez ce qui vous
+        concerne.
+      </p>
+
+      <ul class="mt-8 overflow-hidden rounded-2xl border border-marine/15">
+        {
+          checklist.map((item) => (
+            <li class="flex items-start gap-4 border-b border-marine/10 bg-blanc px-5 py-5 last:border-b-0 sm:px-6">
+              <svg
+                class="mt-0.5 h-6 w-6 flex-shrink-0 text-marine/40 print:text-encre"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
+                set:html={emptyCheckIcon}
+              />
+              <p class="text-sm text-encre sm:text-base">
+                <span class="font-semibold text-marine">{item.titre}</span> {item.texte}
+                {item.liens && (
+                  <span class="mt-1 block print:hidden">
+                    {item.liens.map((lien, i) => (
+                      <>
+                        {i > 0 && <span class="text-encre/40"> · </span>}
+                        <a href={lien.href} class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                          {lien.label}
+                        </a>
+                      </>
+                    ))}
+                  </span>
+                )}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- =================== ORGANISER SON PARCOURS EN 4 ÉTAPES =================== -->
+  <section class="border-t border-marine/10 bg-brume">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">Organiser son parcours</h2>
+
+      <!-- Rappel des deux univers : exclu de l'impression, hors sujet sur le guide papier. -->
+      <p class="mt-4 max-w-3xl text-encre print:hidden">
+        Le salon réunit deux univers complémentaires : le{' '}
+        <a href="/le-salon" class="font-semibold text-marine underline underline-offset-2 hover:text-village">
+          Hall Emploi &amp; Formation
+        </a>{' '}
+        et le{' '}
+        <a href="/village" class="font-semibold text-marine underline underline-offset-2 hover:text-village">
+          Village Maintenance &amp; Industrie
+        </a>. Une méthode simple pour circuler entre les deux sans rien manquer.
+      </p>
+
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          etapes.map((etape) => (
+            <article class="flex flex-col rounded-2xl border border-marine/15 bg-blanc p-6">
+              <span class="font-titre text-4xl font-bold leading-none text-orange">{etape.numero}</span>
+              <h3 class="mt-3 font-titre text-xl font-bold uppercase leading-none text-marine">{etape.titre}</h3>
+              <p class="mt-3 text-sm leading-relaxed text-encre">{etape.texte}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== PRÉPARER SES QUESTIONS ET SE PRÉSENTER =================== -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">Préparer vos échanges</h2>
+      <p class="mt-4 max-w-2xl text-encre">
+        Quelques questions et une présentation simple suffisent à rendre chaque rencontre utile.
+        Piochez selon votre situation.
+      </p>
+
+      <!--
+        Accordéon natif <details>/<summary> : replié par défaut sur mobile
+        comme sur desktop (mobile = exigence explicite du Lot 6). Forcé
+        ouvert à l'impression via la feuille de style ci-dessous.
+      -->
+      <div class="mt-8 space-y-3">
+        {
+          profils.map((profil) => (
+            <details id={profil.id} class="group overflow-hidden rounded-2xl border border-marine/15 bg-brume">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-titre text-lg font-bold uppercase text-marine marker:content-none sm:px-6">
+                {profil.titre}
+                <svg
+                  class="h-5 w-5 flex-shrink-0 text-marine transition-transform group-open:rotate-45 print:hidden"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+                </svg>
+              </summary>
+              <ul class="space-y-2.5 px-5 pb-5 text-sm text-encre sm:px-6 sm:text-base">
+                {profil.questions.map((question) => (
+                  <li class="flex items-start gap-2">
+                    <span class="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true" />
+                    <span>{question}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))
+        }
+      </div>
+
+      <div class="mt-8 rounded-2xl border border-village/30 bg-brume p-6 sm:p-8">
+        <h3 class="font-titre text-xl font-bold uppercase text-marine">Se présenter en une phrase</h3>
+        <p class="mt-3 text-sm text-encre sm:text-base">
+          Pas besoin d'un discours. Une trame simple suffit : <strong class="text-marine">qui vous êtes</strong>,{' '}
+          <strong class="text-marine">ce que vous cherchez</strong>,{' '}
+          <strong class="text-marine">ce que vous pouvez apporter</strong>, puis{' '}
+          <strong class="text-marine">votre question</strong>.
+        </p>
+        <blockquote class="mt-4 border-l-4 border-village pl-4 text-sm italic text-encre sm:text-base">
+          « Bonjour, je m'intéresse à votre secteur et je cherche à mieux comprendre les métiers et
+          les parcours possibles. Quels profils ou formations recherchez-vous ? »
+        </blockquote>
+        <p class="mt-3 text-xs text-encre/70 sm:text-sm">
+          À adapter librement — ce n'est qu'un point de départ, pas une formule à réciter.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== INFORMATIONS PRATIQUES ===================== -->
+  <section class="border-t border-marine/10 bg-brume print:bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">Informations pratiques</h2>
+      <p class="mt-4 max-w-2xl text-encre">
+        L'essentiel est déjà connu. Le reste se précise à l'approche de l'événement — revenez
+        consulter cette page.
+      </p>
+
+      <!--
+        Cartes empilées (jamais de <table>) : grille qui repasse en une
+        colonne dès mobile, aucun débordement horizontal possible à 375px.
+      -->
+      <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          infosConfirmees.map((info) => (
+            <li class="flex flex-col gap-3 rounded-2xl border border-marine/15 bg-blanc p-6">
+              <svg
+                class="h-7 w-7 text-orange"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.7"
+                aria-hidden="true"
+                set:html={info.icone}
+              />
+              <span class="text-xs font-bold uppercase tracking-widest text-marine/60">{info.label}</span>
+              <span class="font-titre text-lg font-bold leading-snug text-marine">{info.valeur}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <!-- À confirmer : exclu de l'impression, pas d'information stable à emporter sur papier. -->
+      <div class="mt-10 print:hidden">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-marine/60">À confirmer</h3>
+        <ul class="mt-4 space-y-3">
+          {
+            infosAConfirmer.map((info) => (
+              <li class="flex flex-col gap-2 rounded-xl border border-orange/25 bg-blanc p-5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div>
+                  <span class="font-semibold text-marine">{info.label}</span>{' '}
+                  <span class="text-sm text-encre">
+                    {info.texte}
+                    {info.contact && (
+                      <>
+                        {' '}
+                        <a href="/exposer" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                          Contacter l'organisation
+                        </a>{' '}
+                        ou{' '}
+                        <a href="mailto:labevents@icloud.com" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                          labevents@icloud.com
+                        </a>
+                        .
+                      </>
+                    )}
+                  </span>
+                </div>
+                <span class="inline-flex flex-shrink-0 items-center rounded-full bg-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-orange">
+                  À confirmer
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= QUESTIONS FRÉQUENTES =======================
+       Exclue de l'impression : traitée en ligne, pas dans le guide papier.
+  -->
+  <section class="bg-blanc print:hidden">
+    <div class="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">Questions fréquentes</h2>
+
+      <div class="mt-8 space-y-3">
+        {
+          faq.map((item) => (
+            <details class="group overflow-hidden rounded-2xl border border-marine/15 bg-brume">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-semibold text-marine marker:content-none sm:px-6 sm:text-lg">
+                {item.q}
+                <svg
+                  class="h-5 w-5 flex-shrink-0 text-marine transition-transform group-open:rotate-45"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+                </svg>
+              </summary>
+              <p class="px-5 pb-5 text-sm text-encre sm:px-6 sm:text-base">
+                {item.a}
+                {item.liens && (
+                  <span class="mt-1 block">
+                    {item.liens.map((lien, i) => (
+                      <>
+                        {i > 0 && <span class="text-encre/40"> · </span>}
+                        <a href={lien.href} class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                          {lien.label}
+                        </a>
+                      </>
+                    ))}
+                  </span>
+                )}
+                {item.contact && (
+                  <>
+                    {' '}
+                    <a href="/exposer" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                      formulaire de contact
+                    </a>{' '}
+                    ou directement par e-mail{' '}
+                    <a href="mailto:labevents@icloud.com" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                      labevents@icloud.com
+                    </a>.
+                  </>
+                )}
+              </p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= CONTACT ======================= -->
+  <section class="border-t border-marine/10 bg-marine text-blanc print:hidden">
+    <div class="mx-auto max-w-3xl px-4 py-14 text-center sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase sm:text-4xl">Une question ? Un besoin particulier ?</h2>
+      <p class="mx-auto mt-4 max-w-2xl text-base text-brume sm:text-lg">
+        L'équipe LabEvents reste à votre disposition pour toute question sur votre visite.
+      </p>
+      <div class="mt-8">
+        <a
+          href="/exposer"
+          class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+        >
+          Contacter l'organisation
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== BLOC IMPRESSION (à l'écart du CTA) ====================
+       Visuellement distinct du bloc de contact ci-dessus. Exclu lui-même de
+       l'impression : c'est le déclencheur, pas le contenu du guide.
+  -->
+  <section class="bg-brume print:hidden">
+    <div class="mx-auto max-w-3xl px-4 py-12 text-center sm:px-6">
+      <div class="rounded-2xl border-2 border-village/40 bg-blanc px-6 py-10 sm:px-10">
+        <h3 class="font-titre text-2xl font-bold uppercase text-marine sm:text-3xl">Emportez votre guide</h3>
+        <p class="mx-auto mt-3 max-w-xl text-sm text-encre sm:text-base">
+          Retrouvez l'essentiel sur une page à imprimer : checklist, méthode, questions à poser et
+          informations pratiques.
+        </p>
+        <button
+          type="button"
+          id="btn-imprimer-guide"
+          class="mt-6 inline-flex items-center justify-center gap-2 rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 9V4h12v5M6 18h12v-6H6v6ZM6 14H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2" />
+          </svg>
+          Imprimer mon guide de visite
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ESPACE LIBRE — IMPRESSION UNIQUEMENT ====================
+       N'apparaît jamais à l'écran (hidden), seulement sur le guide imprimé.
+  -->
+  <section class="hidden print:block">
+    <div class="mx-auto max-w-6xl px-4 py-10">
+      <h2 class="font-titre text-2xl font-bold uppercase text-marine">Mes priorités / Mes contacts</h2>
+      <div class="mt-6 grid gap-8 sm:grid-cols-2">
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-marine/60">Mes priorités</h3>
+          <div class="mt-4 space-y-6">
+            {Array.from({ length: 5 }).map(() => (
+              <div class="border-b border-encre/30" aria-hidden="true">&nbsp;</div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-marine/60">Mes contacts</h3>
+          <div class="mt-4 space-y-6">
+            {Array.from({ length: 5 }).map(() => (
+              <div class="border-b border-encre/30" aria-hidden="true">&nbsp;</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    document.getElementById('btn-imprimer-guide')?.addEventListener('click', () => {
+      window.print();
+    });
+
+    /*
+      Impression : le contenu d'un <details> replié doit rester dans le guide
+      même si l'utilisateur n'a jamais ouvert l'accordéon à l'écran. Les
+      navigateurs récents masquent ce contenu via une mécanique interne
+      (content-visibility) qu'une règle CSS ne peut pas toujours surcharger
+      de façon fiable — on force donc l'attribut `open` juste avant
+      l'impression (déclenchée par le bouton ou par Ctrl+P), et on restaure
+      l'état d'origine juste après.
+    */
+    let detailsReplies: HTMLDetailsElement[] = [];
+    window.addEventListener('beforeprint', () => {
+      detailsReplies = Array.from(document.querySelectorAll('details:not([open])'));
+      detailsReplies.forEach((details) => {
+        details.open = true;
+      });
+    });
+    window.addEventListener('afterprint', () => {
+      detailsReplies.forEach((details) => {
+        details.open = false;
+      });
+      detailsReplies = [];
+    });
+  </script>
+
+  <style>
+    /*
+      Filet de sécurité pour les moteurs qui masquent encore le contenu des
+      <details> repliés via un simple `display: none` (surchargeable en CSS
+      auteur). Le script ci-dessus force déjà `open`, donc cette règle ne
+      joue un rôle que si le JavaScript est indisponible à l'impression.
+    */
+    @media print {
+      details:not([open]) > *:not(summary) {
+        display: block !important;
+      }
+      details > summary svg {
+        display: none;
+      }
+    }
+  </style>
+
+  <style is:global>
+    /*
+      Portée réelle : cette feuille n'est incluse que dans le bundle de la
+      page /preparer-ma-visite (aucune autre page n'importe ce composant),
+      donc ces règles globales n'affectent que son impression.
+    */
+    @media print {
+      header,
+      footer {
+        display: none !important;
+      }
+    }
+  </style>
 </BaseLayout>
