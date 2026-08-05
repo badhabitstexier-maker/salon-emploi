@@ -172,7 +172,6 @@ const faq = [
   },
   {
     q: "Comment contacter l'organisation ?",
-    a: 'Par le formulaire de contact ou directement par e-mail.',
     contact: true,
   },
 ];
@@ -193,8 +192,9 @@ const faq = [
       </h1>
 
       <p class="mt-6 max-w-2xl text-base text-brume sm:text-lg">
-        Deux jours, deux univers, des dizaines d'exposants. Quelques minutes de préparation
-        suffisent pour repartir avec les bons contacts et les bonnes réponses. Voici comment.
+        Deux jours, deux univers et des rencontres pour avancer dans votre projet. Quelques
+        minutes de préparation suffisent pour mieux cibler vos échanges et repartir avec des
+        réponses utiles.
       </p>
 
       <ul class="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-semibold uppercase tracking-wide text-brume sm:flex sm:flex-wrap sm:gap-x-8">
@@ -291,7 +291,7 @@ const faq = [
         et le{' '}
         <a href="/village" class="font-semibold text-marine underline underline-offset-2 hover:text-village">
           Village Maintenance &amp; Industrie
-        </a>. Une méthode simple pour circuler entre les deux sans rien manquer.
+        </a>. Une méthode simple pour organiser vos priorités et circuler entre les deux univers.
       </p>
 
       <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -466,29 +466,32 @@ const faq = [
                 </svg>
               </summary>
               <p class="px-5 pb-5 text-sm text-encre sm:px-6 sm:text-base">
-                {item.a}
-                {item.liens && (
-                  <span class="mt-1 block">
-                    {item.liens.map((lien, i) => (
-                      <>
-                        {i > 0 && <span class="text-encre/40"> · </span>}
-                        <a href={lien.href} class="font-semibold text-village underline underline-offset-2 hover:text-marine">
-                          {lien.label}
-                        </a>
-                      </>
-                    ))}
-                  </span>
-                )}
-                {item.contact && (
+                {item.contact ? (
                   <>
-                    {' '}
-                    <a href="/exposer" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
-                      formulaire de contact
+                    Utilisez le{' '}
+                    <a href="/exposer#contact-visiteur" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                      formulaire de contact du site
                     </a>{' '}
-                    ou directement par e-mail{' '}
+                    ou écrivez-nous directement à{' '}
                     <a href="mailto:labevents@icloud.com" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
                       labevents@icloud.com
                     </a>.
+                  </>
+                ) : (
+                  <>
+                    {item.a}
+                    {item.liens && (
+                      <span class="mt-1 block">
+                        {item.liens.map((lien, i) => (
+                          <>
+                            {i > 0 && <span class="text-encre/40"> · </span>}
+                            <a href={lien.href} class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                              {lien.label}
+                            </a>
+                          </>
+                        ))}
+                      </span>
+                    )}
                   </>
                 )}
               </p>
@@ -508,7 +511,7 @@ const faq = [
       </p>
       <div class="mt-8">
         <a
-          href="/exposer"
+          href="/exposer#contact-visiteur"
           class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
         >
           Contacter l'organisation
