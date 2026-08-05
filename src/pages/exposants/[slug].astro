@@ -20,7 +20,7 @@ const { data } = exposant;
 
 const styleUnivers = {
   hall: { badge: 'bg-marine text-blanc', accent: 'text-orange' },
-  village: { badge: 'bg-village text-blanc', accent: 'text-village' },
+  village: { badge: 'bg-village-dark text-blanc', accent: 'text-village' },
 }[data.univers];
 
 const listesComplementaires = [
@@ -153,7 +153,7 @@ const dateMiseAJour = data.date_mise_a_jour ? formateurDate.format(data.date_mis
 
       {
         dateMiseAJour && (
-          <p class="mt-8 text-xs text-encre/60">Fiche mise à jour le {dateMiseAJour}.</p>
+          <p class="mt-8 text-xs text-encre/70">Fiche mise à jour le {dateMiseAJour}.</p>
         )
       }
 

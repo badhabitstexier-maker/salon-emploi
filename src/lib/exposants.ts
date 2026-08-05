@@ -3,7 +3,7 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 export type Exposant = CollectionEntry<'exposants'>;
 
 export const universLabels: Record<Exposant['data']['univers'], string> = {
-  hall: 'Hall Emploi & Formation',
+  hall: 'Hall Emploi-Formation',
   village: 'Village Maintenance & Industrie',
 };
 
