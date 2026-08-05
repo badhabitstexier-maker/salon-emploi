@@ -33,8 +33,14 @@
   --color-orange: #f26a2a;
   --color-village: #2fa36b;
   /* Variante foncée du vert Village, dérivée du token ci-dessus (aucun hex
-     indépendant) — réservée aux blocs de contraste fort (Lot 3, page /village). */
+     indépendant) — réservée aux blocs de contraste fort (Lot 3, page /village)
+     et, en texte, aux usages où `village` n'atteint pas 4.5:1 sur fond clair. */
   --color-village-dark: color-mix(in srgb, var(--color-village) 55%, #000000);
+  /* Variante foncée de l'orange, dérivée du token ci-dessus — corrections
+     WCAG AA (recette finale) : `orange` (#f26a2a) ne passe pas 4.5:1 en texte
+     ou en badge sur fond clair (blanc/brume, ratio ~3:1). Réservée à ces cas ;
+     l'orange plein reste inchangé sur fond marine, où il passe déjà l'AA. */
+  --color-orange-dark: color-mix(in srgb, var(--color-orange) 75%, #000000);
   --color-encre: #1a2233;
 
   /*

@@ -126,6 +126,11 @@ const infosConfirmees = [
     icone: `<circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12 2.5 2.5 4.5-4.5" />`,
   },
   {
+    label: 'Horaires',
+    valeur: 'De 9 h à 17 h les deux jours',
+    icone: `<circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3.5 2" />`,
+  },
+  {
     label: 'Public',
     valeur: 'Tout public',
     icone: `<circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path stroke-linecap="round" d="M2.5 20a5.5 5.5 0 0 1 11 0M14.5 20a4.2 4.2 0 0 1 7-3.1" />`,
@@ -133,7 +138,6 @@ const infosConfirmees = [
 ];
 
 const infosAConfirmer = [
-  { label: 'Horaires', texte: 'Information prochainement disponible.' },
   { label: 'Accès et transport', texte: 'Modalités en cours de confirmation.' },
   { label: 'Stationnement', texte: 'Information prochainement disponible.' },
   { label: 'Restauration', texte: 'Information prochainement disponible.' },
@@ -262,7 +266,7 @@ const faq = [
                     {item.liens.map((lien, i) => (
                       <>
                         {i > 0 && <span class="text-encre/40"> · </span>}
-                        <a href={lien.href} class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                        <a href={lien.href} class="font-semibold text-village-dark underline underline-offset-2 hover:text-marine">
                           {lien.label}
                         </a>
                       </>
@@ -285,8 +289,8 @@ const faq = [
       <!-- Rappel des deux univers : exclu de l'impression, hors sujet sur le guide papier. -->
       <p class="mt-4 max-w-3xl text-encre print:hidden">
         Le salon réunit deux univers complémentaires : le{' '}
-        <a href="/le-salon" class="font-semibold text-marine underline underline-offset-2 hover:text-village">
-          Hall Emploi &amp; Formation
+        <a href="/exposants" class="font-semibold text-marine underline underline-offset-2 hover:text-village">
+          Hall Emploi-Formation
         </a>{' '}
         et le{' '}
         <a href="/village" class="font-semibold text-marine underline underline-offset-2 hover:text-village">
@@ -397,7 +401,7 @@ const faq = [
                 aria-hidden="true"
                 set:html={info.icone}
               />
-              <span class="text-xs font-bold uppercase tracking-widest text-marine/60">{info.label}</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-marine/70">{info.label}</span>
               <span class="font-titre text-lg font-bold leading-snug text-marine">{info.valeur}</span>
             </li>
           ))
@@ -406,7 +410,7 @@ const faq = [
 
       <!-- À confirmer : exclu de l'impression, pas d'information stable à emporter sur papier. -->
       <div class="mt-10 print:hidden">
-        <h3 class="text-xs font-bold uppercase tracking-widest text-marine/60">À confirmer</h3>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-marine/70">À confirmer</h3>
         <ul class="mt-4 space-y-3">
           {
             infosAConfirmer.map((info) => (
@@ -418,11 +422,11 @@ const faq = [
                     {info.contact && (
                       <>
                         {' '}
-                        <a href="/exposer" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                        <a href="/exposer" class="font-semibold text-village-dark underline underline-offset-2 hover:text-marine">
                           Contacter l'organisation
                         </a>{' '}
                         ou{' '}
-                        <a href="mailto:labevents@icloud.com" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                        <a href="mailto:labevents@icloud.com" class="font-semibold text-village-dark underline underline-offset-2 hover:text-marine">
                           labevents@icloud.com
                         </a>
                         .
@@ -430,7 +434,7 @@ const faq = [
                     )}
                   </span>
                 </div>
-                <span class="inline-flex flex-shrink-0 items-center rounded-full bg-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-orange">
+                <span class="inline-flex flex-shrink-0 items-center rounded-full bg-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-orange-dark">
                   À confirmer
                 </span>
               </li>
@@ -469,11 +473,11 @@ const faq = [
                 {item.contact ? (
                   <>
                     Utilisez le{' '}
-                    <a href="/exposer#contact-visiteur" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                    <a href="/exposer#contact-visiteur" class="font-semibold text-village-dark underline underline-offset-2 hover:text-marine">
                       formulaire de contact du site
                     </a>{' '}
                     ou écrivez-nous directement à{' '}
-                    <a href="mailto:labevents@icloud.com" class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                    <a href="mailto:labevents@icloud.com" class="font-semibold text-village-dark underline underline-offset-2 hover:text-marine">
                       labevents@icloud.com
                     </a>.
                   </>
@@ -485,7 +489,7 @@ const faq = [
                         {item.liens.map((lien, i) => (
                           <>
                             {i > 0 && <span class="text-encre/40"> · </span>}
-                            <a href={lien.href} class="font-semibold text-village underline underline-offset-2 hover:text-marine">
+                            <a href={lien.href} class="font-semibold text-village-dark underline underline-offset-2 hover:text-marine">
                               {lien.label}
                             </a>
                           </>
@@ -554,7 +558,7 @@ const faq = [
       <h2 class="font-titre text-2xl font-bold uppercase text-marine">Mes priorités / Mes contacts</h2>
       <div class="mt-6 grid gap-8 sm:grid-cols-2">
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-widest text-marine/60">Mes priorités</h3>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-marine/70">Mes priorités</h3>
           <div class="mt-4 space-y-6">
             {Array.from({ length: 5 }).map(() => (
               <div class="border-b border-encre/30" aria-hidden="true">&nbsp;</div>
@@ -562,7 +566,7 @@ const faq = [
           </div>
         </div>
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-widest text-marine/60">Mes contacts</h3>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-marine/70">Mes contacts</h3>
           <div class="mt-4 space-y-6">
             {Array.from({ length: 5 }).map(() => (
               <div class="border-b border-encre/30" aria-hidden="true">&nbsp;</div>

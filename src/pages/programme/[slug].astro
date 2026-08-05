@@ -22,8 +22,11 @@ const { data } = item;
 
 const styleUnivers = {
   hall: { badge: 'bg-marine text-blanc', accent: 'text-orange' },
-  village: { badge: 'bg-village text-blanc', accent: 'text-village' },
-  transversal: { badge: 'bg-encre text-blanc', accent: 'text-encre' },
+  village: { badge: 'bg-village-dark text-blanc', accent: 'text-village' },
+  /* accent en text-brume (et non text-encre) : ce bloc s'affiche sur le hero
+     bg-marine, où text-encre serait quasi invisible (texte quasi de la même
+     teinte que le fond). */
+  transversal: { badge: 'bg-encre text-blanc', accent: 'text-brume' },
 }[data.univers];
 
 let exposantLie = null;
@@ -52,7 +55,7 @@ const dateMiseAJour = data.date_mise_a_jour ? formateurDate.format(data.date_mis
       <div class="mt-6 flex flex-wrap items-center gap-2">
         {
           data.mise_en_avant && (
-            <span class="w-fit rounded-full bg-orange px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-blanc">
+            <span class="w-fit rounded-full bg-orange-dark px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-blanc">
               Temps fort
             </span>
           )
@@ -135,7 +138,7 @@ const dateMiseAJour = data.date_mise_a_jour ? formateurDate.format(data.date_mis
           <div class="mt-10 rounded-2xl border border-orange/30 bg-brume p-5">
             <h2 class="font-titre text-lg font-bold uppercase text-marine">Inscription</h2>
             <ul class="mt-2 space-y-2 text-sm text-encre">
-              {data.capacite_limitee && <li class="font-semibold text-orange">Capacité limitée</li>}
+              {data.capacite_limitee && <li class="font-semibold text-orange-dark">Capacité limitée</li>}
               {data.inscription_requise && (
                 <li>
                   {data.lien_inscription ? (
@@ -143,7 +146,7 @@ const dateMiseAJour = data.date_mise_a_jour ? formateurDate.format(data.date_mis
                       href={data.lien_inscription}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="inline-flex items-center gap-1.5 rounded-md bg-orange px-4 py-2.5 font-titre text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+                      class="inline-flex items-center gap-1.5 rounded-md bg-orange-dark px-4 py-2.5 font-titre text-sm font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
                     >
                       S'inscrire (site externe)
                     </a>
@@ -170,7 +173,7 @@ const dateMiseAJour = data.date_mise_a_jour ? formateurDate.format(data.date_mis
 
       {
         dateMiseAJour && (
-          <p class="mt-8 text-xs text-encre/60">Fiche mise à jour le {dateMiseAJour}.</p>
+          <p class="mt-8 text-xs text-encre/70">Fiche mise à jour le {dateMiseAJour}.</p>
         )
       }
 
