@@ -17,19 +17,21 @@ function isActive(href: string) {
 
 <header class="sticky top-0 z-50 bg-marine text-blanc shadow-lg">
   <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:gap-5 xl:gap-6">
-    {/*
-      Bloc-titre typographique sur trois lignes, repris de la planche de
-      références (esperluette en accent). Remplace le logo officiel tant qu'il
-      n'a pas été fourni.
-    */}
     <a
       href="/"
-      class="flex-none font-titre text-sm font-bold uppercase leading-none"
+      class="flex-none"
       aria-label="Accueil — Salon de l'Emploi & de la Formation 2026"
     >
-      <span class="block text-xl leading-none sm:text-2xl">Salon</span>
-      <span class="mt-0.5 block leading-none">De l'Emploi <span class="text-orange">&amp;</span></span>
-      <span class="mt-0.5 block leading-none">De la Formation</span>
+      <picture>
+        <source srcset="/brand/logo-salon-emploi-formation-header-navy.webp" type="image/webp" />
+        <img
+          src="/brand/logo-salon-emploi-formation-header-navy.png"
+          alt="Salon Emploi & Formation"
+          width="1141"
+          height="517"
+          class="h-9 w-auto sm:h-10 lg:h-11"
+        />
+      </picture>
     </a>
 
     <nav class="ml-auto hidden lg:block" aria-label="Navigation principale">
