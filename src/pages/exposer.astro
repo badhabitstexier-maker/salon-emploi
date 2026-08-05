@@ -6,6 +6,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 const accessKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '';
 
 /*
+  Redirections Web3Forms (fallback sans JavaScript uniquement — le script en
+  fin de page intercepte l'envoi via fetch et n'y a normalement pas recours).
+  Construites depuis `Astro.site` (lui-même dérivé de PUBLIC_SITE_URL, voir
+  astro.config.mjs) pour ne jamais coder un domaine en dur : la préproduction
+  redirige vers preprod.salonemploic.com, la production vers son propre domaine.
+*/
+const redirectExposant = new URL('/merci?type=exposant', Astro.site).toString();
+const redirectVisiteur = new URL('/merci?type=visiteur', Astro.site).toString();
+
+/*
   Documents exposants — Lot 2, section 5 du CLAUDE.md : ne jamais inventer de
   fichier. La disponibilité est vérifiée sur disque au build (même logique que
   `Visuel.astro`), pour qu'un simple dépôt de PDF au bon chemin suffise à
@@ -425,7 +435,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
           />
           <input type="hidden" name="from_name" value="Formulaire exposant — salonemploi.nc" />
           <input type="hidden" name="form_type" value="exposant" />
-          <input type="hidden" name="redirect" value="https://www.salonemploi.nc/merci?type=exposant" />
+          <input type="hidden" name="redirect" value={redirectExposant} />
           <div class="absolute -left-[9999px] top-0" aria-hidden="true">
             <label for="botcheck-exposant">Ne pas remplir ce champ</label>
             <input type="text" id="botcheck-exposant" name="botcheck" tabindex="-1" autocomplete="off" />
@@ -602,7 +612,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
           />
           <input type="hidden" name="from_name" value="Formulaire visiteur — salonemploi.nc" />
           <input type="hidden" name="form_type" value="visiteur" />
-          <input type="hidden" name="redirect" value="https://www.salonemploi.nc/merci?type=visiteur" />
+          <input type="hidden" name="redirect" value={redirectVisiteur} />
           <div class="absolute -left-[9999px] top-0" aria-hidden="true">
             <label for="botcheck-visiteur">Ne pas remplir ce champ</label>
             <input type="text" id="botcheck-visiteur" name="botcheck" tabindex="-1" autocomplete="off" />
