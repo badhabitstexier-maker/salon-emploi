@@ -1,15 +1,758 @@
 ---
+import fs from 'node:fs';
+import path from 'node:path';
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const accessKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '';
+
+/*
+  Documents exposants — Lot 2, section 5 du CLAUDE.md : ne jamais inventer de
+  fichier. La disponibilité est vérifiée sur disque au build (même logique que
+  `Visuel.astro`), pour qu'un simple dépôt de PDF au bon chemin suffise à
+  activer le lien, sans toucher au code.
+*/
+const documentsExposants = [
+  { label: 'Dossier exposant 2026', href: '/documents/dossier-exposant-2026.pdf' },
+  { label: 'Grille tarifaire', href: '/documents/grille-tarifaire-2026.pdf' },
+  { label: 'Plan provisoire du salon', href: '/documents/plan-salon-2026.pdf' },
+  { label: 'Conditions de participation', href: '/documents/conditions-participation-2026.pdf' },
+  { label: 'Notice technique', href: '/documents/notice-technique-2026.pdf' },
+].map((doc) => ({
+  ...doc,
+  disponible: fs.existsSync(path.join(process.cwd(), 'public', doc.href.replace(/^\//, ''))),
+}));
+
+const dossierExposant = documentsExposants[0];
+
+const benefices = [
+  {
+    verbe: 'Rencontrer',
+    complement: 'des candidats et des publics ciblés',
+    icone: `<circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path stroke-linecap="round" d="M2.5 20a5.5 5.5 0 0 1 11 0M14.5 20a4.2 4.2 0 0 1 7-3.1" />`,
+  },
+  {
+    verbe: 'Recruter',
+    complement: 'et présenter vos opportunités',
+    icone: `<rect x="3" y="7.5" width="18" height="12" rx="1.8" /><path stroke-linecap="round" stroke-linejoin="round" d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5" /><path stroke-linecap="round" d="M3 13h18" />`,
+  },
+  {
+    verbe: 'Présenter',
+    complement: 'vos formations et vos métiers',
+    icone: `<rect x="3" y="4.5" width="18" height="12" rx="1.5" /><path stroke-linecap="round" d="M8 20.5h8M12 16.5v4" /><path stroke-linecap="round" stroke-linejoin="round" d="M6.5 13.5 10 10l2.5 2 4.5-4.5" />`,
+  },
+  {
+    verbe: 'Valoriser',
+    complement: 'votre marque employeur',
+    icone: `<circle cx="12" cy="9" r="5" /><path stroke-linecap="round" stroke-linejoin="round" d="m8.3 13.2-1.6 7.3 5.3-3 5.3 3-1.6-7.3" />`,
+  },
+  {
+    verbe: 'Échanger',
+    complement: 'avec les acteurs du territoire',
+    icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M4 8.5h13m0 0-4-4m4 4-4 4" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 15.5H7m0 0 4 4m-4-4 4-4" />`,
+  },
+  {
+    verbe: 'Développer',
+    complement: 'votre visibilité avant et pendant le salon',
+    icone: `<path stroke-linecap="round" d="M3 20.5h18" /><path stroke-linecap="round" stroke-linejoin="round" d="M5 19v-7l5-3.5 4 2.5 5-6" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.5 5h3.5v3.5" />`,
+  },
+];
+
+const formules = [
+  {
+    valeur: 'standard',
+    nom: 'Stand standard',
+    sousTitre: "L'essentiel pour participer",
+    items: [
+      'Espace exposant équipé',
+      "Présence dans l'annuaire du salon",
+      'Accès aux deux journées',
+      'Communication pratique exposant',
+    ],
+  },
+  {
+    valeur: 'silver',
+    nom: 'Offre Silver',
+    sousTitre: 'Une visibilité renforcée',
+    items: [
+      'Stand exposant',
+      'Visibilité digitale renforcée',
+      'Présence sur certains supports de communication',
+      'Mise en avant complémentaire',
+    ],
+  },
+  {
+    valeur: 'gold',
+    nom: 'Offre Gold',
+    sousTitre: 'Une présence premium',
+    items: [
+      'Visibilité maximale',
+      'Mise en avant prioritaire',
+      'Possibilités de prise de parole',
+      'Dispositif de communication renforcé',
+    ],
+  },
+  {
+    valeur: 'village',
+    nom: 'Village Maintenance & Industrie',
+    sousTitre: 'Une présence au cœur de la filière',
+    items: [
+      'Espace dédié aux métiers techniques et industriels',
+      'Démonstrations et valorisation des savoir-faire',
+      'Rencontres avec les publics',
+      'Intégration à l’univers Maintenance & Industrie',
+    ],
+    village: true,
+  },
+];
+
+const typesDemande = [
+  { valeur: 'exposer', label: 'Exposer' },
+  { valeur: 'village', label: 'Exposer dans le Village Maintenance & Industrie' },
+  { valeur: 'partenaire', label: 'Devenir partenaire' },
+  { valeur: 'information', label: 'Recevoir des informations' },
+];
+
+const typesStructure = [
+  { valeur: 'entreprise', label: 'Entreprise' },
+  { valeur: 'organisme-formation', label: 'Organisme de formation' },
+  { valeur: 'institution', label: 'Institution' },
+  { valeur: 'accompagnement', label: 'Structure d’accompagnement' },
+  { valeur: 'association', label: 'Association' },
+  { valeur: 'autre', label: 'Autre' },
+];
+
+const objetsVisiteur = [
+  { valeur: 'informations-pratiques', label: 'Informations pratiques' },
+  { valeur: 'programme', label: 'Programme' },
+  { valeur: 'accueil-scolaire', label: 'Accueil scolaire' },
+  { valeur: 'accessibilite', label: 'Accessibilité' },
+  { valeur: 'autre', label: 'Autre' },
+];
+
+const champIcon = `<path stroke-linecap="round" stroke-linejoin="round" d="M7 3.5h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M14 3.5V8h4" />`;
+
+const inputClass =
+  'mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3.5 py-2.5 text-sm text-encre placeholder:text-encre/40 focus:border-village focus:outline-none focus:ring-2 focus:ring-village/30';
+const labelClass = 'block text-sm font-semibold text-marine';
 ---
 
 <BaseLayout
-  title="Exposer"
-  description="Devenez exposant au Salon de l'Emploi & de la Formation 2026 à Nouméa. Formulaire de contact à venir."
+  title="Exposer et devenir partenaire"
+  description="Devenez exposant ou partenaire du Salon de l'Emploi & de la Formation 2026 à Nouméa, les 30 et 31 octobre. Demandez un stand ou posez vos questions."
 >
-  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-    <h1 class="text-3xl font-bold text-marine sm:text-4xl">Exposer</h1>
-    <p class="mt-6 max-w-2xl text-encre">
-      {'{{À COMPLÉTER : bénéfices exposants, formules, formulaire — contenu du Lot 2}}'}
-    </p>
+  <!-- ============================== HERO ============================== -->
+  <section class="bg-marine text-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-20">
+      <p class="text-xs font-bold uppercase tracking-widest text-orange">Exposer au salon</p>
+      <h1 class="mt-3 max-w-3xl font-titre text-4xl font-bold uppercase leading-none sm:text-5xl xl:text-6xl">
+        Exposez, recrutez et développez votre visibilité
+      </h1>
+      <p class="mt-6 max-w-2xl text-base text-brume sm:text-lg">
+        Les 30 et 31 octobre 2026, rencontrez directement les publics du territoire et présentez
+        vos emplois, vos formations, vos métiers ou vos dispositifs d'accompagnement.
+      </p>
+
+      <ul class="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-semibold uppercase tracking-wide text-brume sm:flex sm:flex-wrap sm:gap-x-8">
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
+          Salle d'exposition de Nouville — Nouméa
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
+          Deux jours d'ouverture
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
+          Environ 3 000 visiteurs attendus
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
+          30 et 31 octobre 2026
+        </li>
+      </ul>
+
+      <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+        <a
+          href="#demande-exposant"
+          class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+        >
+          Demander un stand
+        </a>
+        {
+          dossierExposant.disponible ? (
+            <a
+              href={dossierExposant.href}
+              class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
+            >
+              Télécharger le dossier exposant
+            </a>
+          ) : (
+            <span
+              class="inline-flex cursor-not-allowed items-center justify-center rounded-md border-2 border-blanc/30 px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc/50"
+              aria-disabled="true"
+              title="Dossier bientôt disponible"
+            >
+              Dossier bientôt disponible
+            </span>
+          )
+        }
+      </div>
+    </div>
   </section>
+
+  <!-- ===================== POURQUOI EXPOSER ? ===================== -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Pourquoi participer ?
+      </h2>
+
+      <div class="mt-10 grid gap-px bg-marine/10 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          benefices.map((benefice) => (
+            <article class="flex flex-col items-center bg-blanc px-5 py-8 text-center">
+              <svg
+                class="h-9 w-9 text-orange"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.6"
+                aria-hidden="true"
+                set:html={benefice.icone}
+              />
+              <h3 class="mt-4 font-titre text-xl font-bold uppercase leading-none text-marine">
+                {benefice.verbe}
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed text-encre">{benefice.complement}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== NOS FORMULES ========================= -->
+  <section class="border-t border-marine/10 bg-brume">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Choisissez votre formule
+      </h2>
+
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          formules.map((formule) => (
+            <article
+              class:list={[
+                'flex flex-col rounded-2xl border bg-blanc p-6',
+                formule.village ? 'border-village/40' : 'border-marine/15',
+              ]}
+            >
+              {formule.village && (
+                <p class="mb-2 text-xs font-bold uppercase tracking-widest text-village">Univers Village</p>
+              )}
+              <h3 class="font-titre text-xl font-bold uppercase leading-tight text-marine">{formule.nom}</h3>
+              <p class="mt-1 text-sm font-semibold text-encre/70">{formule.sousTitre}</p>
+              <div
+                class:list={['mt-3 h-1 w-10 rounded-full', formule.village ? 'bg-village' : 'bg-orange']}
+                aria-hidden="true"
+              />
+
+              <ul class="mt-4 flex-1 space-y-2.5 text-sm text-encre">
+                {formule.items.map((item) => (
+                  <li class="flex items-start gap-2">
+                    <svg
+                      class:list={['mt-0.5 h-4 w-4 flex-shrink-0', formule.village ? 'text-village' : 'text-marine']}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 5 5 9-9" />
+                    </svg>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <p class="mt-5 text-xs font-semibold uppercase tracking-wide text-encre/60">
+                Tarif et disponibilités sur demande
+              </p>
+              <a
+                href="#demande-exposant"
+                data-preselect-formule={formule.valeur}
+                data-preselect-type={formule.village ? 'village' : undefined}
+                class:list={[
+                  'mt-4 inline-flex items-center justify-center rounded-md px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90',
+                  formule.village ? 'bg-village' : 'bg-marine',
+                ]}
+              >
+                Demander cette formule
+              </a>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VILLAGE MAINTENANCE & INDUSTRIE (bloc vert) ============ -->
+  <section class="bg-village text-marine">
+    <div class="mx-auto grid max-w-6xl items-start gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:py-16">
+      <div class="lg:col-span-7">
+        <p class="text-xs font-bold uppercase tracking-widest text-marine/70">Univers Village</p>
+        <h2 class="mt-3 font-titre text-3xl font-bold uppercase leading-tight sm:text-4xl">
+          Exposez dans le Village Maintenance &amp; Industrie
+        </h2>
+        <div class="mt-4 h-1 w-14 rounded-full bg-marine" aria-hidden="true"></div>
+        <p class="mt-5 max-w-2xl text-base sm:text-lg">
+          Présentez vos métiers, vos besoins en compétences, vos formations et vos savoir-faire au
+          sein d'un espace spécifiquement consacré aux activités techniques et industrielles.
+        </p>
+
+        <ul class="mt-6 grid grid-cols-2 gap-x-6 gap-y-2.5 text-sm font-semibold sm:flex sm:flex-wrap sm:gap-x-8">
+          <li class="flex items-center gap-2">
+            <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-marine" aria-hidden="true"></span>
+            Métiers et emplois
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-marine" aria-hidden="true"></span>
+            Formations et parcours
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-marine" aria-hidden="true"></span>
+            Démonstrations
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-marine" aria-hidden="true"></span>
+            Échanges avec les publics
+          </li>
+        </ul>
+
+        <a
+          href="#demande-exposant"
+          data-preselect-formule="village"
+          data-preselect-type="village"
+          class="mt-8 inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+        >
+          Demander un emplacement dans le Village
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DOCUMENTS EXPOSANTS ===================== -->
+  <section class="border-t border-marine/10 bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Documents exposants
+      </h2>
+
+      <ul class="mx-auto mt-10 max-w-2xl divide-y divide-marine/10 overflow-hidden rounded-2xl border border-marine/15">
+        {
+          documentsExposants.map((doc) => (
+            <li class="flex items-center justify-between gap-4 bg-blanc px-5 py-4">
+              <span class="flex items-center gap-3">
+                <svg
+                  class="h-6 w-6 flex-shrink-0 text-marine/60"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  aria-hidden="true"
+                  set:html={champIcon}
+                />
+                <span class="text-sm font-semibold text-marine">{doc.label}</span>
+              </span>
+              {doc.disponible ? (
+                <a
+                  href={doc.href}
+                  class="flex-shrink-0 text-sm font-bold uppercase tracking-wide text-village hover:underline"
+                >
+                  Télécharger
+                </a>
+              ) : (
+                <span class="flex-shrink-0 text-xs font-semibold uppercase tracking-wide text-encre/40">
+                  Bientôt disponible
+                </span>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- =================== FORMULAIRE EXPOSANT / PARTENAIRE =================== -->
+  <section id="demande-exposant" class="scroll-mt-20 border-t border-marine/10 bg-brume">
+    <div class="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Demander un stand ou devenir partenaire
+      </h2>
+      <p class="mt-4 max-w-2xl text-encre">
+        Présentez-nous votre projet. L'équipe LabEvents vous recontactera pour préciser vos
+        besoins et les disponibilités.
+      </p>
+
+      {
+        import.meta.env.DEV && !accessKey && (
+          <p class="mt-4 rounded-md border border-orange/40 bg-orange/10 px-4 py-3 text-sm font-semibold text-orange">
+            Clé Web3Forms manquante : renseignez PUBLIC_WEB3FORMS_ACCESS_KEY dans votre fichier
+            .env pour tester l'envoi en local (voir .env.example).
+          </p>
+        )
+      }
+
+      <div class="relative mt-8 rounded-2xl border border-marine/15 bg-blanc p-6 sm:p-8">
+        <div data-form-confirmation hidden class="text-center">
+          <h3 class="font-titre text-2xl font-bold uppercase text-marine">
+            Votre demande a bien été envoyée
+          </h3>
+          <p class="mt-3 text-encre">L'équipe LabEvents reviendra vers vous dans les meilleurs délais.</p>
+        </div>
+
+        <form
+          data-web3forms
+          action="https://api.web3forms.com/submit"
+          method="POST"
+          class="grid gap-5 sm:grid-cols-2"
+        >
+          <input type="hidden" name="access_key" value={accessKey} />
+          <input
+            type="hidden"
+            name="subject"
+            value="Salon Emploi Formation 2026 — Nouvelle demande exposant"
+          />
+          <input type="hidden" name="from_name" value="Formulaire exposant — salonemploi.nc" />
+          <input type="hidden" name="form_type" value="exposant" />
+          <input type="hidden" name="redirect" value="https://www.salonemploi.nc/merci?type=exposant" />
+          <div class="absolute -left-[9999px] top-0" aria-hidden="true">
+            <label for="botcheck-exposant">Ne pas remplir ce champ</label>
+            <input type="text" id="botcheck-exposant" name="botcheck" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="sm:col-span-2">
+            <label for="type-demande" class={labelClass}>Type de demande *</label>
+            <select id="type-demande" name="type_demande" required class={inputClass}>
+              <option value="" selected disabled>Sélectionnez une option</option>
+              {typesDemande.map((option) => (
+                <option value={option.valeur}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label for="raison-sociale" class={labelClass}>Raison sociale / organisme *</label>
+            <input type="text" id="raison-sociale" name="raison_sociale" required class={inputClass} />
+          </div>
+
+          <div>
+            <label for="nom-contact" class={labelClass}>Nom et prénom du contact *</label>
+            <input type="text" id="nom-contact" name="nom_contact" required class={inputClass} />
+          </div>
+
+          <div>
+            <label for="fonction" class={labelClass}>Fonction *</label>
+            <input type="text" id="fonction" name="fonction" required class={inputClass} />
+          </div>
+
+          <div>
+            <label for="email-exposant" class={labelClass}>Adresse email *</label>
+            <input type="email" id="email-exposant" name="email" required class={inputClass} />
+          </div>
+
+          <div>
+            <label for="telephone-exposant" class={labelClass}>Téléphone *</label>
+            <input type="tel" id="telephone-exposant" name="telephone" required class={inputClass} />
+          </div>
+
+          <div>
+            <label for="type-structure" class={labelClass}>Type de structure *</label>
+            <select id="type-structure" name="type_structure" required class={inputClass}>
+              <option value="" selected disabled>Sélectionnez une option</option>
+              {typesStructure.map((option) => (
+                <option value={option.valeur}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label for="secteur-activite" class={labelClass}>Secteur d'activité *</label>
+            <input type="text" id="secteur-activite" name="secteur_activite" required class={inputClass} />
+          </div>
+
+          <div class="sm:col-span-2">
+            <label for="formule" class={labelClass}>Formule envisagée *</label>
+            <select id="formule" name="formule" required class={inputClass}>
+              <option value="" selected disabled>Sélectionnez une formule</option>
+              <option value="standard">Stand standard</option>
+              <option value="silver">Silver</option>
+              <option value="gold">Gold</option>
+              <option value="village">Village Maintenance & Industrie</option>
+              <option value="a-definir">À définir</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label for="message-exposant" class={labelClass}>Message / précisions *</label>
+            <textarea id="message-exposant" name="message" rows="4" required class={inputClass} />
+          </div>
+
+          <div class="border-t border-marine/10 pt-5 sm:col-span-2">
+            <p class="text-xs font-bold uppercase tracking-widest text-marine/60">Informations facultatives</p>
+          </div>
+
+          <div>
+            <label for="site-internet" class={labelClass}>Site internet</label>
+            <input type="url" id="site-internet" name="site_internet" placeholder="https://" class={inputClass} />
+          </div>
+
+          <div>
+            <label for="nombre-stands" class={labelClass}>Nombre de stands envisagé</label>
+            <input type="number" id="nombre-stands" name="nombre_stands" min="1" class={inputClass} />
+          </div>
+
+          <div>
+            <label for="meilleur-moment" class={labelClass}>Meilleur moment pour être rappelé</label>
+            <input type="text" id="meilleur-moment" name="meilleur_moment" class={inputClass} />
+          </div>
+
+          <div class="flex flex-col justify-end gap-2.5 pb-1">
+            <span class="flex items-start gap-2 text-sm text-encre">
+              <input
+                type="checkbox"
+                id="conference"
+                name="souhait_conference"
+                value="oui"
+                class="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-marine/30 text-village focus:ring-village"
+              />
+              <label for="conference">Je souhaite proposer une conférence ou un atelier</label>
+            </span>
+            <span class="flex items-start gap-2 text-sm text-encre">
+              <input
+                type="checkbox"
+                id="demonstration"
+                name="souhait_demonstration"
+                value="oui"
+                class="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-marine/30 text-village focus:ring-village"
+              />
+              <label for="demonstration">Je souhaite réaliser une démonstration</label>
+            </span>
+          </div>
+
+          <div class="flex items-start gap-3 border-t border-marine/10 pt-5 sm:col-span-2">
+            <input
+              type="checkbox"
+              id="consentement-exposant"
+              name="consentement"
+              value="oui"
+              required
+              class="mt-1 h-4 w-4 flex-shrink-0 rounded border-marine/30 text-village focus:ring-village"
+            />
+            <label for="consentement-exposant" class="text-sm text-encre">
+              J'accepte que LabEvents utilise les informations transmises pour répondre à ma
+              demande concernant le Salon de l'Emploi &amp; de la Formation 2026. <a
+                href="/confidentialite"
+                class="font-semibold text-marine underline hover:text-village">En savoir plus</a
+              >.
+            </label>
+          </div>
+
+          <div class="sm:col-span-2">
+            <button
+              type="submit"
+              data-submit-btn
+              class="inline-flex w-full items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto"
+            >
+              Envoyer ma demande
+            </button>
+            <p data-form-status class="mt-4 text-sm" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== FORMULAIRE CONTACT VISITEUR ====================== -->
+  <section class="border-t border-marine/10 bg-blanc">
+    <div class="mx-auto max-w-2xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Une question sur le salon ?
+      </h2>
+
+      <div class="relative mt-8 rounded-2xl border border-marine/15 bg-brume p-6 sm:p-8">
+        <div data-form-confirmation hidden class="text-center">
+          <h3 class="font-titre text-2xl font-bold uppercase text-marine">
+            Votre demande a bien été envoyée
+          </h3>
+          <p class="mt-3 text-encre">Votre message a bien été transmis à l'équipe du salon.</p>
+        </div>
+
+        <form
+          data-web3forms
+          action="https://api.web3forms.com/submit"
+          method="POST"
+          class="grid gap-5"
+        >
+          <input type="hidden" name="access_key" value={accessKey} />
+          <input
+            type="hidden"
+            name="subject"
+            value="Salon Emploi Formation 2026 — Nouvelle question visiteur"
+          />
+          <input type="hidden" name="from_name" value="Formulaire visiteur — salonemploi.nc" />
+          <input type="hidden" name="form_type" value="visiteur" />
+          <input type="hidden" name="redirect" value="https://www.salonemploi.nc/merci?type=visiteur" />
+          <div class="absolute -left-[9999px] top-0" aria-hidden="true">
+            <label for="botcheck-visiteur">Ne pas remplir ce champ</label>
+            <input type="text" id="botcheck-visiteur" name="botcheck" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div>
+            <label for="nom-visiteur" class={labelClass}>Nom et prénom *</label>
+            <input type="text" id="nom-visiteur" name="nom" required class={inputClass} />
+          </div>
+
+          <div>
+            <label for="email-visiteur" class={labelClass}>Adresse email *</label>
+            <input type="email" id="email-visiteur" name="email" required class={inputClass} />
+          </div>
+
+          <div>
+            <label for="objet-visiteur" class={labelClass}>Objet *</label>
+            <select id="objet-visiteur" name="objet" required class={inputClass}>
+              <option value="" selected disabled>Sélectionnez une option</option>
+              {objetsVisiteur.map((option) => (
+                <option value={option.valeur}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label for="message-visiteur" class={labelClass}>Message *</label>
+            <textarea id="message-visiteur" name="message" rows="4" required class={inputClass} />
+          </div>
+
+          <div class="flex items-start gap-3">
+            <input
+              type="checkbox"
+              id="consentement-visiteur"
+              name="consentement"
+              value="oui"
+              required
+              class="mt-1 h-4 w-4 flex-shrink-0 rounded border-marine/30 text-marine focus:ring-marine"
+            />
+            <label for="consentement-visiteur" class="text-sm text-encre">
+              J'accepte que LabEvents utilise les informations transmises pour répondre à ma
+              demande concernant le Salon de l'Emploi &amp; de la Formation 2026. <a
+                href="/confidentialite"
+                class="font-semibold text-marine underline hover:text-village">En savoir plus</a
+              >.
+            </label>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              data-submit-btn
+              class="inline-flex w-full items-center justify-center rounded-md bg-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto"
+            >
+              Envoyer mon message
+            </button>
+            <p data-form-status class="mt-4 text-sm" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ COORDONNÉES ============================ -->
+  <section class="border-t border-marine/10 bg-marine text-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <h2 class="font-titre text-xl font-bold uppercase tracking-wide text-orange">LabEvents</h2>
+      <p class="mt-1 text-sm text-brume">
+        Organisateur du Salon de l'Emploi &amp; de la Formation 2026
+      </p>
+      <ul class="mt-4 flex flex-col gap-2 text-sm text-brume sm:flex-row sm:flex-wrap sm:gap-x-8">
+        <li>
+          Email : <a href="mailto:labevents@icloud.com" class="font-semibold text-blanc hover:text-orange"
+            >labevents@icloud.com</a
+          >
+        </li>
+        <li>
+          Téléphone : <a href="tel:+68777647" class="font-semibold text-blanc hover:text-orange">(+687) 77 36 47</a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <script>
+    const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit';
+
+    function handleForm(form: HTMLFormElement) {
+      const statusBox = form.querySelector<HTMLElement>('[data-form-status]');
+      const submitBtn = form.querySelector<HTMLButtonElement>('[data-submit-btn]');
+      const submitLabel = submitBtn?.textContent ?? 'Envoyer';
+      const confirmation = form.parentElement?.querySelector<HTMLElement>('[data-form-confirmation]');
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const honeypot = form.querySelector<HTMLInputElement>('input[name="botcheck"]');
+        if (honeypot?.value) return;
+
+        if (statusBox) {
+          statusBox.textContent = '';
+          statusBox.removeAttribute('role');
+        }
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Envoi en cours…';
+        }
+
+        try {
+          const data = Object.fromEntries(new FormData(form).entries());
+          const response = await fetch(WEB3FORMS_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(data),
+          });
+          const result = await response.json();
+
+          if (!result.success) throw new Error(result.message || 'Échec de l’envoi');
+
+          form.hidden = true;
+          if (confirmation) confirmation.hidden = false;
+        } catch (error) {
+          if (statusBox) {
+            statusBox.textContent =
+              "Une erreur est survenue lors de l'envoi. Merci de réessayer, ou de nous écrire directement à labevents@icloud.com.";
+            statusBox.classList.add('font-medium', 'text-red-700');
+            statusBox.setAttribute('role', 'alert');
+          }
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = submitLabel;
+          }
+        }
+      });
+    }
+
+    document.querySelectorAll<HTMLFormElement>('form[data-web3forms]').forEach(handleForm);
+
+    document.querySelectorAll<HTMLElement>('[data-preselect-formule], [data-preselect-type]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const formuleValue = el.getAttribute('data-preselect-formule');
+        const typeValue = el.getAttribute('data-preselect-type');
+        const formuleSelect = document.getElementById('formule');
+        const typeSelect = document.getElementById('type-demande');
+        if (formuleValue && formuleSelect instanceof HTMLSelectElement) {
+          formuleSelect.value = formuleValue;
+        }
+        if (typeValue && typeSelect instanceof HTMLSelectElement) {
+          typeSelect.value = typeValue;
+        }
+      });
+    });
+  </script>
 </BaseLayout>
