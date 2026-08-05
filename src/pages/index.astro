@@ -153,19 +153,26 @@ const infosPratiques = [
   <!-- ============================== HERO ==============================
        Aplat marine à gauche, visuel en découpe diagonale à droite à partir
        de lg — composition reprise de la vignette « 1. ACCUEIL ».
+
+       Deux versions du portrait selon le breakpoint (seuil lg = 1024px,
+       déjà utilisé pour la bascule nav desktop / menu mobile) :
+       - desktop (lg+) : cadrage resserré à 3 personnages, sans le cadre en
+         costume, pour mieux occuper la hauteur du panneau diagonal ;
+       - mobile/tablette (< lg) : version complète à 4 personnages, qui
+         occupe bien le format aspect-[4/3] du bloc image inline.
   -->
   <section class="relative overflow-hidden bg-marine text-blanc">
     <div class="absolute inset-y-0 right-0 hidden w-5/12 lg:block xl:w-1/2">
       <Visuel
         class="decoupe-diagonale h-full w-full"
-        src="/images/hero-salon.webp"
-        alt="Équipe du salon : cadre en costume, professionnelle avec un dossier, et deux techniciens casqués, représentant les univers Emploi-Formation et Maintenance & Industrie"
-        width={1448}
-        height={1086}
+        src="/images/hero-salon-desktop.webp"
+        alt="Professionnelle avec un dossier, technicien casque orange et technicienne casque blanc, représentant les univers Emploi-Formation et Maintenance & Industrie"
+        width={1049}
+        height={937}
         loading="eager"
         fit="contain"
         position="object-bottom"
-        fondImage="#0a1930"
+        fondImage="#0c1a2f"
       />
     </div>
 
@@ -209,7 +216,7 @@ const infosPratiques = [
 
       <Visuel
         class="mt-10 aspect-[4/3] w-full rounded-2xl lg:hidden"
-        src="/images/hero-salon.webp"
+        src="/images/hero-salon-mobile.webp"
         alt="Équipe du salon : cadre en costume, professionnelle avec un dossier, et deux techniciens casqués, représentant les univers Emploi-Formation et Maintenance & Industrie"
         width={1448}
         height={1086}
