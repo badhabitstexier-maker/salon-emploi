@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Message envoyé"
+  description="Votre demande concernant le Salon de l'Emploi & de la Formation 2026 a bien été transmise à l'équipe LabEvents."
+>
+  <section class="bg-brume">
+    <div class="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6 lg:py-28">
+      <svg
+        class="mx-auto h-14 w-14 text-village"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="1.6"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="m8.5 12 2.5 2.5 4.5-4.5" />
+      </svg>
+
+      <h1 class="mt-6 font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Votre demande a bien été envoyée
+      </h1>
+
+      <p id="texte-exposant" hidden class="mt-4 text-encre">
+        L'équipe LabEvents reviendra vers vous dans les meilleurs délais.
+      </p>
+      <p id="texte-visiteur" hidden class="mt-4 text-encre">
+        Votre message a bien été transmis à l'équipe du salon.
+      </p>
+      <p id="texte-defaut" class="mt-4 text-encre">
+        Votre message a bien été transmis à l'équipe du salon. L'équipe LabEvents reviendra vers
+        vous dans les meilleurs délais.
+      </p>
+
+      <a
+        href="/"
+        class="mt-9 inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+      >
+        Retour à l'accueil
+      </a>
+    </div>
+  </section>
+
+  <script>
+    const type = new URLSearchParams(window.location.search).get('type');
+    if (type === 'exposant' || type === 'visiteur') {
+      document.getElementById('texte-defaut')?.setAttribute('hidden', '');
+      document.getElementById(`texte-${type}`)?.removeAttribute('hidden');
+    }
+  </script>
+</BaseLayout>

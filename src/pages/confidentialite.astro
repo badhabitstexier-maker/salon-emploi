@@ -6,10 +6,83 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   title="Politique de confidentialité"
   description="Politique de confidentialité et gestion des données des formulaires du Salon de l'Emploi & de la Formation 2026."
 >
-  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-    <h1 class="text-3xl font-bold text-marine sm:text-4xl">Politique de confidentialité</h1>
-    <p class="mt-6 max-w-2xl text-encre">
-      {'{{À COMPLÉTER : politique de confidentialité — dépend du fournisseur de formulaire retenu (Lot 2)}}'}
+  <section class="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+    <h1 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+      Politique de confidentialité
+    </h1>
+    <p class="mt-3 text-sm text-encre/60">
+      Texte provisoire — à valider par Philippe avant mise en ligne (voir encadré en fin de page).
     </p>
+
+    <div class="prose-salon mt-8 space-y-6 text-encre">
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Pourquoi ces données sont collectées</h2>
+        <p class="mt-2">
+          Les formulaires du site (demande exposant / partenaire et question visiteur) collectent
+          uniquement les informations nécessaires pour répondre à votre demande concernant le
+          Salon de l'Emploi &amp; de la Formation 2026. Ces données ne sont utilisées à aucune
+          autre fin, ni cédées ni revendues à un tiers.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Qui reçoit ces données</h2>
+        <p class="mt-2">
+          Les informations transmises via les formulaires sont adressées directement à
+          <strong> LabEvents</strong>, organisateur du salon, à l'adresse
+          <a href="mailto:labevents@icloud.com" class="font-semibold text-marine underline hover:text-village"
+            >labevents@icloud.com</a
+          >.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Prestataire technique</h2>
+        <p class="mt-2">
+          L'envoi des formulaires est assuré par <strong>Web3Forms</strong>, un service tiers qui
+          transmet le contenu du formulaire par email sans le stocker durablement de manière
+          consultable par LabEvents au-delà de cet envoi. Aucune base de données visiteurs ou
+          exposants n'est constituée par le site lui-même.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Champs obligatoires</h2>
+        <p class="mt-2">
+          Dans chaque formulaire, les champs obligatoires sont identifiés par un astérisque (*).
+          Les autres champs sont facultatifs et ne conditionnent pas le traitement de votre
+          demande.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Données sensibles</h2>
+        <p class="mt-2">
+          Merci de ne transmettre, dans les champs libres (message, précisions), aucune donnée
+          sensible au sens du RGPD (origine, santé, opinions, etc.). Ces formulaires ne sont pas
+          conçus pour recueillir ce type d'information.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Vos droits</h2>
+        <p class="mt-2">
+          Vous pouvez demander l'accès, la correction ou la suppression des données transmises via
+          les formulaires du site en écrivant à
+          <a href="mailto:labevents@icloud.com" class="font-semibold text-marine underline hover:text-village"
+            >labevents@icloud.com</a
+          >.
+        </p>
+      </section>
+    </div>
+
+    <div class="mt-10 rounded-2xl border border-orange/40 bg-orange/10 p-6">
+      <h2 class="font-titre text-lg font-bold uppercase text-orange">À valider avant publication</h2>
+      <ul class="mt-3 list-inside list-disc space-y-1.5 text-sm text-encre">
+        <li>Confirmation de Web3Forms comme prestataire retenu pour la V1 (CLAUDE.md, section 3bis).</li>
+        <li>Durée réelle de conservation des emails reçus par LabEvents (boîte mail).</li>
+        <li>Vérification que ce texte provisoire n'a pas besoin d'un avis juridique avant mise en ligne.</li>
+      </ul>
+    </div>
   </section>
 </BaseLayout>
