@@ -1,0 +1,32 @@
+name: Vérifier le build (avant fusion)
+
+# Se déclenche sur chaque Pull Request vers main.
+# N'importe rien nulle part — vérifie seulement que le site compile.
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Construire le site (contrôle uniquement)
+        run: npm run build
+        env:
+          # Valeurs neutres : ce build ne sert qu'à vérifier que ça compile,
+          # il n'est jamais déployé nulle part.
+          PUBLIC_SITE_URL: "http://localhost:4321"
+          PUBLIC_WEB3FORMS_ACCESS_KEY: "check-only"

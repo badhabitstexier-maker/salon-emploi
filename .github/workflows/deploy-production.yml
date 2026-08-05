@@ -1,0 +1,42 @@
+name: Déployer en production (manuel)
+
+# Déclenchement strictement manuel — tu décides quand la prod
+# reçoit ce qui a été validé sur la préprod.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production   # secrets de l'environnement "production"
+
+    steps:
+      - name: Récupérer le code (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Construire le site (build Astro)
+        run: npm run build
+        env:
+          PUBLIC_SITE_URL: ${{ secrets.PUBLIC_SITE_URL }}
+          PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.PUBLIC_WEB3FORMS_ACCESS_KEY }}
+          # Pas de PUBLIC_NOINDEX en production : le site doit être indexé.
+
+      - name: Déployer le contenu de dist/ vers OVH (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}/
+          dangerous-clean-slate: false
