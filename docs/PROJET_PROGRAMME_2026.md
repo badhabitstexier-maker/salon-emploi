@@ -511,33 +511,40 @@ Aucun nom n'est proposé. Les profils suivants sont à identifier et solliciter 
 
 ## 10. Passage du projet au programme publié
 
-> ⚠ **Section à vérifier par Claude Code.** Elle a été rédigée sans accès au dépôt : le
-> schéma réel de la collection `programme` (`src/content.config.ts`) et les utilitaires
-> (`src/lib/programme.ts`) n'ont pas pu être consultés. Les noms de champs ci-dessous
-> sont donc **indicatifs** et doivent être confrontés au schéma existant avant tout
-> usage.
+> ✅ **Section vérifiée par Claude Code le 05/08/2026**, confrontée au schéma réel de la
+> collection `programme` (`src/content.config.ts`) et aux utilitaires
+> (`src/lib/programme.ts`). Les noms de champs et transformations ci-dessous sont ceux du
+> schéma réel — plusieurs correspondances présumées de la version précédente de ce
+> document étaient inexactes ou incomplètes ; voir le détail en 10.2.
 
 ### 10.1 Principe général
 
 Une ligne du CSV validée devient **un fichier Markdown** dans `src/content/programme/`.
 Le CSV reste le document de travail ; la collection ne contient que du confirmé.
 
-### 10.2 Correspondance présumée des champs
+### 10.2 Correspondance réelle des champs
 
-| Colonne CSV | Champ de collection présumé | Remarque |
+| Colonne CSV | Champ de collection réel | Transformation nécessaire |
 |---|---|---|
-| `identifiant` | nom du fichier (`v-01.md`) | sert d'identifiant stable |
-| `date` | `date` | format ISO attendu |
-| `heure_debut` | `heureDebut` | à confirmer |
-| `heure_fin` | `heureFin` | à confirmer |
-| `univers` | `univers` | valeurs contraintes probables (`hall` / `village` / `transversal`) |
-| `type` | `type` | valeurs contraintes probables |
-| `titre_provisoire` | `titre` | **à valider avant publication** |
-| `objectif` | `description` | à reformuler pour le public |
-| `public_principal` | `public` | à confirmer |
-| `espace_a_confirmer` | `lieu` | **ne publier que si confirmé** |
-| `statut` | `publie` (booléen) | voir 10.3 |
-| `commentaires` | — | **usage interne, ne pas publier** |
+| `identifiant` | nom du fichier (ex. `v-01.md`) | aucun champ frontmatter dédié ; peut aussi alimenter le champ optionnel `slug` si un identifiant d'URL stable, indépendant du nom de fichier, est souhaité |
+| `date` | `date` (enum `'2026-10-30'` \| `'2026-10-31'`) | aucune autre valeur n'est acceptée ; à écrire **entre guillemets** en YAML (sans guillemets, la valeur est interprétée comme une date technique et le build échoue) |
+| `heure_debut` | `heure_debut` (string, regex `HH:MM`) | nom de champ réel en **snake_case** (pas `heureDebut`) ; à écrire entre guillemets en YAML |
+| `heure_fin` | `heure_fin` (string, regex `HH:MM`, optionnel) | même remarque ; nom réel `heure_fin` (pas `heureFin`) |
+| `univers` | `univers` (enum `hall` / `village` / `transversal`) | transformation obligatoire, aucune valeur du CSV ne correspond telle quelle : « Hall Emploi & Formation » → `hall`, « Village Maintenance & Industrie » → `village`, « Transversal » → `transversal` |
+| `type` | `type` (enum `conference` / `atelier` / `demonstration` / `rencontre` / `information` / `autre`) | transformation obligatoire et **non triviale** : aucune valeur du CSV ne correspond telle quelle. Correspondances envisageables à arbitrer : « Demonstration » → `demonstration`, « Mini-conference » → `conference`, « Atelier pratique » → `atelier`, « Rencontre metiers » → `rencontre` ; pas de correspondance évidente pour « Ouverture », « Presentation courte », « Temoignage », « Table ronde », « Cloture » (candidats possibles : `information` ou `autre`, à trancher). Les lignes `Aucune animation` (V-06, S-06 — pause déjeuner) **ne sont pas des entrées de programme publiables** : le schéma n'a pas de notion de créneau vide, ces lignes ne doivent jamais devenir un fichier dans `src/content/programme/` |
+| `titre_provisoire` | `titre` (obligatoire) | **à valider avant publication** — ce sont des titres de travail |
+| *(absent du CSV)* | `accroche` (**obligatoire**) | aucune colonne du CSV ne fournit de phrase d'accroche courte ; à rédiger séparément, ne pas la déduire automatiquement de `objectif` |
+| `objectif` | `description` (obligatoire) | à reformuler pour un public visiteur — `objectif` est une note de travail interne, pas un texte éditorial |
+| `public_principal` | `publics` (**tableau** de chaînes — le champ s'appelle `publics`, pas `public`) | découper la chaîne CSV (séparée par des virgules) en liste YAML, un public par ligne |
+| `profil_intervenant_recherche` | — | ne correspond à **aucun champ** du schéma : `intervenants` attend des personnes confirmées (`nom` obligatoire, `fonction`/`organisme` optionnels), pas un profil recherché. Reste un document de travail interne tant qu'aucun nom n'est confirmé (cf. section 9 du présent document et `PROGRAMME_POINTS_A_VALIDER.md`) |
+| `organisateur_pressenti` | `organisateur` (optionnel) | ne publier que si le nom est confirmé ; ne jamais publier une valeur « A IDENTIFIER » ou un statut pressenti |
+| `espace_a_confirmer` | `lieu` (optionnel) | ne publier que si confirmé ; ne jamais publier la valeur littérale « A CONFIRMER » |
+| `besoins_techniques` | — | aucun champ correspondant dans le schéma ; reste un document de travail interne (logistique), jamais publié |
+| `inscription_envisagee` | `inscription_requise` (booléen, défaut `false`) | transformation texte → booléen ; la valeur « A ARBITRER » ne peut pas être publiée telle quelle et doit rester `false` tant que l'arbitrage n'a pas eu lieu (section 7, point 6). Le champ `lien_inscription` n'a **aucun équivalent dans le CSV** et devra être ajouté manuellement une fois l'arbitrage rendu |
+| `capacite_limitee` | `capacite_limitee` (booléen, défaut `false`) | même nom de champ que la colonne CSV, mais transformation texte → booléen nécessaire (« Non » → `false`, « A ARBITRER » → reste `false` tant que non tranché) — cette correspondance était absente de la version précédente de ce tableau |
+| `priorite` | — | aucun champ correspondant dans le schéma ; sert uniquement au pilotage interne (indispensable / recommandé / optionnel), n'est pas publié tel quel. Ne pas confondre avec `ordre`, qui départage deux entrées à la même heure et n'a pas la même sémantique |
+| `statut` | `publie` (booléen, défaut `false`) | aucune valeur actuelle du CSV (« A confirmer » / « A arbitrer ») ne justifie `publie: true` ; voir les conditions strictes en 10.3 avant tout passage à `true` |
+| `commentaires` | — | usage interne, **ne jamais publier** |
 
 ### 10.3 Conditions impératives avant `publie: true`
 
