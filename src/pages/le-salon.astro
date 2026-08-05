@@ -146,20 +146,39 @@ const infosPratiques = [
         </li>
       </ul>
 
-      <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+      <!--
+        Hiérarchie des CTA : les deux univers du salon priment (c'est l'objet
+        de cette page), « Préparer ma visite » reste accessible mais en lien
+        secondaire discret plutôt qu'en bouton, pour ne pas concurrencer les
+        deux boutons de découverte. Le libellé du Village s'allège sous sm
+        (bascule de largeur des boutons, colonne → ligne) pour ne jamais
+        forcer un retour à la ligne disgracieux.
+      -->
+      <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <a
-          href="/preparer-ma-visite"
-          class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+          href="/exposants"
+          class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 text-center font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
         >
-          Préparer ma visite
+          Découvrir le Hall Emploi-Formation
         </a>
         <a
           href="/village"
-          class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
+          class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 text-center font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
         >
-          Découvrir le Village
+          <span class="sm:hidden">Découvrir le Village Maintenance</span>
+          <span class="hidden sm:inline">Découvrir le Village Maintenance &amp; Industrie</span>
         </a>
       </div>
+
+      <a
+        href="/preparer-ma-visite"
+        class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brume underline decoration-brume/40 underline-offset-4 transition-colors hover:text-blanc hover:decoration-blanc"
+      >
+        Préparer ma visite
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
     </div>
   </section>
 
@@ -241,7 +260,7 @@ const infosPratiques = [
               href="/exposants"
               class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-marine px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
             >
-              Découvrir les exposants
+              Découvrir le Hall Emploi-Formation
             </a>
           </div>
           <Visuel
