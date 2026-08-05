@@ -2,10 +2,7 @@
 
 > Constitution du projet pour Claude Code. À lire au début de **chaque** session.
 > Objectif de ce fichier : garder le cap, éviter le sur-engineering, tenir le périmètre V1.
-> v2 — intègre les corrections ChatGPT + arbitrages Philippe du 04/08/2026.
-> v3 — 05/08/2026 : Web3Forms validé comme fournisseur de formulaire pour la V1 (voir section 4) ; Lot 2 terminé et validé techniquement ; Lot 3 (Le salon + Village) en cours.
-> v4 — 05/08/2026 : Lot 3 terminé et validé (correction des CTA du hero `/le-salon` incluse) ; Lot 4 (Annuaire des exposants) en cours. Aucun exposant n'est encore confirmé ou publié dans le dépôt — aucune entreprise, institution ou organisme de formation ne doit être inventé. Les données exposants sont gérées par une Content Collection Astro statique (fichiers de données locaux, pas de base de données). Lots 5 et 6 non commencés.
-> v5 — 05/08/2026 : Lot 4 (Annuaire des exposants) terminé et validé. Lot 5 (Programme) en cours. Aucun programme détaillé n'est encore confirmé — aucune conférence, démonstration, animation, intervention ou horaire ne doit être inventé. Les données du programme sont gérées par une Content Collection Astro statique (fichiers de données locaux, pas de base de données), sur le même principe que la collection exposants. Lot 6 non commencé.
+> v3 — intègre les corrections ChatGPT + arbitrages Philippe du 04/08/2026 + workflow CI/CD du 06/08/2026.
 
 ---
 
@@ -48,7 +45,7 @@ Le site doit être **réutilisable pour les éditions futures**.
 
 **Nom de domaine validé (04/08/2026) : `salonemploi.nc`.** URL canonique : `https://www.salonemploi.nc` (voir note technique section 4 sur la cohérence www/apex). Le site n'est plus hébergé en sous-domaine de nounou.nc — ce nom de domaine est définitif dès la V1.
 
-**Fournisseur de formulaire : décision prise (05/08/2026) — Web3Forms retenu pour la V1.** Les formulaires exposant et visiteur du Lot 2 ont été testés avec succès en local (envoi + confirmation). La clé d'accès réelle est stockée uniquement dans `.env` local (jamais commitée — `.env` est ignoré par Git, voir `.env.example` pour le format attendu) et ne doit jamais être recopiée dans ce fichier ni ailleurs dans le dépôt.
+**Fournisseur de formulaire retenu (04/08/2026) : Web3Forms.** Choisi pour son quota gratuit plus généreux, l'absence de branding sur les emails, et une meilleure adéquation à un usage en pic ponctuel (période de commercialisation des stands) plutôt qu'un flux régulier. Le Lot 2 peut démarrer.
 
 ---
 
@@ -57,13 +54,25 @@ Le site doit être **réutilisable pour les éditions futures**.
 - **Astro** (dernière version stable), sortie **statique** (`output: 'static'`).
 - **Tailwind CSS v4** pour le style, via le plugin officiel `@tailwindcss/vite` (méthode actuelle recommandée — `@astrojs/tailwind` est dépréciée pour Tailwind v4, ne pas la réintroduire). Configuration **CSS-first** : les tokens vivent dans `src/styles/global.css` via la directive `@theme`, pas dans un fichier `tailwind.config.js`.
 - **React en îlots** UNIQUEMENT pour les briques réellement interactives (filtre exposants, filtre programme). Le reste reste statique. Ne pas transformer le site en SPA.
-- **Formulaires (V1)** : **Web3Forms**, validé par Philippe le 05/08/2026. La clé d'accès vit uniquement dans `.env` local (jamais dans Git). Formulaires exposant et visiteur fonctionnels et testés en local (Lot 2). **Pas de Supabase, pas de base de données en V1.**
+- **Formulaires (V1)** : **Web3Forms** (retenu le 04/08/2026 — voir section 3bis). **Pas de Supabase, pas de base de données en V1.**
 - **Contenus dynamiques** (exposants, programme) : **Astro Content Collections** (fichiers de données), pas de base.
 - **CMS d'édition** : aucun au départ (édition à la main des fichiers de contenu). Keystatic sera ajouté plus tard, dans un lot dédié (Lot 7).
 - **Node** : 20 LTS ou 22.
 - **Hébergement cible** : OVH, en fichiers statiques (dépôt du dossier `dist/`).
 - **Domaine — cohérence www/apex** : décider si `www.salonemploi.nc` ou `salonemploi.nc` (sans www) est la version canonique, et configurer une redirection 301 systématique de l'autre vers celle-ci. Sans ça, Google peut indexer les deux versions séparément et diluer le référencement. Choix par défaut proposé : `www.salonemploi.nc` (cohérent avec le prompt Lot 0 déjà rédigé) — à confirmer par Philippe lors de la configuration DNS/hébergement, pas bloquant pour le Lot 0 en local.
-- **Environnement de prévisualisation** : chaque lot doit produire une version consultable sans toucher au serveur de production — exécution locale (`astro dev`) clairement documentée dans le compte rendu de fin de session, ou déploiement sur un sous-domaine de test. La mise en production OVH n'intervient qu'après validation des lots 0 à 3.
+- **Environnement de prévisualisation** : chaque lot doit produire une version consultable sans toucher au serveur de production.
+
+**Workflow de déploiement (décision du 06/08/2026 — méthode alignée sur l'écosystème nounou) :**
+1. Développement sur une branche dédiée, PR ouverte vers `main`.
+2. Un contrôle automatique (`.github/workflows/pr-check.yml`) vérifie que `npm run build` réussit sur la PR — la fusion est bloquée si le build échoue (protection de branche activée sur `main`).
+3. **Fusion directe une fois le contrôle vert**, sans attendre de recette visuelle préalable sur la préproduction.
+4. La fusion sur `main` déclenche **automatiquement** le déploiement sur la préprod (`.github/workflows/deploy-preprod.yml`) — build + transfert FTP vers `/salon-emploi-preprod`, sans action manuelle.
+5. La recette visuelle se fait **après** la fusion, directement sur `https://preprod.salonemploinc.com`.
+6. Si un problème est détecté : nouvelle branche de correctif, même cycle (PR → contrôle → fusion → déploiement auto).
+7. Après chaque fusion, mettre le dépôt local à jour (`git switch main && git pull origin main`) pour rester synchrone — cette synchronisation n'a aucun effet sur ce qui est déployé.
+8. Le passage en production reste **strictement manuel** : déclenchement du workflow `.github/workflows/deploy-production.yml` depuis l'onglet Actions, uniquement quand `main` est validé sur la préprod.
+
+Les secrets (clé Web3Forms, identifiants FTP, `PUBLIC_SITE_URL`, `PUBLIC_NOINDEX`) vivent exclusivement dans les environnements GitHub `preprod` et `production` (Settings → Environments) — jamais dans le code, un commit, ou un fichier de documentation.
 - **Versionnement** : Git, un commit propre après chaque lot.
 
 ### Ce qu'on NE fait PAS (garde-fous anti-usine-à-gaz)
@@ -89,6 +98,8 @@ Valeurs de départ **à confirmer par Philippe** — définies comme tokens dans
 | Texte principal | `encre` | `#1A2233` |
 
 Principes visuels : **mobile-first**, grands titres, interface claire et aérée, photos de personnes et de gestes professionnels concrets. **Distinction visuelle nette** entre Hall Emploi-Formation (marine/orange) et Village Maintenance & Industrie (accent `village`).
+
+**Typographie (décision du 04/08/2026)** : intégrer une police condensée sans serif (type Barlow Condensed), **auto-hébergée** (pas de CDN tiers), pour coller au caractère événementiel identifié sur la planche de référence. Remplace la pile système actuelle sur les titres au minimum.
 
 Le mockup de direction artistique fourni par Philippe (aperçu des 7 pages) sert de **référence d'inspiration** pour la hiérarchie visuelle et la densité d'information — pas de gabarit à reproduire pixel pour pixel. Il ne remplace pas les tokens ci-dessus, qu'il faut respecter.
 
@@ -160,56 +171,28 @@ Critères de validation :
 - [ ] Responsive vérifié mobile + desktop.
 - [ ] Aucun logo de partenaire non confirmé affiché.
 
-### Lot 2 — Exposer/Contact (débloque la commercialisation) — ✅ TERMINÉ ET VALIDÉ (05/08/2026)
-Pré-requis : fournisseur de formulaire choisi et validé (section 4). ✅ Web3Forms.
+### Lot 2 — Exposer/Contact (débloque la commercialisation)
+Pré-requis : fournisseur de formulaire choisi et validé (section 4).
 Contenu : bénéfices exposants, formules, dossier PDF téléchargeable, formulaire fonctionnel (visiteur + exposant), page de confirmation.
 
 Critères de validation :
-- [x] Le formulaire envoie effectivement un email et affiche une confirmation (testé en local, formulaires exposant et visiteur).
-- [x] Le dossier exposant PDF est téléchargeable (ou placeholder si non fourni — à signaler explicitement).
-- [x] Aucune information tarifaire non confirmée n'est publiée en dur.
+- [ ] Le formulaire envoie effectivement un email et affiche une confirmation.
+- [ ] Le dossier exposant PDF est téléchargeable (ou placeholder si non fourni — à signaler explicitement).
+- [ ] Aucune information tarifaire non confirmée n'est publiée en dur.
 
-### Lot 3 — Le salon + Village — ✅ TERMINÉ ET VALIDÉ (05/08/2026)
+### Lot 3 — Le salon + Village
 Contenu réel, distinction visuelle nette entre les deux univers.
 
 Critères de validation :
-- [x] Contenu réel intégré.
-- [x] Contrôle mobile complet sur les deux pages.
-- [x] Mention AMD conforme à la clause de la section 2 (aucune mention de l'AMD sur les deux pages).
+- [ ] Contenu réel intégré.
+- [ ] Contrôle mobile complet sur les deux pages.
+- [ ] Mention AMD conforme à la clause de la section 2.
 
 **→ MISE EN LIGNE V1 possible à ce stade.**
 
-### Lot 4 — Exposants (Content Collection + filtres) — ✅ TERMINÉ ET VALIDÉ (05/08/2026)
-Contenu : annuaire `/exposants` (recherche, filtres, tri, état vide qualitatif), fiches individuelles `/exposants/[slug]`, Content Collection `exposants` typée, documentation `docs/EXPOSANTS.md` pour l'ajout des futurs exposants.
-
-**Aucun exposant n'est confirmé à ce stade.** Aucune entreprise, institution, organisme de formation ou structure d'accompagnement ne doit être inventée ni publiée dans le dépôt final. Le lot doit fonctionner correctement — y compris son état vide — sans aucune fiche exposant réelle.
-
-Critères de validation :
-- [x] Collection `exposants` typée (Content Collection Astro, fichiers de données statiques — pas de base de données).
-- [x] Documentation `docs/EXPOSANTS.md` créée et à jour.
-- [x] Page `/exposants` complète (hero, compteur, recherche/filtres, grille, état vide, bloc commercial final).
-- [x] État vide qualitatif tant qu'aucun exposant n'est publié.
-- [x] Fiches individuelles `/exposants/[slug]` fonctionnelles, fiches `publie: false` exclues du build public.
-- [x] Aucun exposant fictif dans le dépôt final (données de test supprimées avant commit).
-- [x] Distinction visuelle Hall / Village respectée.
-- [x] Build (`npm run build`) sans erreur.
-
-### Lot 5 — Programme (Content Collection + filtres) — 🚧 EN COURS (05/08/2026)
-Contenu : page `/programme` (affichage par journée, filtres, recherche, état vide qualitatif), fiches individuelles `/programme/[slug]`, Content Collection `programme` typée, documentation `docs/PROGRAMME.md` pour l'ajout des futurs éléments de programme.
-
-**Aucun programme détaillé n'est confirmé à ce stade.** Aucune conférence, démonstration, atelier, animation, intervention, intervenant ou horaire ne doit être inventé ni publié dans le dépôt final. Le lot doit fonctionner correctement — y compris son état vide — sans aucune entrée de programme réelle.
-
-Critères de validation :
-- [ ] Collection `programme` typée (Content Collection Astro, fichiers de données statiques — pas de base de données).
-- [ ] Documentation `docs/PROGRAMME.md` créée et à jour.
-- [ ] Page `/programme` complète (hero, affichage par journée, recherche/filtres, cartes, état vide, bloc final).
-- [ ] État vide qualitatif tant qu'aucune entrée de programme n'est publiée.
-- [ ] Fiches individuelles `/programme/[slug]` fonctionnelles, entrées `publie: false` exclues du build public.
-- [ ] Aucune entrée de programme fictive dans le dépôt final (données de test supprimées avant commit).
-- [ ] Distinction visuelle Hall / Village / Transversal respectée.
-- [ ] Build (`npm run build`) sans erreur.
-
-### Lot 6 — Préparer ma visite — non commencé
+### Lot 4 — Exposants (Content Collection + filtres)
+### Lot 5 — Programme (Content Collection + filtres)
+### Lot 6 — Préparer ma visite
 ### Lot 7 (plus tard) — intégration du CMS d'édition (Keystatic)
 
 ---
@@ -240,6 +223,7 @@ Exception : le **Lot 0** reste volontairement en placeholders génériques, puis
 - Accessibilité : structure sémantique (`header`, `main`, `nav`, `footer`), contrastes suffisants, navigation clavier.
 - Responsive systématique, pensé mobile d'abord.
 - Textes en **français**.
+- **Contraste sur fond `village` (vert)** : le corps de texte doit être en `encre`/`marine`, jamais en blanc — le blanc sur `village` tombe sous le seuil d'accessibilité (testé à 3,2:1, sous le minimum WCAG AA de 4,5:1). Le blanc reste acceptable uniquement pour de grands titres à fort corps. Écart assumé par rapport à la planche de référence, documenté ici pour ne pas être réintroduit par erreur dans un futur lot.
 
 ---
 
@@ -249,7 +233,8 @@ Exception : le **Lot 0** reste volontairement en placeholders génériques, puis
 - `git commit` propre à la fin de chaque lot, message explicite.
 - `/clear` entre deux lots, `/compact` si la session s'allonge.
 - **Sonnet par défaut.** Opus réservé à l'architecture initiale ou aux blocages difficiles réels et identifiés (vérifier `/usage` avant une session Opus sur Pro, le pool est partagé). Haiku possible pour les tâches répétitives (reformatage de données).
-- À la fin de chaque session : compte rendu court avec (a) les critères de validation cochés/non cochés du lot, (b) les `{{À COMPLÉTER}}` restants, (c) le lien/commande de prévisualisation, (d) la prochaine étape suggérée.
+- **Pull Request automatique (décision du 04/08/2026) : à la fin de chaque lot, après le commit et le push, ouvrir systématiquement une Pull Request vers `main` sans attendre que Philippe le demande.** Ne pas fusionner soi-même — la fusion reste une décision de Philippe après relecture — mais l'ouverture de la PR ne doit plus dépendre d'une demande explicite.
+- À la fin de chaque session : compte rendu court avec (a) les critères de validation cochés/non cochés du lot, (b) les `{{À COMPLÉTER}}` restants, (c) le lien/commande de prévisualisation, (d) **le lien de la Pull Request ouverte**, (e) la prochaine étape suggérée.
 
 ---
 
