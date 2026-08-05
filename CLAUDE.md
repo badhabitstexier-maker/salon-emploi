@@ -5,6 +5,7 @@
 > v2 — intègre les corrections ChatGPT + arbitrages Philippe du 04/08/2026.
 > v3 — 05/08/2026 : Web3Forms validé comme fournisseur de formulaire pour la V1 (voir section 4) ; Lot 2 terminé et validé techniquement ; Lot 3 (Le salon + Village) en cours.
 > v4 — 05/08/2026 : Lot 3 terminé et validé (correction des CTA du hero `/le-salon` incluse) ; Lot 4 (Annuaire des exposants) en cours. Aucun exposant n'est encore confirmé ou publié dans le dépôt — aucune entreprise, institution ou organisme de formation ne doit être inventé. Les données exposants sont gérées par une Content Collection Astro statique (fichiers de données locaux, pas de base de données). Lots 5 et 6 non commencés.
+> v5 — 05/08/2026 : Lot 4 (Annuaire des exposants) terminé et validé. Lot 5 (Programme) en cours. Aucun programme détaillé n'est encore confirmé — aucune conférence, démonstration, animation, intervention ou horaire ne doit être inventé. Les données du programme sont gérées par une Content Collection Astro statique (fichiers de données locaux, pas de base de données), sur le même principe que la collection exposants. Lot 6 non commencé.
 
 ---
 
@@ -178,22 +179,36 @@ Critères de validation :
 
 **→ MISE EN LIGNE V1 possible à ce stade.**
 
-### Lot 4 — Exposants (Content Collection + filtres) — 🚧 EN COURS (05/08/2026)
+### Lot 4 — Exposants (Content Collection + filtres) — ✅ TERMINÉ ET VALIDÉ (05/08/2026)
 Contenu : annuaire `/exposants` (recherche, filtres, tri, état vide qualitatif), fiches individuelles `/exposants/[slug]`, Content Collection `exposants` typée, documentation `docs/EXPOSANTS.md` pour l'ajout des futurs exposants.
 
 **Aucun exposant n'est confirmé à ce stade.** Aucune entreprise, institution, organisme de formation ou structure d'accompagnement ne doit être inventée ni publiée dans le dépôt final. Le lot doit fonctionner correctement — y compris son état vide — sans aucune fiche exposant réelle.
 
 Critères de validation :
-- [ ] Collection `exposants` typée (Content Collection Astro, fichiers de données statiques — pas de base de données).
-- [ ] Documentation `docs/EXPOSANTS.md` créée et à jour.
-- [ ] Page `/exposants` complète (hero, compteur, recherche/filtres, grille, état vide, bloc commercial final).
-- [ ] État vide qualitatif tant qu'aucun exposant n'est publié.
-- [ ] Fiches individuelles `/exposants/[slug]` fonctionnelles, fiches `publie: false` exclues du build public.
-- [ ] Aucun exposant fictif dans le dépôt final (données de test supprimées avant commit).
-- [ ] Distinction visuelle Hall / Village respectée.
+- [x] Collection `exposants` typée (Content Collection Astro, fichiers de données statiques — pas de base de données).
+- [x] Documentation `docs/EXPOSANTS.md` créée et à jour.
+- [x] Page `/exposants` complète (hero, compteur, recherche/filtres, grille, état vide, bloc commercial final).
+- [x] État vide qualitatif tant qu'aucun exposant n'est publié.
+- [x] Fiches individuelles `/exposants/[slug]` fonctionnelles, fiches `publie: false` exclues du build public.
+- [x] Aucun exposant fictif dans le dépôt final (données de test supprimées avant commit).
+- [x] Distinction visuelle Hall / Village respectée.
+- [x] Build (`npm run build`) sans erreur.
+
+### Lot 5 — Programme (Content Collection + filtres) — 🚧 EN COURS (05/08/2026)
+Contenu : page `/programme` (affichage par journée, filtres, recherche, état vide qualitatif), fiches individuelles `/programme/[slug]`, Content Collection `programme` typée, documentation `docs/PROGRAMME.md` pour l'ajout des futurs éléments de programme.
+
+**Aucun programme détaillé n'est confirmé à ce stade.** Aucune conférence, démonstration, atelier, animation, intervention, intervenant ou horaire ne doit être inventé ni publié dans le dépôt final. Le lot doit fonctionner correctement — y compris son état vide — sans aucune entrée de programme réelle.
+
+Critères de validation :
+- [ ] Collection `programme` typée (Content Collection Astro, fichiers de données statiques — pas de base de données).
+- [ ] Documentation `docs/PROGRAMME.md` créée et à jour.
+- [ ] Page `/programme` complète (hero, affichage par journée, recherche/filtres, cartes, état vide, bloc final).
+- [ ] État vide qualitatif tant qu'aucune entrée de programme n'est publiée.
+- [ ] Fiches individuelles `/programme/[slug]` fonctionnelles, entrées `publie: false` exclues du build public.
+- [ ] Aucune entrée de programme fictive dans le dépôt final (données de test supprimées avant commit).
+- [ ] Distinction visuelle Hall / Village / Transversal respectée.
 - [ ] Build (`npm run build`) sans erreur.
 
-### Lot 5 — Programme (Content Collection + filtres) — non commencé
 ### Lot 6 — Préparer ma visite — non commencé
 ### Lot 7 (plus tard) — intégration du CMS d'édition (Keystatic)
 

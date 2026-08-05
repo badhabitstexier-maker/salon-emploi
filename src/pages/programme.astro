@@ -1,15 +1,328 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ProgrammeCard from '../components/ProgrammeCard.astro';
+import {
+  getProgrammePublie,
+  trierProgramme,
+  publicsDisponibles,
+  universLabels,
+  typeLabels,
+  journeeLabels,
+  journees,
+} from '../lib/programme';
+
+const items = trierProgramme(await getProgrammePublie());
+const total = items.length;
+
+const itemsParJour = journees.map((date) => ({
+  date,
+  label: journeeLabels[date],
+  items: items.filter((item) => item.data.date === date),
+}));
+
+const publics = publicsDisponibles(items);
+
+const infosSalon = [
+  'Vendredi 30 octobre 2026',
+  'Samedi 31 octobre 2026',
+  'Salle d’exposition de Nouville',
+  'Entrée gratuite',
+];
 ---
 
 <BaseLayout
   title="Programme"
-  description="Le programme du Salon de l'Emploi & de la Formation 2026, jour par jour, sera disponible prochainement."
+  description="Consultez le programme du Salon de l'Emploi & de la Formation 2026, les 30 et 31 octobre à Nouville, Nouméa."
 >
-  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-    <h1 class="text-3xl font-bold text-marine sm:text-4xl">Programme</h1>
-    <p class="mt-6 max-w-2xl text-encre">
-      {'{{À COMPLÉTER : programme par jour — contenu du Lot 5}}'}
-    </p>
+  <!-- ============================== HERO ============================== -->
+  <section class="bg-marine text-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-20">
+      <p class="text-xs font-bold uppercase tracking-widest text-orange">Programme</p>
+      <h1 class="mt-3 max-w-3xl font-titre text-4xl font-bold uppercase leading-none sm:text-5xl xl:text-6xl">
+        Deux jours pour découvrir, comprendre et échanger
+      </h1>
+
+      <p class="mt-6 max-w-2xl text-base text-brume sm:text-lg">
+        Le programme du Salon de l'Emploi & de la Formation réunira des temps d'information, de
+        découverte et d'échange autour de l'emploi, de la formation et des métiers.
+      </p>
+      <p class="mt-4 max-w-2xl text-sm italic text-brume/80">
+        Les horaires et les contenus seront publiés progressivement à l'approche de l'événement.
+      </p>
+
+      <ul class="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-semibold uppercase tracking-wide text-brume sm:flex sm:flex-wrap sm:gap-x-8">
+        {
+          infosSalon.map((info) => (
+            <li class="flex items-center gap-2">
+              <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true" />
+              {info}
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+        <a
+          href="/preparer-ma-visite"
+          class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 text-center font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+        >
+          Préparer ma visite
+        </a>
+        <a
+          href="/exposants"
+          class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 text-center font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
+        >
+          Découvrir les exposants
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {
+    total > 0 ? (
+      <section class="bg-blanc">
+        <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
+          <!-- ========================= NAVIGATION JOURS ========================= -->
+          <nav aria-label="Aller à une journée" class="flex flex-wrap gap-3">
+            {itemsParJour.map((jour) => (
+              <a
+                href={`#jour-${jour.date}`}
+                class="rounded-md border-2 border-marine px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
+              >
+                {jour.label} <span class="font-sans text-xs font-semibold normal-case tracking-normal">({jour.items.length})</span>
+              </a>
+            ))}
+          </nav>
+
+          <!-- ==================== RECHERCHE ET FILTRES ==================== -->
+          <form id="filtres-programme" class="mt-6 rounded-2xl border border-marine/15 bg-brume p-5 sm:p-6">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div class="lg:col-span-2">
+                <label for="recherche-programme" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                  Rechercher
+                </label>
+                <input
+                  id="recherche-programme"
+                  name="recherche"
+                  type="search"
+                  placeholder="Titre, thème, intervenant…"
+                  class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+                />
+              </div>
+
+              <div>
+                <label for="filtre-jour" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                  Journée
+                </label>
+                <select
+                  id="filtre-jour"
+                  name="jour"
+                  class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+                >
+                  <option value="">Toutes</option>
+                  {itemsParJour.map((jour) => (
+                    <option value={jour.date}>{jour.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label for="filtre-univers" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                  Univers
+                </label>
+                <select
+                  id="filtre-univers"
+                  name="univers"
+                  class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+                >
+                  <option value="">Tous</option>
+                  <option value="hall">{universLabels.hall}</option>
+                  <option value="village">{universLabels.village}</option>
+                  <option value="transversal">{universLabels.transversal}</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="filtre-type" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                  Type
+                </label>
+                <select
+                  id="filtre-type"
+                  name="type"
+                  class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+                >
+                  <option value="">Tous</option>
+                  {Object.entries(typeLabels).map(([valeur, label]) => (
+                    <option value={valeur}>{label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {publics.length > 0 && (
+                <div>
+                  <label for="filtre-public" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                    Public
+                  </label>
+                  <select
+                    id="filtre-public"
+                    name="public"
+                    class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+                  >
+                    <option value="">Tous</option>
+                    {publics.map((public_) => (
+                      <option value={public_}>{public_}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <p id="resultats-compte" class="text-sm font-semibold text-marine" aria-live="polite">
+                {total} {total > 1 ? 'résultats' : 'résultat'}
+              </p>
+              <button
+                type="reset"
+                id="reinitialiser-filtres"
+                class="rounded-md border border-marine/30 px-4 py-2 text-sm font-semibold text-marine transition-colors hover:bg-marine hover:text-blanc"
+              >
+                Réinitialiser les filtres
+              </button>
+            </div>
+          </form>
+
+          <p id="aucun-resultat" class="mt-8 hidden rounded-2xl border border-marine/15 bg-brume p-8 text-center text-sm text-encre">
+            Aucun temps fort ne correspond à votre recherche. Essayez d'autres mots-clés ou
+            réinitialisez les filtres.
+          </p>
+
+          <!-- ========================= JOURNÉES ========================= -->
+          {itemsParJour.map((jour) => (
+            <div id={`jour-${jour.date}`} data-jour-wrapper data-date={jour.date} class="mt-12 scroll-mt-24">
+              <h2 class="font-titre text-2xl font-bold uppercase text-marine sm:text-3xl">{jour.label} 2026</h2>
+              {jour.items.length > 0 ? (
+                <div data-grille-jour class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {jour.items.map((item) => <ProgrammeCard item={item} />)}
+                </div>
+              ) : (
+                <p class="mt-4 text-sm text-encre/70">
+                  Aucun temps fort publié pour cette journée pour l'instant.
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <script>
+          const form = document.getElementById('filtres-programme') as HTMLFormElement | null;
+          const compte = document.getElementById('resultats-compte');
+          const aucunResultat = document.getElementById('aucun-resultat');
+          const champRecherche = document.getElementById('recherche-programme') as HTMLInputElement | null;
+          const joursWrappers = Array.from(document.querySelectorAll<HTMLElement>('[data-jour-wrapper]'));
+
+          if (form && compte && aucunResultat) {
+            const cartes = Array.from(document.querySelectorAll<HTMLElement>('[data-programme-card]'));
+
+            const normaliser = (valeur: string) =>
+              valeur
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+
+            const appliquerFiltres = () => {
+              const donnees = new FormData(form);
+              const recherche = normaliser(String(donnees.get('recherche') ?? '').trim());
+              const jour = String(donnees.get('jour') ?? '');
+              const univers = String(donnees.get('univers') ?? '');
+              const type = String(donnees.get('type') ?? '');
+              const public_ = String(donnees.get('public') ?? '');
+
+              let visibles = 0;
+
+              for (const carte of cartes) {
+                const matchRecherche = !recherche || (carte.dataset.search ?? '').includes(recherche);
+                const matchJour = !jour || carte.dataset.date === jour;
+                const matchUnivers = !univers || carte.dataset.univers === univers;
+                const matchType = !type || carte.dataset.type === type;
+                const publicsCarte = (carte.dataset.publics ?? '').split('|');
+                const matchPublic = !public_ || publicsCarte.includes(public_);
+
+                const visible = matchRecherche && matchJour && matchUnivers && matchType && matchPublic;
+                carte.classList.toggle('hidden', !visible);
+                if (visible) visibles += 1;
+              }
+
+              for (const wrapper of joursWrappers) {
+                const cartesWrapper = wrapper.querySelectorAll<HTMLElement>('[data-programme-card]');
+                const visiblesWrapper = Array.from(cartesWrapper).filter((c) => !c.classList.contains('hidden'));
+                const aDesCartes = cartesWrapper.length > 0;
+                wrapper.classList.toggle('hidden', aDesCartes && visiblesWrapper.length === 0);
+              }
+
+              compte.textContent = `${visibles} ${visibles > 1 || visibles === 0 ? 'résultats' : 'résultat'}`;
+              aucunResultat.classList.toggle('hidden', visibles !== 0);
+            };
+
+            form.addEventListener('input', appliquerFiltres);
+            form.addEventListener('change', appliquerFiltres);
+            form.addEventListener('reset', () => {
+              window.setTimeout(appliquerFiltres, 0);
+              champRecherche?.focus();
+            });
+
+            appliquerFiltres();
+          }
+        </script>
+      </section>
+    ) : (
+      <section class="bg-blanc">
+        <div class="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6 lg:py-20">
+          <h2 class="font-titre text-2xl font-bold uppercase text-marine sm:text-3xl">
+            Le programme sera publié prochainement
+          </h2>
+          <p class="mt-4 text-encre">
+            Les horaires, rencontres et temps forts seront ajoutés progressivement à l'approche du
+            salon.
+          </p>
+          <p class="mt-2 text-encre">
+            Vous pourrez bientôt consulter le programme des deux journées et préparer votre
+            parcours de visite.
+          </p>
+          <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <a
+              href="/exposants"
+              class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+            >
+              Découvrir les exposants
+            </a>
+            <a
+              href="/le-salon"
+              class="inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
+            >
+              Découvrir le salon
+            </a>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- ======================= BLOC FINAL ======================= -->
+  <section class="border-t border-marine/10 bg-marine text-blanc">
+    <div class="mx-auto max-w-4xl px-4 py-14 text-center sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase sm:text-4xl">Organisez votre venue</h2>
+      <p class="mx-auto mt-4 max-w-2xl text-base text-brume sm:text-lg">
+        Retrouvez prochainement toutes les informations utiles pour préparer votre visite au
+        salon.
+      </p>
+      <div class="mt-8">
+        <a
+          href="/preparer-ma-visite"
+          class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+        >
+          Préparer ma visite
+        </a>
+      </div>
+    </div>
   </section>
 </BaseLayout>
