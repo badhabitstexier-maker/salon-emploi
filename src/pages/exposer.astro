@@ -923,20 +923,14 @@ const labelClass = 'block text-sm font-semibold text-marine';
           />
           <span class="text-sm font-semibold text-marine">{packCommercial.label}</span>
         </span>
-        {
-          packCommercial.disponible ? (
-            <a
-              href={packCommercial.href}
-              class="flex-shrink-0 text-sm font-bold uppercase tracking-wide text-village-dark hover:underline"
-            >
-              Télécharger
-            </a>
-          ) : (
-            <span class="flex-shrink-0 text-xs font-semibold uppercase tracking-wide text-encre/40">
-              Bientôt disponible
-            </span>
-          )
-        }
+        <a
+          href="/documents/Pack_commercial_exposants_2026.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex-shrink-0 text-sm font-bold uppercase tracking-wide text-village-dark hover:underline"
+        >
+          Télécharger
+        </a>
       </div>
     </div>
   </section>
