@@ -16,109 +16,189 @@ const redirectExposant = new URL('/merci?type=exposant', Astro.site).toString();
 const redirectVisiteur = new URL('/merci?type=visiteur', Astro.site).toString();
 
 /*
-  Documents exposants — Lot 2, section 5 du CLAUDE.md : ne jamais inventer de
-  fichier. La disponibilité est vérifiée sur disque au build (même logique que
-  `Visuel.astro`), pour qu'un simple dépôt de PDF au bon chemin suffise à
-  activer le lien, sans toucher au code.
+  Pack commercial exposants 2026 — offre 2026, section 8 de la demande de
+  mise à jour. Ne jamais inventer de fichier : la disponibilité est vérifiée
+  sur disque au build (même logique que `Visuel.astro`), pour qu'un simple
+  dépôt de PDF au bon chemin suffise à activer le lien, sans toucher au code.
 */
-const documentsExposants = [
-  { label: 'Dossier exposant 2026', href: '/documents/dossier-exposant-2026.pdf' },
-  { label: 'Grille tarifaire', href: '/documents/grille-tarifaire-2026.pdf' },
-  { label: 'Plan provisoire du salon', href: '/documents/plan-salon-2026.pdf' },
-  { label: 'Conditions de participation', href: '/documents/conditions-participation-2026.pdf' },
-  { label: 'Notice technique', href: '/documents/notice-technique-2026.pdf' },
-].map((doc) => ({
-  ...doc,
-  disponible: fs.existsSync(path.join(process.cwd(), 'public', doc.href.replace(/^\//, ''))),
-}));
+const packCommercial = {
+  label: 'Pack commercial exposants 2026',
+  href: '/documents/pack-commercial-exposants-2026.pdf',
+  disponible: fs.existsSync(
+    path.join(process.cwd(), 'public', 'documents/pack-commercial-exposants-2026.pdf'),
+  ),
+};
 
-const dossierExposant = documentsExposants[0];
+const chiffresCles = [
+  { value: '12', unite: 'Éditions', label: 'depuis 2010' },
+  { value: '3 000', unite: 'Visiteurs', label: 'attendus (environ)' },
+  { value: '2', unite: 'Jours', label: 'de rencontres' },
+  { value: '37', unite: 'Emplacements', label: 'commercialisés' },
+  { value: '100 %', unite: 'Gratuit', label: 'entrée visiteurs' },
+];
 
-const benefices = [
+const raisons = [
   {
     verbe: 'Rencontrer',
-    complement: 'des candidats et des publics ciblés',
+    complement: 'vos futurs collaborateurs',
+    texte: 'Échangez en direct avec des candidats motivés et présentez vos opportunités de recrutement.',
     icone: `<circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path stroke-linecap="round" d="M2.5 20a5.5 5.5 0 0 1 11 0M14.5 20a4.2 4.2 0 0 1 7-3.1" />`,
   },
   {
-    verbe: 'Recruter',
-    complement: 'et présenter vos opportunités',
-    icone: `<rect x="3" y="7.5" width="18" height="12" rx="1.8" /><path stroke-linecap="round" stroke-linejoin="round" d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5" /><path stroke-linecap="round" d="M3 13h18" />`,
-  },
-  {
-    verbe: 'Présenter',
-    complement: 'vos formations et vos métiers',
-    icone: `<rect x="3" y="4.5" width="18" height="12" rx="1.5" /><path stroke-linecap="round" d="M8 20.5h8M12 16.5v4" /><path stroke-linecap="round" stroke-linejoin="round" d="M6.5 13.5 10 10l2.5 2 4.5-4.5" />`,
-  },
-  {
-    verbe: 'Valoriser',
-    complement: 'votre marque employeur',
+    verbe: 'Faire découvrir',
+    complement: 'vos métiers',
+    texte: 'Valorisez vos métiers, votre savoir-faire et votre marque employeur auprès des publics du salon.',
     icone: `<circle cx="12" cy="9" r="5" /><path stroke-linecap="round" stroke-linejoin="round" d="m8.3 13.2-1.6 7.3 5.3-3 5.3 3-1.6-7.3" />`,
   },
   {
-    verbe: 'Échanger',
-    complement: 'avec les acteurs du territoire',
+    verbe: 'Créer',
+    complement: 'des contacts utiles',
+    texte: 'Développez votre réseau avec les acteurs de l’emploi, de la formation et du territoire.',
     icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M4 8.5h13m0 0-4-4m4 4-4 4" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 15.5H7m0 0 4 4m-4-4 4-4" />`,
   },
-  {
-    verbe: 'Développer',
-    complement: 'votre visibilité avant et pendant le salon',
-    icone: `<path stroke-linecap="round" d="M3 20.5h18" /><path stroke-linecap="round" stroke-linejoin="round" d="M5 19v-7l5-3.5 4 2.5 5-6" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.5 5h3.5v3.5" />`,
-  },
 ];
+
+const mentionGold =
+  'Les offres sont validées par LabEvents. Les annonces similaires peuvent être regroupées afin de préserver la lisibilité du parcours candidat.';
 
 const formules = [
   {
     valeur: 'standard',
-    nom: 'Stand standard',
-    sousTitre: "L'essentiel pour participer",
+    nom: 'Standard',
+    tarif: '82 500 F HT',
     items: [
-      'Espace exposant équipé',
-      "Présence dans l'annuaire du salon",
-      'Accès aux deux journées',
-      'Communication pratique exposant',
+      'Emplacement d’exposition équipé pendant les deux journées',
+      'Panneaux de séparation',
+      'Une table et quatre chaises',
+      'Fiche essentielle dans l’annuaire des exposants',
+      'Logo et lien vers le site de l’exposant',
+      'Déclaration et publication de 5 offres maximum',
+      'Réception, après le salon, des candidatures adressées à vos offres',
     ],
   },
   {
     valeur: 'silver',
-    nom: 'Offre Silver',
-    sousTitre: 'Une visibilité renforcée',
+    nom: 'Silver',
+    sousTitre: 'Exposant partenaire',
+    tarif: '105 000 F HT',
+    disponibilite: '4 formules maximum sur l’ensemble du salon',
+    intro: 'Comprend les prestations Standard, plus :',
     items: [
-      'Stand exposant',
-      'Visibilité digitale renforcée',
-      'Présence sur certains supports de communication',
-      'Mise en avant complémentaire',
+      'Fiche exposant enrichie',
+      'Présentation de l’activité',
+      'Publicité en bandeau sur le site avec rotation standard',
+      'Logo sur l’affiche et le visuel master',
+      'Présence sur les supports numériques',
+      'Une publication dédiée sur les réseaux sociaux',
+      'Un créneau de 30 minutes dans l’espace ateliers-conférences',
+      'Déclaration et publication de 10 offres maximum',
+      'Accès aux profils candidats compatibles inclus',
     ],
   },
   {
     valeur: 'gold',
-    nom: 'Offre Gold',
-    sousTitre: 'Une présence premium',
+    nom: 'Gold',
+    sousTitre: 'Partenaire premium',
+    tarif: '125 000 F HT',
+    disponibilite: '2 formules maximum sur l’ensemble du salon',
+    intro: 'Comprend les prestations Silver, avec une visibilité renforcée :',
     items: [
-      'Visibilité maximale',
-      'Mise en avant prioritaire',
-      'Possibilités de prise de parole',
-      'Dispositif de communication renforcé',
+      'Vitrine premium sur le site',
+      'Présentation développée de l’activité',
+      'Galerie de photographies',
+      'Publicité en bandeau avec rotation renforcée et prioritaire',
+      'Présence sur l’ensemble des supports de communication',
+      'Deux publications dédiées et des stories',
+      'Deux créneaux dans l’espace ateliers-conférences, dont un prioritaire',
+      'Mentions par l’animateur pendant le salon',
+      'Déclaration et publication des offres sans plafond prédéfini',
+      'Accès aux profils candidats compatibles inclus',
+    ],
+    mention: mentionGold,
+    miseEnAvant: true,
+  },
+];
+
+const comparatif = [
+  { critere: 'Tarif HT', standard: '82 500 F', silver: '105 000 F', gold: '125 000 F' },
+  { critere: 'Formules disponibles', standard: '—', silver: '4 maximum', gold: '2 maximum' },
+  { critere: 'Offres publiées', standard: '5 maximum', silver: '10 maximum', gold: 'Sans plafond prédéfini' },
+  { critere: 'Accès profils compatibles', standard: 'Option +20 000 F HT', silver: 'Inclus', gold: 'Inclus' },
+  { critere: 'Créneau ateliers-conférences', standard: '—', silver: '30 minutes', gold: '2 créneaux, dont 1 prioritaire' },
+  { critere: 'Visibilité digitale', standard: 'Fiche essentielle', silver: 'Fiche enrichie + bandeau standard', gold: 'Vitrine premium + bandeau prioritaire' },
+];
+
+const parcoursCandidature = [
+  {
+    numero: '1',
+    titre: 'Vous déclarez vos offres',
+    texte: 'Via un formulaire dédié, dans la limite prévue par votre formule.',
+  },
+  {
+    numero: '2',
+    titre: 'Les candidats postulent',
+    texte:
+      'Ils sélectionnent jusqu’à cinq offres, renseignent leur profil, déposent leur CV et rédigent un texte personnel de valorisation.',
+  },
+  {
+    numero: '3',
+    titre: 'Vous recevez les candidatures',
+    texte: 'Après la clôture du salon, LabEvents vous transmet les candidatures adressées à vos offres.',
+  },
+];
+
+const contenuDossier = [
+  'Les informations professionnelles renseignées',
+  'Le CV',
+  'Le projet du candidat',
+  'Son texte personnel de valorisation',
+  'La référence de l’offre sélectionnée',
+];
+
+const repartitionProfils = [
+  { formule: 'Standard', valeur: 'Option 20 000 F HT' },
+  { formule: 'Silver', valeur: 'Inclus' },
+  { formule: 'Gold', valeur: 'Inclus' },
+];
+
+const equipementEmplacement = [
+  'Deux éléments de séparation de 1,22 m de largeur, soit une largeur totale de 2,44 m',
+  'Hauteur des panneaux : 2 m',
+  'Une table',
+  'Quatre chaises',
+  'Mise à disposition pendant les deux journées',
+  'Accompagnement LabEvents avant et pendant le salon',
+];
+
+const optionsComplementaires = [
+  {
+    nom: 'Affiche de stand',
+    tarif: '8 000 F HT',
+    items: [
+      'Format 110 × 145 cm',
+      'Impression comprise',
+      'Fichier prêt à imprimer fourni par l’exposant',
+      'PAO non comprise',
     ],
   },
   {
-    valeur: 'village',
-    nom: 'Village Maintenance & Industrie',
-    sousTitre: 'Une présence au cœur de la filière',
-    items: [
-      'Espace dédié aux métiers techniques et industriels',
-      'Démonstrations et valorisation des savoir-faire',
-      'Rencontres avec les publics',
-      'Intégration à l’univers Maintenance & Industrie',
-    ],
-    village: true,
+    nom: 'Barnum extérieur',
+    tarif: '7 000 F HT',
+    items: ['Format 3 × 3 m', 'Sous réserve de disponibilité', 'Sous réserve de validation de l’activité et des contraintes techniques'],
+  },
+  {
+    nom: 'Partenaire de l’espace ateliers-conférences',
+    tarif: '95 000 F HT',
+    disponibilite: 'Partenariat unique — une seule formule disponible sur l’ensemble du salon.',
+    description: 'Associez votre marque à l’ensemble de la programmation de l’espace ateliers-conférences.',
+    typeDemande: 'ateliers-conferences',
   },
 ];
 
 const typesDemande = [
   { valeur: 'exposer', label: 'Exposer' },
-  { valeur: 'village', label: 'Exposer dans le Village Maintenance & Industrie' },
   { valeur: 'partenaire', label: 'Devenir partenaire' },
+  { valeur: 'ateliers-conferences', label: 'Partenaire espace ateliers-conférences' },
   { valeur: 'information', label: 'Recevoir des informations' },
 ];
 
@@ -140,6 +220,7 @@ const objetsVisiteur = [
 ];
 
 const champIcon = `<path stroke-linecap="round" stroke-linejoin="round" d="M7 3.5h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M14 3.5V8h4" />`;
+const checkIcon = `<path stroke-linecap="round" stroke-linejoin="round" d="m5 12 5 5 9-9" />`;
 
 const inputClass =
   'mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3.5 py-2.5 text-sm text-encre placeholder:text-encre/40 focus:border-village focus:outline-none focus:ring-2 focus:ring-village/30';
@@ -148,7 +229,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
 
 <BaseLayout
   title="Exposer et devenir partenaire"
-  description="Devenez exposant ou partenaire du Salon de l'Emploi & de la Formation 2026 à Nouméa, les 30 et 31 octobre. Demandez un stand ou posez vos questions."
+  description="Découvrez l'offre exposants 2026 du Salon de l'Emploi & de la Formation à Nouméa : formules Standard, Silver et Gold, dispositif de candidatures et options complémentaires."
 >
   <!-- ============================== HERO ============================== -->
   <section class="bg-marine text-blanc">
@@ -157,9 +238,9 @@ const labelClass = 'block text-sm font-semibold text-marine';
       <h1 class="mt-3 max-w-3xl font-titre text-4xl font-bold uppercase leading-none sm:text-5xl xl:text-6xl">
         Exposez, recrutez et développez votre visibilité
       </h1>
-      <p class="mt-6 max-w-2xl text-base text-brume sm:text-lg">
-        Les 30 et 31 octobre 2026, rencontrez directement les publics du territoire et présentez
-        vos emplois, vos formations, vos métiers ou vos dispositifs d'accompagnement.
+      <p class="mt-6 max-w-2xl font-titre text-xl font-bold uppercase text-orange sm:text-2xl">
+        Rencontrez vos futurs collaborateurs. Faites découvrir vos métiers. Créez des contacts
+        utiles.
       </p>
 
       <ul class="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-semibold uppercase tracking-wide text-brume sm:flex sm:flex-wrap sm:gap-x-8">
@@ -169,15 +250,15 @@ const labelClass = 'block text-sm font-semibold text-marine';
         </li>
         <li class="flex items-center gap-2">
           <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
-          Deux jours d'ouverture
-        </li>
-        <li class="flex items-center gap-2">
-          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
-          Environ 3 000 visiteurs attendus
-        </li>
-        <li class="flex items-center gap-2">
-          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
           30 et 31 octobre 2026
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
+          9 h à 17 h
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
+          Entrée visiteurs libre et gratuite
         </li>
       </ul>
 
@@ -186,12 +267,12 @@ const labelClass = 'block text-sm font-semibold text-marine';
           href="#demande-exposant"
           class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
         >
-          Demander un stand
+          Réserver mon emplacement
         </a>
         {
-          dossierExposant.disponible ? (
+          packCommercial.disponible ? (
             <a
-              href={dossierExposant.href}
+              href={packCommercial.href}
               class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
             >
               Télécharger le dossier exposant
@@ -210,30 +291,54 @@ const labelClass = 'block text-sm font-semibold text-marine';
     </div>
   </section>
 
-  <!-- ===================== POURQUOI EXPOSER ? ===================== -->
+  <!-- ========================= CHIFFRES CLÉS ========================= -->
+  <section class="border-b border-marine/10 bg-brume" aria-labelledby="chiffres-titre">
+    <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <h2 id="chiffres-titre" class="sr-only">Le salon en chiffres</h2>
+
+      <ul class="grid grid-cols-2 gap-px bg-marine/10 sm:grid-cols-3 lg:grid-cols-5">
+        {
+          chiffresCles.map((chiffre) => (
+            <li class="flex flex-col items-center bg-brume px-4 py-8 text-center">
+              <span class="block font-titre text-4xl font-bold leading-none text-marine sm:text-5xl">
+                {chiffre.value}
+              </span>
+              <span class="mt-2 block font-titre text-base font-bold uppercase leading-none tracking-wide text-marine">
+                {chiffre.unite}
+              </span>
+              <span class="mt-1 block text-sm text-encre">{chiffre.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== TROIS RAISONS D'EXPOSER ===================== -->
   <section class="bg-blanc">
     <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
       <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
-        Pourquoi participer ?
+        Pourquoi exposer ?
       </h2>
 
-      <div class="mt-10 grid gap-px bg-marine/10 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-10 grid gap-px bg-marine/10 sm:grid-cols-3">
         {
-          benefices.map((benefice) => (
+          raisons.map((raison) => (
             <article class="flex flex-col items-center bg-blanc px-5 py-8 text-center">
               <svg
-                class="h-9 w-9 text-orange"
+                class="h-10 w-10 text-orange"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 stroke-width="1.6"
                 aria-hidden="true"
-                set:html={benefice.icone}
+                set:html={raison.icone}
               />
               <h3 class="mt-4 font-titre text-xl font-bold uppercase leading-none text-marine">
-                {benefice.verbe}
+                {raison.verbe}
               </h3>
-              <p class="mt-2 text-sm leading-relaxed text-encre">{benefice.complement}</p>
+              <p class="mt-1 font-titre text-base font-semibold text-marine">{raison.complement}</p>
+              <p class="mt-3 text-sm leading-relaxed text-encre">{raison.texte}</p>
             </article>
           ))
         }
@@ -248,54 +353,49 @@ const labelClass = 'block text-sm font-semibold text-marine';
         Choisissez votre formule
       </h2>
 
-      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {
           formules.map((formule) => (
             <article
               class:list={[
                 'flex flex-col rounded-2xl border bg-blanc p-6',
-                formule.village ? 'border-village/40' : 'border-marine/15',
+                formule.miseEnAvant ? 'border-2 border-village' : 'border-marine/15',
               ]}
             >
-              {formule.village && (
-                <p class="mb-2 text-xs font-bold uppercase tracking-widest text-village-dark">Univers Village</p>
+              <h3 class="font-titre text-2xl font-bold uppercase leading-tight text-marine">{formule.nom}</h3>
+              {formule.sousTitre && <p class="mt-1 text-sm font-semibold text-encre/70">{formule.sousTitre}</p>}
+              <p class="mt-3 font-titre text-2xl font-bold text-village-dark">{formule.tarif}</p>
+              {formule.disponibilite && (
+                <p class="mt-1 text-xs font-bold uppercase tracking-wide text-orange-dark">{formule.disponibilite}</p>
               )}
-              <h3 class="font-titre text-xl font-bold uppercase leading-tight text-marine">{formule.nom}</h3>
-              <p class="mt-1 text-sm font-semibold text-encre/70">{formule.sousTitre}</p>
-              <div
-                class:list={['mt-3 h-1 w-10 rounded-full', formule.village ? 'bg-village' : 'bg-orange']}
-                aria-hidden="true"
-              />
+              <div class="mt-3 h-1 w-10 rounded-full bg-village" aria-hidden="true" />
 
-              <ul class="mt-4 flex-1 space-y-2.5 text-sm text-encre">
+              {formule.intro && <p class="mt-4 text-sm font-semibold text-marine">{formule.intro}</p>}
+              <ul class="mt-3 flex-1 space-y-2.5 text-sm text-encre">
                 {formule.items.map((item) => (
                   <li class="flex items-start gap-2">
                     <svg
-                      class:list={['mt-0.5 h-4 w-4 flex-shrink-0', formule.village ? 'text-village' : 'text-marine']}
+                      class="mt-0.5 h-4 w-4 flex-shrink-0 text-village"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                       stroke-width="2"
                       aria-hidden="true"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 5 5 9-9" />
-                    </svg>
+                      set:html={checkIcon}
+                    />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
 
-              <p class="mt-5 text-xs font-semibold uppercase tracking-wide text-encre/60">
-                Tarif et disponibilités sur demande
-              </p>
+              {formule.mention && (
+                <p class="mt-4 text-xs leading-relaxed text-encre/70">{formule.mention}</p>
+              )}
+
               <a
                 href="#demande-exposant"
                 data-preselect-formule={formule.valeur}
-                data-preselect-type={formule.village ? 'village' : undefined}
-                class:list={[
-                  'mt-4 inline-flex items-center justify-center rounded-md px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90',
-                  formule.village ? 'bg-village' : 'bg-marine',
-                ]}
+                class="mt-5 inline-flex items-center justify-center rounded-md bg-village px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
               >
                 Demander cette formule
               </a>
@@ -306,98 +406,218 @@ const labelClass = 'block text-sm font-semibold text-marine';
     </div>
   </section>
 
-  <!-- ============ VILLAGE MAINTENANCE & INDUSTRIE (bloc vert) ============ -->
-  <section class="bg-village text-marine">
-    <div class="mx-auto grid max-w-6xl items-start gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:py-16">
-      <div class="lg:col-span-7">
-        <p class="text-xs font-bold uppercase tracking-widest text-marine/70">Univers Village</p>
-        <h2 class="mt-3 font-titre text-3xl font-bold uppercase leading-tight sm:text-4xl">
-          Exposez dans le Village Maintenance &amp; Industrie
-        </h2>
-        <div class="mt-4 h-1 w-14 rounded-full bg-marine" aria-hidden="true"></div>
-        <p class="mt-5 max-w-2xl text-base sm:text-lg">
-          Présentez vos métiers, vos besoins en compétences, vos formations et vos savoir-faire au
-          sein d'un espace spécifiquement consacré aux activités techniques et industrielles.
-        </p>
+  <!-- ===================== TABLEAU COMPARATIF ===================== -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Comparer les formules en un coup d'œil
+      </h2>
 
-        <ul class="mt-6 grid grid-cols-2 gap-x-6 gap-y-2.5 text-sm font-semibold sm:flex sm:flex-wrap sm:gap-x-8">
-          <li class="flex items-center gap-2">
-            <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-marine" aria-hidden="true"></span>
-            Métiers et emplois
-          </li>
-          <li class="flex items-center gap-2">
-            <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-marine" aria-hidden="true"></span>
-            Formations et parcours
-          </li>
-          <li class="flex items-center gap-2">
-            <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-marine" aria-hidden="true"></span>
-            Démonstrations
-          </li>
-          <li class="flex items-center gap-2">
-            <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-marine" aria-hidden="true"></span>
-            Échanges avec les publics
-          </li>
-        </ul>
-
-        <a
-          href="#demande-exposant"
-          data-preselect-formule="village"
-          data-preselect-type="village"
-          class="mt-8 inline-flex items-center justify-center rounded-md bg-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
-        >
-          Demander un emplacement dans le Village
-        </a>
+      <div class="mt-10 overflow-x-auto rounded-2xl border border-marine/15">
+        <table class="w-full min-w-[640px] border-collapse text-left text-sm">
+          <caption class="sr-only">Comparatif des formules Standard, Silver et Gold</caption>
+          <thead>
+            <tr class="bg-marine text-blanc">
+              <th scope="col" class="px-4 py-3 font-titre text-sm font-bold uppercase tracking-wide">
+                Critère
+              </th>
+              <th scope="col" class="px-4 py-3 font-titre text-sm font-bold uppercase tracking-wide">
+                Standard
+              </th>
+              <th scope="col" class="px-4 py-3 font-titre text-sm font-bold uppercase tracking-wide">
+                Silver
+              </th>
+              <th scope="col" class="px-4 py-3 font-titre text-sm font-bold uppercase tracking-wide">
+                Gold
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              comparatif.map((ligne, i) => (
+                <tr class:list={[i % 2 === 0 ? 'bg-blanc' : 'bg-brume']}>
+                  <th scope="row" class="px-4 py-3 font-semibold text-marine">{ligne.critere}</th>
+                  <td class="px-4 py-3 text-encre">{ligne.standard}</td>
+                  <td class="px-4 py-3 text-encre">{ligne.silver}</td>
+                  <td class="px-4 py-3 text-encre">{ligne.gold}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
       </div>
+      <p class="mt-4 text-xs text-encre/70">
+        Détail complet des prestations dans les formules ci-dessus. Tarifs exprimés hors taxes.
+      </p>
     </div>
   </section>
 
-  <!-- ===================== DOCUMENTS EXPOSANTS ===================== -->
-  <section class="border-t border-marine/10 bg-blanc">
+  <!-- =================== DISPOSITIF DE CANDIDATURES =================== -->
+  <section class="border-t border-marine/10 bg-village text-marine">
     <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
-      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
-        Documents exposants
+      <p class="text-xs font-bold uppercase tracking-widest text-marine/70">Recrutement</p>
+      <h2 class="mt-2 font-titre text-3xl font-bold uppercase leading-tight sm:text-4xl">
+        Votre recrutement commence avant le salon
       </h2>
+      <p class="mt-5 max-w-3xl text-sm sm:text-base">
+        Il n'existe pas de plateforme ni d'accès autonome à une base de CV : le dispositif repose
+        sur la déclaration de vos offres et la transmission, après le salon, des candidatures qui
+        leur sont directement adressées.
+      </p>
 
-      <ul class="mx-auto mt-10 max-w-2xl divide-y divide-marine/10 overflow-hidden rounded-2xl border border-marine/15">
+      <div class="mt-10 grid gap-6 sm:grid-cols-3">
         {
-          documentsExposants.map((doc) => (
-            <li class="flex items-center justify-between gap-4 bg-blanc px-5 py-4">
-              <span class="flex items-center gap-3">
+          parcoursCandidature.map((etape) => (
+            <div class="rounded-2xl bg-blanc/90 p-6">
+              <span class="font-titre text-4xl font-bold leading-none text-village-dark">{etape.numero}</span>
+              <h3 class="mt-3 font-titre text-lg font-bold uppercase leading-none text-marine">{etape.titre}</h3>
+              <p class="mt-3 text-sm leading-relaxed text-encre">{etape.texte}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-8 rounded-2xl bg-blanc/90 p-6 sm:p-8">
+        <h3 class="font-titre text-lg font-bold uppercase text-marine">Chaque dossier comprend</h3>
+        <ul class="mt-3 grid gap-2.5 text-sm text-encre sm:grid-cols-2">
+          {
+            contenuDossier.map((item) => (
+              <li class="flex items-start gap-2">
                 <svg
-                  class="h-6 w-6 flex-shrink-0 text-marine/60"
+                  class="mt-0.5 h-4 w-4 flex-shrink-0 text-village-dark"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  stroke-width="1.6"
+                  stroke-width="2"
                   aria-hidden="true"
-                  set:html={champIcon}
+                  set:html={checkIcon}
                 />
-                <span class="text-sm font-semibold text-marine">{doc.label}</span>
-              </span>
-              {doc.disponible ? (
-                <a
-                  href={doc.href}
-                  class="flex-shrink-0 text-sm font-bold uppercase tracking-wide text-village-dark hover:underline"
-                >
-                  Télécharger
-                </a>
-              ) : (
-                <span class="flex-shrink-0 text-xs font-semibold uppercase tracking-wide text-encre/40">
-                  Bientôt disponible
-                </span>
-              )}
+                <span>{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="mt-8 rounded-2xl border-2 border-marine/20 bg-blanc/90 p-6 sm:p-8">
+        <h3 class="font-titre text-lg font-bold uppercase text-marine">Accès aux profils candidats compatibles</h3>
+        <p class="mt-3 text-sm text-encre sm:text-base">
+          Selon la formule choisie, LabEvents peut également identifier, parmi les candidats ayant
+          donné leur accord, des profils correspondant aux métiers et aux principaux critères de
+          recrutement de l'exposant.
+        </p>
+        <ul class="mt-4 grid gap-3 sm:grid-cols-3">
+          {
+            repartitionProfils.map((ligne) => (
+              <li class="rounded-xl border border-marine/15 bg-brume px-4 py-3 text-center">
+                <p class="text-xs font-bold uppercase tracking-wide text-marine/70">{ligne.formule}</p>
+                <p class="mt-1 font-titre text-base font-bold text-marine">{ligne.valeur}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <p class="mt-6 max-w-3xl text-xs leading-relaxed text-marine/80">
+        Les candidatures nominatives sont transmises après la clôture du salon afin de préserver
+        la rencontre physique pendant l'événement. Le nombre de candidatures reçues et leur
+        adéquation avec les besoins de l'exposant ne peuvent être garantis par LabEvents.
+      </p>
+    </div>
+  </section>
+
+  <!-- =================== ÉQUIPEMENT DE L'EMPLACEMENT =================== -->
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Équipement de l'emplacement
+      </h2>
+      <p class="mx-auto mt-5 max-w-3xl text-center text-encre">
+        Les emplacements proposés correspondent aux espaces natifs de la Salle d'exposition de
+        Nouville. Leur surface et leur configuration varient selon leur localisation.
+      </p>
+
+      <ul class="mx-auto mt-10 grid max-w-4xl gap-4 sm:grid-cols-2">
+        {
+          equipementEmplacement.map((item) => (
+            <li class="flex items-center gap-3 rounded-xl border border-marine/15 bg-brume px-5 py-4 text-sm font-semibold text-marine sm:text-base">
+              <span class="h-2 w-2 flex-shrink-0 rounded-full bg-village" aria-hidden="true" />
+              {item}
             </li>
           ))
         }
       </ul>
+
+      <div class="mx-auto mt-8 max-w-3xl rounded-2xl border border-orange/25 bg-orange/5 p-5 text-sm text-encre sm:p-6">
+        <p>
+          L'attribution des emplacements relève exclusivement de l'organisateur, en fonction des
+          activités représentées, des contraintes techniques, des disponibilités et de la
+          cohérence générale du salon. Le choix d'un numéro ou d'une surface précise ne peut pas
+          être garanti.
+        </p>
+        <p class="mt-3">
+          Le détail des emplacements sera transmis ultérieurement aux exposants confirmés dans le
+          plan et la notice technique.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== OPTIONS COMPLÉMENTAIRES ===================== -->
+  <section class="border-t border-marine/10 bg-brume">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
+      <h2 class="text-center font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Options complémentaires
+      </h2>
+
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          optionsComplementaires.map((option) => (
+            <article class="flex flex-col rounded-2xl border border-marine/15 bg-blanc p-6">
+              <h3 class="font-titre text-xl font-bold uppercase leading-tight text-marine">{option.nom}</h3>
+              <p class="mt-2 font-titre text-xl font-bold text-village-dark">{option.tarif}</p>
+              {option.disponibilite && (
+                <p class="mt-1 text-xs font-bold uppercase tracking-wide text-orange-dark">{option.disponibilite}</p>
+              )}
+              <div class="mt-3 h-1 w-10 rounded-full bg-orange" aria-hidden="true" />
+              {option.description && <p class="mt-4 flex-1 text-sm text-encre">{option.description}</p>}
+              {option.items && (
+                <ul class="mt-4 flex-1 space-y-2 text-sm text-encre">
+                  {option.items.map((item) => (
+                    <li class="flex items-start gap-2">
+                      <svg
+                        class="mt-0.5 h-4 w-4 flex-shrink-0 text-marine"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
+                        set:html={checkIcon}
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <a
+                href="#demande-exposant"
+                data-preselect-type={option.typeDemande}
+                class="mt-5 inline-flex items-center justify-center rounded-md border-2 border-marine px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
+              >
+                Ajouter à ma demande
+              </a>
+            </article>
+          ))
+        }
+      </div>
     </div>
   </section>
 
   <!-- =================== FORMULAIRE EXPOSANT / PARTENAIRE =================== -->
-  <section id="demande-exposant" class="scroll-mt-20 border-t border-marine/10 bg-brume">
+  <section id="demande-exposant" class="scroll-mt-20 border-t border-marine/10 bg-blanc">
     <div class="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:py-16">
       <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
-        Demander un stand ou devenir partenaire
+        Demander un emplacement ou devenir partenaire
       </h2>
       <p class="mt-4 max-w-2xl text-encre">
         Présentez-nous votre projet. L'équipe LabEvents vous recontactera pour préciser vos
@@ -413,7 +633,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
         )
       }
 
-      <div class="relative mt-8 rounded-2xl border border-marine/15 bg-blanc p-6 sm:p-8">
+      <div class="relative mt-8 rounded-2xl border border-marine/15 bg-brume p-6 sm:p-8">
         <div data-form-confirmation hidden class="text-center">
           <h3 class="font-titre text-2xl font-bold uppercase text-marine">
             Votre demande a bien été envoyée
@@ -495,16 +715,19 @@ const labelClass = 'block text-sm font-semibold text-marine';
             <label for="formule" class={labelClass}>Formule envisagée *</label>
             <select id="formule" name="formule" required class={inputClass}>
               <option value="" selected disabled>Sélectionnez une formule</option>
-              <option value="standard">Stand standard</option>
+              <option value="standard">Standard</option>
               <option value="silver">Silver</option>
               <option value="gold">Gold</option>
-              <option value="village">Village Maintenance & Industrie</option>
               <option value="a-definir">À définir</option>
             </select>
           </div>
 
           <div class="sm:col-span-2">
             <label for="message-exposant" class={labelClass}>Message / précisions *</label>
+            <p class="mt-1 text-xs text-encre/70">
+              Précisez ici les options complémentaires souhaitées (affiche de stand, barnum
+              extérieur, accès aux profils candidats compatibles…).
+            </p>
             <textarea id="message-exposant" name="message" rows="4" required class={inputClass} />
           </div>
 
@@ -518,8 +741,8 @@ const labelClass = 'block text-sm font-semibold text-marine';
           </div>
 
           <div>
-            <label for="nombre-stands" class={labelClass}>Nombre de stands envisagé</label>
-            <input type="number" id="nombre-stands" name="nombre_stands" min="1" class={inputClass} />
+            <label for="nombre-emplacements" class={labelClass}>Nombre d'emplacements envisagé</label>
+            <input type="number" id="nombre-emplacements" name="nombre_emplacements" min="1" class={inputClass} />
           </div>
 
           <div>
@@ -584,13 +807,13 @@ const labelClass = 'block text-sm font-semibold text-marine';
   </section>
 
   <!-- ====================== FORMULAIRE CONTACT VISITEUR ====================== -->
-  <section id="contact-visiteur" class="scroll-mt-20 border-t border-marine/10 bg-blanc">
+  <section id="contact-visiteur" class="scroll-mt-20 border-t border-marine/10 bg-brume">
     <div class="mx-auto max-w-2xl px-4 py-14 sm:px-6 lg:py-16">
       <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
         Une question sur le salon ?
       </h2>
 
-      <div class="relative mt-8 rounded-2xl border border-marine/15 bg-brume p-6 sm:p-8">
+      <div class="relative mt-8 rounded-2xl border border-marine/15 bg-blanc p-6 sm:p-8">
         <div data-form-confirmation hidden class="text-center">
           <h3 class="font-titre text-2xl font-bold uppercase text-marine">
             Votre demande a bien été envoyée
@@ -672,6 +895,48 @@ const labelClass = 'block text-sm font-semibold text-marine';
             <p data-form-status class="mt-4 text-sm" role="status" aria-live="polite"></p>
           </div>
         </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PACK COMMERCIAL EXPOSANTS ===================== -->
+  <section class="border-t border-marine/10 bg-blanc">
+    <div class="mx-auto max-w-2xl px-4 py-14 text-center sm:px-6 lg:py-16">
+      <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
+        Pack commercial exposants 2026
+      </h2>
+      <p class="mx-auto mt-4 max-w-xl text-encre">
+        Retrouvez l'ensemble des formules, tarifs et modalités dans un document unique à
+        télécharger et partager en interne.
+      </p>
+
+      <div class="mx-auto mt-8 flex max-w-md items-center justify-between gap-4 rounded-2xl border border-marine/15 bg-brume px-5 py-4">
+        <span class="flex items-center gap-3">
+          <svg
+            class="h-6 w-6 flex-shrink-0 text-marine/60"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.6"
+            aria-hidden="true"
+            set:html={champIcon}
+          />
+          <span class="text-sm font-semibold text-marine">{packCommercial.label}</span>
+        </span>
+        {
+          packCommercial.disponible ? (
+            <a
+              href={packCommercial.href}
+              class="flex-shrink-0 text-sm font-bold uppercase tracking-wide text-village-dark hover:underline"
+            >
+              Télécharger
+            </a>
+          ) : (
+            <span class="flex-shrink-0 text-xs font-semibold uppercase tracking-wide text-encre/40">
+              Bientôt disponible
+            </span>
+          )
+        }
       </div>
     </div>
   </section>

@@ -117,7 +117,7 @@ Vérifier sur `https://preprod.salonemploinc.com` :
 - Page d'accueil et logo.
 - Favicon.
 - Navigation desktop et mobile (menu ouvert + fermé).
-- Pages : Le salon, Village, Exposants, Programme, Préparer ma visite, Exposer.
+- Pages : Le salon, Exposants, Programme, Préparer ma visite, Exposer.
 - Liens internes et ancres.
 - Images.
 - Formulaires (soumission + réception Web3Forms).

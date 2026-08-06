@@ -21,8 +21,8 @@ const { item } = Astro.props;
 const { data } = item;
 
 const styleUnivers = {
-  hall: { badge: 'bg-marine text-blanc', accent: 'text-orange' },
-  village: { badge: 'bg-village-dark text-blanc', accent: 'text-village' },
+  emploi: { badge: 'bg-marine text-blanc', accent: 'text-orange' },
+  formation: { badge: 'bg-village-dark text-blanc', accent: 'text-village' },
   /* accent en text-brume (et non text-encre) : ce bloc s'affiche sur le hero
      bg-marine, où text-encre serait quasi invisible (texte quasi de la même
      teinte que le fond). */
@@ -184,16 +184,6 @@ const dateMiseAJour = data.date_mise_a_jour ? formateurDate.format(data.date_mis
         >
           Retour au programme
         </a>
-        {
-          data.univers === 'village' && (
-            <a
-              href="/village"
-              class="inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
-            >
-              Découvrir le Village Maintenance & Industrie
-            </a>
-          )
-        }
       </div>
     </div>
   </section>
