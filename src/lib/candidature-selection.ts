@@ -12,6 +12,16 @@
 export const MAX_SELECTION = 5;
 export const ORIENTATION_PARAM = 'orientation';
 
+/**
+ * Texte exact de l'unique option visible dans Tally pour la question
+ * « Orientation de ma candidature » (voir docs/CANDIDATURES_TALLY.md,
+ * section 15). Transmis via le champ caché `orientation_labevents_label`
+ * pour précocher cette option visuellement — la casse, les accents, la
+ * ponctuation et les espaces doivent rester strictement identiques.
+ */
+export const ORIENTATION_LABEVENTS_LABEL =
+  "Je souhaite que LabEvents oriente ma candidature vers les exposants les plus adaptés à mon profil.";
+
 const SELECTION_PARAM_PREFIX = 'offre';
 const SELECTION_PARAMS = Array.from(
   { length: MAX_SELECTION },
@@ -135,6 +145,7 @@ export function construireUrlTally(baseUrl: string, offres: OffreCandidature[], 
     url.searchParams.set(`offre_${numero}_exposant`, offre.exposantNom);
   });
   url.searchParams.set('orientation_labevents', String(orientation));
+  if (orientation) url.searchParams.set('orientation_labevents_label', ORIENTATION_LABEVENTS_LABEL);
   url.searchParams.set('source', 'salon-emploi.nc');
   url.searchParams.set('edition', '2026');
   return url.toString();

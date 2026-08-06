@@ -69,6 +69,12 @@ d'environnement publique `PUBLIC_TALLY_CANDIDATURE_URL` (voir
 **configurable sans modifier le code** : aucune URL réelle ou fictive n'est
 codée en dur dans les composants.
 
+URL du formulaire Tally réel utilisée en préproduction (depuis la
+correction du 06/08/2026 ajoutant le champ `orientation_labevents_label`,
+voir section 15) : `https://tally.so/r/xX7gek`. Elle n'est active qu'en
+préproduction à ce stade — la production n'est pas modifiée tant que
+Philippe n'a pas validé la recette.
+
 Si la variable est absente ou vide :
 
 - aucune iframe n'est affichée (pas d'iframe cassée) ;
@@ -84,10 +90,18 @@ Si la variable est absente ou vide :
    publique (ex. `https://tally.so/r/XXXXXXXX`).
 2. En local : ajouter `PUBLIC_TALLY_CANDIDATURE_URL=https://tally.so/r/XXXXXXXX`
    dans `.env` (non commité).
-3. En préproduction/production : renseigner la même variable dans
-   l'environnement GitHub concerné (Settings → Environments), au même
-   endroit que `PUBLIC_WEB3FORMS_ACCESS_KEY` (voir CLAUDE.md, section 4).
-4. Aucune modification de composant n'est nécessaire pour changer cette URL.
+3. En préproduction : contrairement à `PUBLIC_WEB3FORMS_ACCESS_KEY` (un
+   secret), cette URL n'est pas sensible. Elle est injectée dans
+   `.github/workflows/deploy-preprod.yml` via `${{ vars.PUBLIC_TALLY_CANDIDATURE_URL }}`
+   — une **variable** d'environnement GitHub, pas un secret. À créer dans
+   *Settings → Environments → preprod → Variables* (et non *Secrets*), avec :
+   - nom : `PUBLIC_TALLY_CANDIDATURE_URL`
+   - valeur : `https://tally.so/r/xX7gek`
+4. En production : la variable n'est volontairement **pas encore** câblée
+   dans `.github/workflows/deploy-production.yml`. Ce câblage sera fait dans
+   un lot ultérieur, après validation de la recette en préproduction par
+   Philippe.
+5. Aucune modification de composant n'est nécessaire pour changer cette URL.
 
 ## 8. Liste exacte des champs cachés transmis à Tally
 
@@ -106,13 +120,21 @@ offre_5_ref, offre_5_titre, offre_5_exposant
 Les emplacements sans offre ne sont **pas** transmis (pas de champ
 `offre_4_ref=""` si seules 3 offres sont sélectionnées).
 
-Champs supplémentaires, toujours transmis :
+Champs supplémentaires :
 
 ```
-orientation_labevents = true | false
-source                = salon-emploi.nc
-edition                = 2026
+orientation_labevents       = true | false                     (toujours transmis)
+orientation_labevents_label = <texte exact, section 15>         (transmis uniquement si orientation_labevents = true)
+source                       = salon-emploi.nc                  (toujours transmis)
+edition                      = 2026                              (toujours transmis)
 ```
+
+`orientation_labevents` est la valeur technique exploitée pour l'export et
+le futur dispatch (section 20). `orientation_labevents_label` sert
+uniquement à précocher visuellement la checkbox « Orientation de ma
+candidature » dans Tally — ce n'est pas une donnée d'exploitation. Les deux
+champs restent volontairement distincts (voir `construireUrlTally()` dans
+`src/lib/candidature-selection.ts`) : ne jamais les fusionner.
 
 Aucune donnée personnelle (nom, email, téléphone, CV…) n'est jamais placée
 dans cette URL : ces informations ne sont saisies que dans Tally lui-même.
@@ -225,6 +247,22 @@ l'état de cette case au moment du chargement de l'iframe, et se recalcule à
 chaque changement (case cochée/décochée ou offre retirée du récapitulatif).
 Cette information alimente le futur dispatch manuel LabEvents pour les
 candidats « hors liste » — elle est indépendante du consentement B.
+
+Depuis la correction du 06/08/2026, la question visible « Orientation de ma
+candidature » dans Tally n'a qu'une seule option, dont le texte exact est :
+
+```
+Je souhaite que LabEvents oriente ma candidature vers les exposants les plus adaptés à mon profil.
+```
+
+Cette phrase est centralisée côté site dans la constante
+`ORIENTATION_LABEVENTS_LABEL` (`src/lib/candidature-selection.ts`) et
+transmise telle quelle à Tally via le champ caché
+`orientation_labevents_label`, uniquement lorsque `orientation_labevents =
+true`. Quand l'orientation est désactivée, ce champ n'est pas transmis du
+tout (préféré à une valeur vide). Tally utilise cette valeur pour précocher
+automatiquement la case dans le formulaire ; le site ne pilote que le
+préremplissage, jamais l'affichage ni la présence de l'option elle-même.
 
 ## 16. Mention de conservation jusqu'au 31 décembre 2026
 
