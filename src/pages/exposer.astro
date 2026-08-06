@@ -1,6 +1,4 @@
 ---
-import fs from 'node:fs';
-import path from 'node:path';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const accessKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '';
@@ -16,17 +14,13 @@ const redirectExposant = new URL('/merci?type=exposant', Astro.site).toString();
 const redirectVisiteur = new URL('/merci?type=visiteur', Astro.site).toString();
 
 /*
-  Pack commercial exposants 2026 — offre 2026, section 8 de la demande de
-  mise à jour. Ne jamais inventer de fichier : la disponibilité est vérifiée
-  sur disque au build (même logique que `Visuel.astro`), pour qu'un simple
-  dépôt de PDF au bon chemin suffise à activer le lien, sans toucher au code.
+  Pack commercial exposants 2026 — fichier réel déposé dans
+  public/documents/Pack_commercial_exposants_2026.pdf : lien statique direct,
+  sans vérification au build.
 */
 const packCommercial = {
   label: 'Pack commercial exposants 2026',
-  href: '/documents/pack-commercial-exposants-2026.pdf',
-  disponible: fs.existsSync(
-    path.join(process.cwd(), 'public', 'documents/pack-commercial-exposants-2026.pdf'),
-  ),
+  href: '/documents/Pack_commercial_exposants_2026.pdf',
 };
 
 const chiffresCles = [
@@ -269,24 +263,14 @@ const labelClass = 'block text-sm font-semibold text-marine';
         >
           Réserver mon emplacement
         </a>
-        {
-          packCommercial.disponible ? (
-            <a
-              href={packCommercial.href}
-              class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
-            >
-              Télécharger le dossier exposant
-            </a>
-          ) : (
-            <span
-              class="inline-flex cursor-not-allowed items-center justify-center rounded-md border-2 border-blanc/30 px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc/50"
-              aria-disabled="true"
-              title="Dossier bientôt disponible"
-            >
-              Dossier bientôt disponible
-            </span>
-          )
-        }
+        <a
+          href={packCommercial.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
+        >
+          Télécharger le dossier exposant
+        </a>
       </div>
     </div>
   </section>
@@ -923,20 +907,14 @@ const labelClass = 'block text-sm font-semibold text-marine';
           />
           <span class="text-sm font-semibold text-marine">{packCommercial.label}</span>
         </span>
-        {
-          packCommercial.disponible ? (
-            <a
-              href={packCommercial.href}
-              class="flex-shrink-0 text-sm font-bold uppercase tracking-wide text-village-dark hover:underline"
-            >
-              Télécharger
-            </a>
-          ) : (
-            <span class="flex-shrink-0 text-xs font-semibold uppercase tracking-wide text-encre/40">
-              Bientôt disponible
-            </span>
-          )
-        }
+        <a
+          href={packCommercial.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex-shrink-0 text-sm font-bold uppercase tracking-wide text-village-dark hover:underline"
+        >
+          Télécharger
+        </a>
       </div>
     </div>
   </section>
