@@ -3,8 +3,8 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 export type ProgrammeItem = CollectionEntry<'programme'>;
 
 export const universLabels: Record<ProgrammeItem['data']['univers'], string> = {
-  hall: 'Hall Emploi-Formation',
-  village: 'Village Maintenance & Industrie',
+  emploi: 'Hall Emploi',
+  formation: 'Hall Formation',
   transversal: 'Transversal',
 };
 

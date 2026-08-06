@@ -33,16 +33,16 @@ const checkIcon = `<path stroke-linecap="round" stroke-linejoin="round" d="m5 12
 
 const hallPoints = [
   'Emplois et recrutements',
-  'Formations initiales et continues',
-  'Orientation et reconversion',
-  'Accompagnement des parcours',
+  'Offres d’emploi',
+  'Rencontres avec les candidats',
+  'Découverte des métiers',
 ];
 
-const villagePoints = [
-  'Métiers techniques et industriels',
-  'Besoins en compétences',
-  'Formations et qualifications',
-  'Savoir-faire et environnements professionnels',
+const formationPoints = [
+  'Organismes de formation',
+  'Orientation',
+  'Découverte des parcours',
+  'Formations et débouchés',
 ];
 
 const publics = [
@@ -150,23 +150,20 @@ const infosPratiques = [
         Hiérarchie des CTA : les deux univers du salon priment (c'est l'objet
         de cette page), « Préparer ma visite » reste accessible mais en lien
         secondaire discret plutôt qu'en bouton, pour ne pas concurrencer les
-        deux boutons de découverte. Le libellé du Village s'allège sous sm
-        (bascule de largeur des boutons, colonne → ligne) pour ne jamais
-        forcer un retour à la ligne disgracieux.
+        deux boutons de découverte.
       -->
       <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <a
-          href="/exposants"
+          href="#hall-emploi"
           class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 text-center font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
         >
-          Découvrir le Hall Emploi-Formation
+          Découvrir le Hall Emploi
         </a>
         <a
-          href="/village"
+          href="#hall-formation"
           class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 text-center font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
         >
-          <span class="sm:hidden">Découvrir le Village Maintenance</span>
-          <span class="hidden sm:inline">Découvrir le Village Maintenance &amp; Industrie</span>
+          Découvrir le Hall Formation
         </a>
       </div>
 
@@ -227,16 +224,16 @@ const infosPratiques = [
       </h2>
 
       <div class="mt-10 grid gap-6 lg:grid-cols-2">
-        <article class="flex flex-col overflow-hidden rounded-2xl border border-marine/15 bg-blanc">
+        <article id="hall-emploi" class="flex scroll-mt-24 flex-col overflow-hidden rounded-2xl border border-marine/15 bg-blanc">
           <div class="flex flex-1 flex-col p-6 sm:p-8">
             <p class="text-xs font-bold uppercase tracking-widest text-orange-dark">Univers 1</p>
             <h3 class="mt-2 font-titre text-2xl font-bold uppercase text-marine sm:text-3xl">
-              Hall Emploi-Formation
+              Hall Emploi
             </h3>
             <div class="mt-3 h-1 w-12 rounded-full bg-orange" aria-hidden="true"></div>
             <p class="mt-4 text-sm text-encre sm:text-base">
-              Un espace consacré aux rencontres avec les entreprises, les organismes de formation,
-              les institutions et les structures d'accompagnement.
+              Entreprises qui recrutent, offres d'emploi, rencontres avec les candidats et
+              découverte des métiers.
             </p>
             <ul class="mt-4 flex-1 space-y-2.5 text-sm text-encre">
               {
@@ -260,33 +257,33 @@ const infosPratiques = [
               href="/exposants"
               class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-marine px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
             >
-              Découvrir le Hall Emploi-Formation
+              Découvrir le Hall Emploi
             </a>
           </div>
           <Visuel
             class="h-44 w-full sm:h-52"
             src="/images/hall-emploi-formation.webp"
-            alt="Recruteuse échangeant avec deux visiteurs sur un stand du Hall Emploi-Formation"
+            alt="Recruteuse échangeant avec deux visiteurs sur un stand du Hall Emploi"
             width={1672}
             height={941}
             position="object-[center_22%]"
           />
         </article>
 
-        <article class="flex flex-col overflow-hidden rounded-2xl bg-village">
+        <article id="hall-formation" class="flex scroll-mt-24 flex-col overflow-hidden rounded-2xl bg-village">
           <div class="flex flex-1 flex-col p-6 sm:p-8 text-marine">
             <p class="text-xs font-bold uppercase tracking-widest text-marine/70">Univers 2</p>
             <h3 class="mt-2 font-titre text-2xl font-bold uppercase text-blanc sm:text-3xl">
-              Village Maintenance &amp; Industrie
+              Hall Formation
             </h3>
             <div class="mt-3 h-1 w-12 rounded-full bg-marine" aria-hidden="true"></div>
             <p class="mt-4 text-sm sm:text-base">
-              Un espace immersif consacré aux métiers techniques, industriels et de la
-              maintenance, à leurs compétences et à leurs perspectives professionnelles.
+              Organismes de formation, orientation, découverte des parcours et information sur les
+              formations et les débouchés.
             </p>
             <ul class="mt-4 flex-1 space-y-2.5 text-sm">
               {
-                villagePoints.map((point) => (
+                formationPoints.map((point) => (
                   <li class="flex items-start gap-2">
                     <svg
                       class="mt-0.5 h-4 w-4 flex-shrink-0 text-marine"
@@ -303,16 +300,16 @@ const infosPratiques = [
               }
             </ul>
             <a
-              href="/village"
+              href="/exposants"
               class="mt-6 inline-flex w-fit items-center justify-center rounded-md bg-marine px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
             >
-              Découvrir le Village
+              Découvrir le Hall Formation
             </a>
           </div>
           <Visuel
             class="h-44 w-full sm:h-52"
-            src="/images/village-maintenance-industrie.webp"
-            alt="Deux techniciens examinant un moteur au Village Maintenance & Industrie"
+            src="/images/hall-formation.webp"
+            alt="Organisme de formation présentant un parcours à des visiteurs du Hall Formation"
             width={1672}
             height={941}
             position="object-[center_18%]"

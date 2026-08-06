@@ -16,7 +16,7 @@ const exposants = defineCollection({
   schema: z.object({
     nom: z.string(),
     slug: z.string().optional(),
-    univers: z.enum(['hall', 'village']),
+    univers: z.enum(['emploi', 'formation']),
     type_structure: z.enum([
       'entreprise',
       'organisme-formation',
@@ -71,7 +71,7 @@ const programme = defineCollection({
     date: z.enum(['2026-10-30', '2026-10-31']),
     heure_debut: z.string().regex(heureRegex, 'Format attendu : HH:MM (ex. 09:30)'),
     heure_fin: z.string().regex(heureRegex, 'Format attendu : HH:MM (ex. 09:30)').optional(),
-    univers: z.enum(['hall', 'village', 'transversal']),
+    univers: z.enum(['emploi', 'formation', 'transversal']),
     type: z.enum(['conference', 'atelier', 'demonstration', 'rencontre', 'information', 'autre']),
     lieu: z.string().optional(),
     accroche: z.string(),

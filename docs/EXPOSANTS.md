@@ -35,7 +35,7 @@ frontmatter, qui contient tous les champs. Rien n'est écrit après le second
 ```markdown
 ---
 nom: "Exemple non publié"
-univers: hall
+univers: emploi
 type_structure: entreprise
 secteurs:
   - Industrie
@@ -64,7 +64,7 @@ date_mise_a_jour: 2026-08-05
 |---|---|---|
 | `nom` | oui | Nom affiché de l'exposant. |
 | `slug` | non | Force l'adresse de la fiche si le nom du fichier ne convient pas (accents, renommage). Sinon, l'adresse vient automatiquement du nom du fichier. |
-| `univers` | oui | `hall` ou `village` (voir section 4). |
+| `univers` | oui | `emploi` ou `formation` (voir section 4). |
 | `type_structure` | oui | Voir les valeurs autorisées en section 4. |
 | `secteurs` | oui (peut être une liste vide) | Liste de secteurs ou domaines d'activité. |
 | `accroche` | oui | Une phrase courte, affichée sur la carte de la liste. |
@@ -87,8 +87,8 @@ date_mise_a_jour: 2026-08-05
 
 ### `univers`
 
-- `hall` → Hall Emploi & Formation
-- `village` → Village Maintenance & Industrie
+- `emploi` → Hall Emploi
+- `formation` → Hall Formation
 
 ### `type_structure`
 

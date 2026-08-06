@@ -38,7 +38,7 @@ titre: "Exemple non publié"
 date: "2026-10-30"
 heure_debut: "09:30"
 heure_fin: "10:15"
-univers: hall
+univers: emploi
 type: conference
 lieu: "Scène centrale"
 accroche: "Une phrase courte qui donne envie de découvrir la fiche."
@@ -75,7 +75,7 @@ date_mise_a_jour: 2026-08-05
 | `date` | oui | Journée concernée — voir les valeurs autorisées en section 4. |
 | `heure_debut` | oui | Heure de début — voir le format en section 5. |
 | `heure_fin` | non | Heure de fin — même format que `heure_debut`. |
-| `univers` | oui | `hall`, `village` ou `transversal` — voir section 4. |
+| `univers` | oui | `emploi`, `formation` ou `transversal` — voir section 4. |
 | `type` | oui | Voir les valeurs autorisées en section 4. |
 | `lieu` | non | Emplacement au sein du salon, uniquement si un nom d'espace a été confirmé. |
 | `accroche` | oui | Une phrase courte, affichée sur la carte de la liste. |
@@ -105,8 +105,8 @@ plutôt que comme le texte attendu par le site, et le build échoue.
 
 ### `univers`
 
-- `hall` → Hall Emploi & Formation
-- `village` → Village Maintenance & Industrie
+- `emploi` → Hall Emploi
+- `formation` → Hall Formation
 - `transversal` → commun aux deux univers
 
 ### `type`

@@ -19,6 +19,11 @@ const noindex = PUBLIC_NOINDEX === 'true';
 export default defineConfig({
   site,
   output: 'static',
+  // /village (Village Maintenance & Industrie) retiré du salon en août 2026 :
+  // redirection plutôt que 404 pour d'éventuels liens déjà partagés/indexés.
+  redirects: {
+    '/village': '/le-salon',
+  },
   vite: {
     plugins: [tailwindcss()],
   },

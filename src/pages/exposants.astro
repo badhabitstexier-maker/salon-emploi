@@ -11,14 +11,14 @@ import {
 
 const exposants = trierExposants(await getExposantsPublies());
 const total = exposants.length;
-const totalHall = exposants.filter((e) => e.data.univers === 'hall').length;
-const totalVillage = exposants.filter((e) => e.data.univers === 'village').length;
+const totalEmploi = exposants.filter((e) => e.data.univers === 'emploi').length;
+const totalFormation = exposants.filter((e) => e.data.univers === 'formation').length;
 
 const secteurs = secteursDisponibles(exposants);
 
 const infosSalon = [
-  'Hall Emploi-Formation',
-  'Village Maintenance & Industrie',
+  'Hall Emploi',
+  'Hall Formation',
   '30 et 31 octobre 2026',
   'Nouville — Nouméa',
 ];
@@ -74,10 +74,10 @@ const infosSalon = [
           <p class="text-center text-sm font-semibold text-marine sm:text-base">
             <span class="font-titre text-lg font-bold text-orange-dark">{total}</span>{' '}
             {total > 1 ? 'exposants confirmés' : 'exposant confirmé'}
-            {(totalHall > 0 || totalVillage > 0) && (
+            {(totalEmploi > 0 || totalFormation > 0) && (
               <span class="text-encre/70">
                 {' — '}
-                {totalHall} {universLabels.hall} · {totalVillage} {universLabels.village}
+                {totalEmploi} {universLabels.emploi} · {totalFormation} {universLabels.formation}
               </span>
             )}
           </p>
@@ -116,8 +116,8 @@ const infosSalon = [
                   class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
                 >
                   <option value="">Tous</option>
-                  <option value="hall">{universLabels.hall}</option>
-                  <option value="village">{universLabels.village}</option>
+                  <option value="emploi">{universLabels.emploi}</option>
+                  <option value="formation">{universLabels.formation}</option>
                 </select>
               </div>
 
