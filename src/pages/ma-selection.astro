@@ -53,15 +53,13 @@ const offresDisponibles = offres.map((offre) => ({
         <ul data-liste-selection class="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label="Offres sélectionnées"></ul>
 
         <div class="mt-8 flex flex-col gap-3 border-t border-marine/10 pt-8 sm:flex-row sm:items-center">
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            title="Le formulaire de candidature sera disponible au Lot 2 (/candidater)."
-            class="inline-flex cursor-not-allowed items-center justify-center rounded-md bg-village/50 px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-marine/60"
+          <a
+            href="/candidater"
+            data-cta-candidater
+            class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-marine transition-opacity hover:opacity-90"
           >
-            Candidater à ma sélection — Bientôt disponible
-          </button>
+            Candidater à ma sélection
+          </a>
           <a
             href="/offres"
             data-preserve-selection
@@ -78,18 +76,17 @@ const offresDisponibles = offres.map((offre) => ({
           Je n'ai pas trouvé d'offre correspondant à mon profil
         </h2>
         <p class="mt-3 text-sm text-encre">
-          Vous pourrez prochainement candidater sans sélectionner d'offre précise, pour être orienté
-          par l'équipe du salon.
+          Vous pouvez déposer votre profil sans sélectionner d'offre précise, afin que LabEvents
+          vous oriente vers les exposants les plus adaptés.
         </p>
-        <button
-          type="button"
-          disabled
-          aria-disabled="true"
-          title="Ce parcours sera disponible au Lot 2 (/candidater?orientation=1)."
-          class="mt-4 inline-flex cursor-not-allowed items-center justify-center rounded-md border-2 border-marine/30 px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-marine/60"
+        <a
+          href="/candidater"
+          data-cta-candidater
+          data-cta-candidater-orientation
+          class="mt-4 inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
         >
-          Candidater sans offre — Bientôt disponible
-        </button>
+          Déposer mon profil
+        </a>
       </div>
     </div>
   </section>

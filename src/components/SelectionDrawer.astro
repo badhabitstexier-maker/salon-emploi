@@ -24,15 +24,13 @@ import OffreSelection from './OffreSelection.astro';
         >
           Voir ma sélection
         </a>
-        <button
-          type="button"
-          disabled
-          aria-disabled="true"
-          title="Le formulaire de candidature sera disponible au Lot 2 (/candidater)."
-          class="cursor-not-allowed rounded-md bg-village/50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-marine/60"
+        <a
+          href="/candidater"
+          data-cta-candidater
+          class="rounded-md bg-village px-4 py-2 text-xs font-bold uppercase tracking-wide text-marine transition-opacity hover:opacity-90"
         >
-          Candidater à ma sélection — Bientôt disponible
-        </button>
+          Candidater à ma sélection
+        </a>
       </div>
     </div>
 
