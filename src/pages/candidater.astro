@@ -191,13 +191,17 @@ const tallyBaseUrl = import.meta.env.PUBLIC_TALLY_CANDIDATURE_URL ?? '';
         .filter((offre): offre is OffreResume => Boolean(offre));
       const orientation = caseOrientation?.checked ?? false;
       const urlComplete = construireUrlTally(tallyBase, offresValides, orientation);
-      if (iframe.getAttribute('src') !== urlComplete) {
+      if (iframe.dataset.tallySrc !== urlComplete) {
         // data-tally-src : c'est cet attribut que le script officiel Tally
         // (widgets/embed.js, chargé par TallyCandidatureEmbed.astro) utilise
         // pour retrouver l'iframe à redimensionner lors des messages
-        // Tally.FormHeightChanged. src : chargement effectif de l'iframe.
+        // Tally.FormHeightChanged. On affecte `data-tally-src` d'abord, puis
+        // on appelle tallyInitEmbed() : c'est lui (jamais nous directement)
+        // qui affecte `src` et déclenche le scan Tally — dans cet ordre,
+        // sinon le mécanisme de hauteur dynamique ne s'initialise jamais.
         iframe.dataset.tallySrc = urlComplete;
-        iframe.src = urlComplete;
+        iframe.removeAttribute('src');
+        (window as any).tallyInitEmbed?.();
       }
     }
 

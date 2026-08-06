@@ -136,8 +136,19 @@ export interface OffreCandidature {
  * personnelle n'est ajoutée ici — uniquement des références d'offres, déjà
  * publiques, et deux indicateurs techniques (`source`, `edition`).
  */
+/**
+ * Le lien Tally configuré (`PUBLIC_TALLY_CANDIDATURE_URL`) est un lien de
+ * partage `/r/{id}` — celui destiné à un envoi direct. Le mécanisme officiel
+ * de hauteur dynamique (`dynamicHeight=1`) est documenté par Tally pour
+ * l'URL d'embed `/embed/{id}` : on convertit donc uniquement au moment de
+ * construire l'URL de l'iframe, sans toucher à la variable elle-même.
+ */
+export function convertirEnUrlEmbedTally(baseUrl: string): string {
+  return baseUrl.replace(/\/r\/([^/?#]+)/, '/embed/$1');
+}
+
 export function construireUrlTally(baseUrl: string, offres: OffreCandidature[], orientation: boolean): string {
-  const url = new URL(baseUrl);
+  const url = new URL(convertirEnUrlEmbedTally(baseUrl));
   offres.slice(0, MAX_SELECTION).forEach((offre, index) => {
     const numero = index + 1;
     url.searchParams.set(`offre_${numero}_ref`, offre.reference);
