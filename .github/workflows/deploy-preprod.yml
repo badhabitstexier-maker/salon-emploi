@@ -30,6 +30,9 @@ jobs:
           PUBLIC_SITE_URL: ${{ secrets.PUBLIC_SITE_URL }}
           PUBLIC_NOINDEX: ${{ secrets.PUBLIC_NOINDEX }}
           PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.PUBLIC_WEB3FORMS_ACCESS_KEY }}
+          # Non secrète (voir docs/CANDIDATURES_TALLY.md) : variable d'environnement
+          # "preprod", pas un secret — à créer dans Settings → Environments → preprod → Variables.
+          PUBLIC_TALLY_CANDIDATURE_URL: ${{ vars.PUBLIC_TALLY_CANDIDATURE_URL }}
 
       - name: Déployer le contenu de dist/ vers OVH (FTP)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
