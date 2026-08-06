@@ -139,6 +139,25 @@ champs restent volontairement distincts (voir `construireUrlTally()` dans
 Aucune donnée personnelle (nom, email, téléphone, CV…) n'est jamais placée
 dans cette URL : ces informations ne sont saisies que dans Tally lui-même.
 
+Un paramètre technique supplémentaire, `dynamicHeight=1`, est également
+toujours ajouté : il n'a aucune valeur métier, il active le mécanisme
+officiel Tally de hauteur dynamique (voir section 6bis). Ce n'est pas un
+champ caché du formulaire, mais un réglage d'affichage de l'intégration.
+
+## 6bis. Hauteur dynamique de l'iframe (un seul scroll)
+
+L'iframe Tally n'a pas de hauteur fixe et ne défile jamais elle-même :
+`src/components/TallyCandidatureEmbed.astro` charge le script officiel
+`https://tally.so/widgets/embed.js` (une seule fois par page), qui écoute les
+messages `Tally.FormHeightChanged` envoyés par Tally à chaque changement
+d'étape et ajuste automatiquement la hauteur de l'iframe en conséquence.
+Combiné à `dynamicHeight=1` dans l'URL, cela garantit un seul scroll — celui
+de la page `salonemploi.nc` — sans scroll interne imbriqué dans le
+formulaire. L'attribut `data-tally-src` de l'iframe (mis à jour par
+`recalculerTally()` dans `src/pages/candidater.astro`, en parallèle de
+`src`) est ce que le script officiel utilise pour retrouver l'iframe à
+redimensionner.
+
 ## 9. Règles de validation des références
 
 Au chargement de `/candidater` (`src/pages/candidater.astro`, réutilise

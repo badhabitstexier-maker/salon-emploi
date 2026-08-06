@@ -6,6 +6,13 @@
   champs cachés (offres sélectionnées, orientation) côté client, puisque seule
   la sélection réelle du visiteur (dans l'URL du site) permet de le faire.
 
+  Hauteur dynamique : l'URL construite par construireUrlTally() porte
+  `dynamicHeight=1`, et le script officiel Tally (widgets/embed.js, chargé
+  ci-dessous une seule fois) écoute les messages `Tally.FormHeightChanged`
+  pour ajuster lui-même la hauteur de l'iframe à chaque étape du formulaire.
+  Objectif : un seul scroll (celui de la page), jamais de scroll interne à
+  l'iframe. Voir docs/CANDIDATURES_TALLY.md.
+
   Sans URL configurée : aucune iframe, aucun bouton mort — un état d'attente
   propre (voir docs/CANDIDATURES_TALLY.md, section « Configuration »).
 */
@@ -19,8 +26,8 @@ const configuree = tallyBaseUrl.trim().length > 0;
 
 {
   configuree ? (
-    <div class="w-full overflow-hidden rounded-2xl border border-marine/15 bg-brume">
-      <div class="relative min-h-[720px] w-full">
+    <div class="w-full rounded-2xl border border-marine/15 bg-brume">
+      <div class="relative min-h-[240px] w-full">
         <p id="tally-etat-chargement" class="p-6 text-sm text-encre">
           Chargement du formulaire de candidature…
         </p>
@@ -28,7 +35,8 @@ const configuree = tallyBaseUrl.trim().length > 0;
           id="tally-candidature-iframe"
           title="Formulaire de candidature — Salon de l'Emploi et de la Formation 2026"
           data-tally-base={tallyBaseUrl}
-          class="hidden h-[720px] w-full border-0"
+          class="hidden w-full border-0"
+          style="height: 1px;"
         />
       </div>
       <noscript>
@@ -40,6 +48,26 @@ const configuree = tallyBaseUrl.trim().length > 0;
           .
         </p>
       </noscript>
+      <script>
+        // Chargement du script officiel Tally (une seule fois par page,
+        // même si ce composant venait à être rendu plusieurs fois) : c'est
+        // lui qui écoute les messages de redimensionnement envoyés par
+        // l'iframe Tally et ajuste sa hauteur en conséquence.
+        const SRC_EMBED_TALLY = 'https://tally.so/widgets/embed.js';
+
+        function chargerEmbedTally(): void {
+          if (typeof (window as any).Tally !== 'undefined') {
+            (window as any).Tally.loadEmbeds();
+            return;
+          }
+          if (document.querySelector(`script[src="${SRC_EMBED_TALLY}"]`)) return;
+          const script = document.createElement('script');
+          script.src = SRC_EMBED_TALLY;
+          document.body.appendChild(script);
+        }
+
+        chargerEmbedTally();
+      </script>
     </div>
   ) : (
     <div class="rounded-2xl border border-marine/15 bg-brume p-6 text-center sm:p-8">

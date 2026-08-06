@@ -148,5 +148,10 @@ export function construireUrlTally(baseUrl: string, offres: OffreCandidature[], 
   if (orientation) url.searchParams.set('orientation_labevents_label', ORIENTATION_LABEVENTS_LABEL);
   url.searchParams.set('source', 'salon-emploi.nc');
   url.searchParams.set('edition', '2026');
+  // Active le mécanisme officiel Tally de hauteur dynamique (voir
+  // TallyCandidatureEmbed.astro, qui charge widgets/embed.js) : évite le
+  // double scroll (page + iframe) en laissant Tally piloter la hauteur de
+  // l'iframe via postMessage à chaque changement d'étape du formulaire.
+  url.searchParams.set('dynamicHeight', '1');
   return url.toString();
 }
