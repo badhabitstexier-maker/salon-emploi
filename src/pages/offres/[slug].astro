@@ -1,0 +1,206 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SelectionDrawer from '../../components/SelectionDrawer.astro';
+import { getOffresPubliees, offreSlug, formuleLabels, type Offre } from '../../lib/offres';
+
+export async function getStaticPaths() {
+  const offres = await getOffresPubliees();
+  return offres.map((offre) => ({
+    params: { slug: offreSlug(offre) },
+    props: { offre, toutesLesOffres: offres },
+  }));
+}
+
+interface Props {
+  offre: Offre;
+  toutesLesOffres: Offre[];
+}
+
+const { offre, toutesLesOffres } = Astro.props;
+const { data } = offre;
+
+const badgeFormule = data.formule === 'silver' || data.formule === 'gold' ? formuleLabels[data.formule] : null;
+
+const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
+
+const offresDisponibles = toutesLesOffres.map((o) => ({
+  reference: o.data.reference,
+  intitule: o.data.intitule,
+  exposantNom: o.data.exposantNom,
+  href: `/offres/${offreSlug(o)}`,
+}));
+
+const jobPostingSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'JobPosting',
+  title: data.intitule,
+  description: data.descriptionCourte,
+  identifier: {
+    '@type': 'PropertyValue',
+    name: data.exposantNom,
+    value: data.reference,
+  },
+  datePosted: data.datePublication.toISOString().slice(0, 10),
+  validThrough: data.dateCloture.toISOString().slice(0, 10),
+  employmentType: data.typeContrat,
+  hiringOrganization: {
+    '@type': 'Organization',
+    name: data.exposantNom,
+  },
+  jobLocation: {
+    '@type': 'Place',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: data.lieu,
+      addressCountry: 'NC',
+    },
+  },
+};
+---
+
+<BaseLayout title={`${data.intitule} — ${data.exposantNom}`} description={data.descriptionCourte}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(jobPostingSchema)} />
+  </Fragment>
+
+  <section class="bg-marine text-blanc">
+    <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:py-14">
+      <a
+        href="/offres"
+        data-preserve-selection
+        data-href-base="/offres"
+        class="inline-flex items-center gap-1.5 text-sm font-semibold text-brume underline decoration-brume/40 underline-offset-4 transition-colors hover:text-blanc hover:decoration-blanc"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Voir toutes les offres
+      </a>
+
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <span class="w-fit rounded-full bg-orange px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-marine">
+          {data.reference}
+        </span>
+        {badgeFormule && (
+          <span class="w-fit rounded-full border border-blanc/30 px-2.5 py-1 text-xs font-semibold text-brume">
+            {badgeFormule}
+          </span>
+        )}
+        {data.sansExperience && (
+          <span class="w-fit rounded-full bg-village px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-marine">
+            Débutant accepté
+          </span>
+        )}
+      </div>
+
+      <h1 class="mt-4 font-titre text-3xl font-bold uppercase leading-none sm:text-4xl">{data.intitule}</h1>
+      <p class="mt-2 text-base font-semibold text-brume">{data.exposantNom}</p>
+
+      <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-brume">
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true" />
+          {data.secteur}
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true" />
+          {data.typeContrat.join(' · ')}
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true" />
+          {data.lieu}
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="bg-blanc">
+    <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:py-14">
+      <div class="grid gap-4 rounded-2xl border border-marine/15 bg-brume p-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Postes à pourvoir</p>
+          <p class="mt-1 font-titre text-lg font-bold text-marine">{data.nombrePostes}</p>
+        </div>
+        {data.datePrisePoste && (
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Prise de poste</p>
+            <p class="mt-1 font-titre text-lg font-bold text-marine">{data.datePrisePoste}</p>
+          </div>
+        )}
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Niveau d'expérience</p>
+          <p class="mt-1 font-titre text-lg font-bold text-marine">{data.niveauExperience}</p>
+        </div>
+        {data.niveauFormation.length > 0 && (
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Niveau de formation</p>
+            <p class="mt-1 font-titre text-lg font-bold text-marine">{data.niveauFormation.join(' · ')}</p>
+          </div>
+        )}
+      </div>
+
+      <p class="mt-8 text-lg font-semibold text-marine">{data.descriptionCourte}</p>
+
+      {data.missions.length > 0 && (
+        <div class="mt-8">
+          <h2 class="font-titre text-lg font-bold uppercase text-marine">Missions</h2>
+          <ul class="mt-3 space-y-1.5 text-sm text-encre">
+            {data.missions.map((mission) => (
+              <li class="flex items-start gap-2">
+                <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true" />
+                <span>{mission}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {data.competencesPrerequis.length > 0 && (
+        <div class="mt-8">
+          <h2 class="font-titre text-lg font-bold uppercase text-marine">Compétences et prérequis</h2>
+          <ul class="mt-3 space-y-1.5 text-sm text-encre">
+            {data.competencesPrerequis.map((competence) => (
+              <li class="flex items-start gap-2">
+                <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true" />
+                <span>{competence}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p class="mt-8 text-xs text-encre/70">Offre publiée le {formateurDate.format(data.datePublication)}.</p>
+
+      <div class="mt-10 flex flex-col gap-3 border-t border-marine/10 pt-8 sm:flex-row">
+        {data.accepteCandidaturesEnLigne ? (
+          <button
+            type="button"
+            data-offre-toggle={data.reference}
+            aria-pressed="false"
+            class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-marine transition-opacity hover:opacity-90"
+          >
+            Ajouter cette offre à ma sélection
+          </button>
+        ) : (
+          <p class="rounded-2xl border border-marine/15 bg-brume p-4 text-sm text-encre">
+            Cette offre est à découvrir directement auprès de l'exposant pendant le salon.
+          </p>
+        )}
+        <a
+          href="/offres"
+          data-preserve-selection
+          data-href-base="/offres"
+          class="inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
+        >
+          Voir toutes les offres
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <SelectionDrawer />
+  <script type="application/json" id="offres-disponibles-donnees" set:html={JSON.stringify(offresDisponibles)} />
+  <script>
+    import { initSelectionUI } from '../../lib/selection-ui';
+    initSelectionUI();
+  </script>
+</BaseLayout>

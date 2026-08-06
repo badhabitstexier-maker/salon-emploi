@@ -1,0 +1,43 @@
+---
+import OffreSelection from './OffreSelection.astro';
+---
+
+<OffreSelection />
+
+<div
+  id="tiroir-selection"
+  data-selection-presente
+  class="hidden fixed inset-x-0 bottom-0 z-40 border-t-2 border-marine bg-brume shadow-[0_-4px_16px_rgba(16,35,63,0.18)]"
+>
+  <div class="mx-auto max-w-6xl px-4 py-3 sm:px-6">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <p class="font-titre text-sm font-bold uppercase tracking-wide text-marine">
+        Ma sélection <span data-compteur-selection class="text-orange-dark">0/5</span>
+      </p>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <a
+          href="/ma-selection"
+          data-preserve-selection
+          data-href-base="/ma-selection"
+          class="rounded-md border-2 border-marine px-4 py-2 text-xs font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
+        >
+          Voir ma sélection
+        </a>
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          title="Le formulaire de candidature sera disponible au Lot 2 (/candidater)."
+          class="cursor-not-allowed rounded-md bg-village/50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-marine/60"
+        >
+          Candidater à ma sélection — Bientôt disponible
+        </button>
+      </div>
+    </div>
+
+    <ul data-liste-selection class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5" aria-label="Offres sélectionnées"></ul>
+  </div>
+</div>
+
+<p id="annonce-selection" class="sr-only" role="status" aria-live="polite"></p>

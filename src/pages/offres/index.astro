@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import OffreCard from '../../components/OffreCard.astro';
+import OffreFilters from '../../components/OffreFilters.astro';
+import SelectionDrawer from '../../components/SelectionDrawer.astro';
+import {
+  getOffresPubliees,
+  trierOffres,
+  offreSlug,
+  secteursDisponibles,
+  entreprisesDisponibles,
+  lieuxDisponibles,
+  typesContratDisponibles,
+  niveauxFormationDisponibles,
+} from '../../lib/offres';
+
+const offres = trierOffres(await getOffresPubliees());
+const total = offres.length;
+
+const offresDisponibles = offres.map((offre) => ({
+  reference: offre.data.reference,
+  intitule: offre.data.intitule,
+  exposantNom: offre.data.exposantNom,
+  href: `/offres/${offreSlug(offre)}`,
+}));
+
+const infosSalon = ['Hall Emploi', 'Hall Formation', '30 et 31 octobre 2026', 'Nouville — Nouméa'];
+---
+
+<BaseLayout
+  title="Les offres du salon 2026"
+  description="Consultez les postes proposés par les exposants du Salon de l'Emploi & de la Formation 2026 à Nouméa et préparez votre candidature."
+>
+  <!-- ============================== HERO ============================== -->
+  <section class="bg-marine text-blanc">
+    <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-20">
+      <p class="text-xs font-bold uppercase tracking-widest text-orange">Offres et candidatures</p>
+      <h1 class="mt-3 max-w-3xl font-titre text-4xl font-bold uppercase leading-none sm:text-5xl xl:text-6xl">
+        Les offres du salon 2026
+      </h1>
+
+      <p class="mt-6 max-w-2xl text-base text-brume sm:text-lg">
+        Consultez les postes proposés par les exposants, préparez votre candidature et sélectionnez
+        jusqu'à cinq offres avant de rencontrer les recruteurs sur le salon.
+      </p>
+
+      <ul class="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-semibold uppercase tracking-wide text-brume sm:flex sm:flex-wrap sm:gap-x-8">
+        {infosSalon.map((info) => (
+          <li class="flex items-center gap-2">
+            <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true" />
+            {info}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== RAPPEL — LA CANDIDATURE PRÉPARE LA RENCONTRE ==================== -->
+  <section class="border-b border-marine/10 bg-orange/10">
+    <div class="mx-auto max-w-6xl px-4 py-4 sm:px-6">
+      <p class="text-center text-sm font-semibold text-marine">
+        La candidature en ligne prépare la rencontre. Elle ne remplace pas l'échange avec le
+        recruteur pendant le salon.
+      </p>
+    </div>
+  </section>
+
+  {total > 0 && (
+    <section class="border-b border-marine/10 bg-brume">
+      <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        <p class="text-center text-sm font-semibold text-marine sm:text-base">
+          <span class="font-titre text-lg font-bold text-orange-dark">{total}</span>{' '}
+          {total > 1 ? 'offres disponibles' : 'offre disponible'}
+        </p>
+      </div>
+    </section>
+  )}
+
+  {total > 0 ? (
+    <section class="bg-blanc">
+      <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
+        <OffreFilters
+          total={total}
+          entreprises={entreprisesDisponibles(offres)}
+          secteurs={secteursDisponibles(offres)}
+          typesContrat={typesContratDisponibles(offres)}
+          lieux={lieuxDisponibles(offres)}
+          niveauxFormation={niveauxFormationDisponibles(offres)}
+        />
+
+        <div id="grille-offres" class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {offres.map((offre) => <OffreCard offre={offre} />)}
+        </div>
+
+        <p id="aucun-resultat-offres" class="mt-8 hidden rounded-2xl border border-marine/15 bg-brume p-8 text-center text-sm text-encre">
+          Aucune offre ne correspond à votre recherche. Essayez d'autres mots-clés ou réinitialisez
+          les filtres.
+        </p>
+      </div>
+
+      <SelectionDrawer />
+      <script type="application/json" id="offres-disponibles-donnees" set:html={JSON.stringify(offresDisponibles)} />
+      <script>
+        import { initSelectionUI } from '../../lib/selection-ui';
+        initSelectionUI();
+      </script>
+    </section>
+  ) : (
+    <section class="bg-blanc">
+      <div class="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6 lg:py-20">
+        <h2 class="font-titre text-2xl font-bold uppercase text-marine sm:text-3xl">
+          Les offres des exposants seront publiées progressivement à l'approche du salon.
+        </h2>
+        <p class="mt-4 text-encre">
+          Revenez prochainement pour découvrir les postes proposés par les entreprises et organismes
+          de formation présents au salon.
+        </p>
+        <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <a
+            href="/preparer-ma-visite"
+            class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+          >
+            Préparer ma visite
+          </a>
+          <a
+            href="/le-salon"
+            class="inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
+          >
+            Découvrir le salon
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+</BaseLayout>
