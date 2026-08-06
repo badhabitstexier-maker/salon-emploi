@@ -23,10 +23,11 @@ Le site doit être **réutilisable pour les éditions futures**.
 - **Lieu** : Salle d'exposition de Nouville, Nouméa.
 - **Entrée** : libre et gratuite.
 - **Fréquentation cible** : ~3 000 visiteurs sur les deux jours.
-- **Deux univers** :
-  - **Hall Emploi-Formation**
-  - **Village Maintenance & Industrie**
-- **Organisateur unique** : LabEvents. **L'AMD (Association Maintenance Durable) est un partenaire pressenti, susceptible de porter le Village Maintenance & Industrie — mais ce partenariat n'est pas confirmé.** Ne jamais présenter l'AMD comme organisateur du salon, ni affirmer un partenariat non confirmé. En cas de doute, utiliser une formulation neutre ("en lien avec l'AMD") ou masquer la mention jusqu'à validation explicite de Philippe.
+- **Deux univers (configuration provisoire au 06/08/2026)** :
+  - **Hall Emploi** — entreprises qui recrutent, organismes de formation, acteurs de l'accompagnement.
+  - **Hall Formation** — organismes de formation, orientation, découverte des parcours.
+  - ⚠️ Le **Village Maintenance & Industrie** est **suspendu** tant que le partenariat AMD n'est pas confirmé. Ne pas le mentionner sur le site ni dans les documents tant que Philippe n'a pas donné son feu vert explicite. Quand l'AMD sera confirmée, les deux halls fusionneront avec le Village dans une configuration à trois univers.
+- **Emplacements commercialisés : 37** (configuration provisoire incluant les espaces potentiellement liés à l'AMD). À réviser si l'AMD confirme sa participation et revendique une partie des emplacements.
 
 ---
 
