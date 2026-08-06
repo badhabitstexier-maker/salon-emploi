@@ -5,8 +5,8 @@
 
   Aucun localStorage, sessionStorage, cookie ni IndexedDB : tout l'état vient
   de `window.location.search` et n'est réécrit qu'avec `history.replaceState`.
-  Appelé une fois par page via `initSelectionUI()` (voir /offres, /offres/[slug]
-  et /ma-selection).
+  Appelé une fois par page via `initSelectionUI()` (voir /offres, /offres/[slug],
+  /ma-selection et /candidater).
 */
 import {
   MAX_SELECTION,
@@ -15,7 +15,11 @@ import {
   ajouterReference,
   retirerReference,
   appliquerSelectionAlUrl,
+  hrefVersCandidater,
 } from './candidature-selection';
+
+/** Événement émis à chaque écriture de la sélection dans l'URL (voir /candidater). */
+export const EVENEMENT_SELECTION_CHANGEE = 'offres:selection-changee';
 
 interface OffreResume {
   reference: string;
@@ -95,6 +99,10 @@ export function initSelectionUI(options: OptionsSelectionUI = {}): void {
     document.querySelectorAll('[data-compteur-selection]').forEach((element) => {
       element.textContent = `${selection.length}/${MAX_SELECTION}`;
     });
+    // Variante « nombre seul » — pour les libellés du type "X offre(s) sélectionnée(s) sur 5" (/candidater).
+    document.querySelectorAll('[data-compteur-nombre]').forEach((element) => {
+      element.textContent = String(selection.length);
+    });
 
     document.querySelectorAll<HTMLElement>('[data-liste-selection]').forEach((liste) => {
       remplirListe(liste, selection);
@@ -116,12 +124,21 @@ export function initSelectionUI(options: OptionsSelectionUI = {}): void {
       const url = appliquerSelectionAlUrl(new URL(cheminBase, window.location.href), selection);
       lien.href = `${url.pathname}${url.search}`;
     });
+
+    // CTA de candidature (tiroir, /ma-selection) — activés au Lot 2, pointent
+    // vers /candidater avec la sélection courante ; `data-cta-candidater-orientation`
+    // ajoute en plus `orientation=1` (parcours « Déposer mon profil »).
+    document.querySelectorAll<HTMLAnchorElement>('a[data-cta-candidater]').forEach((lien) => {
+      const orientation = lien.hasAttribute('data-cta-candidater-orientation');
+      lien.href = hrefVersCandidater(selection, orientation);
+    });
   }
 
   function ecrireSelection(selection: string[]): void {
     const url = appliquerSelectionAlUrl(new URL(window.location.href), selection);
     window.history.replaceState(window.history.state, '', url);
     rendre(selection);
+    document.dispatchEvent(new CustomEvent(EVENEMENT_SELECTION_CHANGEE, { detail: { selection } }));
   }
 
   document.addEventListener('click', (evenement) => {

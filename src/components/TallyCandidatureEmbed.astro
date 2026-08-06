@@ -1,0 +1,51 @@
+---
+/*
+  Intégration du formulaire Tally de candidature. Reçoit uniquement l'URL de
+  base configurée (variable PUBLIC_TALLY_CANDIDATURE_URL, résolue au build) —
+  ce composant ne construit pas l'URL finale : la page /candidater calcule les
+  champs cachés (offres sélectionnées, orientation) côté client, puisque seule
+  la sélection réelle du visiteur (dans l'URL du site) permet de le faire.
+
+  Sans URL configurée : aucune iframe, aucun bouton mort — un état d'attente
+  propre (voir docs/CANDIDATURES_TALLY.md, section « Configuration »).
+*/
+interface Props {
+  tallyBaseUrl: string;
+}
+
+const { tallyBaseUrl } = Astro.props;
+const configuree = tallyBaseUrl.trim().length > 0;
+---
+
+{
+  configuree ? (
+    <div class="w-full overflow-hidden rounded-2xl border border-marine/15 bg-brume">
+      <div class="relative min-h-[720px] w-full">
+        <p id="tally-etat-chargement" class="p-6 text-sm text-encre">
+          Chargement du formulaire de candidature…
+        </p>
+        <iframe
+          id="tally-candidature-iframe"
+          title="Formulaire de candidature — Salon de l'Emploi et de la Formation 2026"
+          data-tally-base={tallyBaseUrl}
+          class="hidden h-[720px] w-full border-0"
+        />
+      </div>
+      <noscript>
+        <p class="border-t border-marine/15 bg-blanc p-6 text-sm text-encre">
+          Ce formulaire nécessite JavaScript.{' '}
+          <a href={tallyBaseUrl} class="font-semibold text-marine underline" target="_blank" rel="noopener noreferrer">
+            Ouvrir le formulaire de candidature dans un nouvel onglet
+          </a>
+          .
+        </p>
+      </noscript>
+    </div>
+  ) : (
+    <div class="rounded-2xl border border-marine/15 bg-brume p-6 text-center sm:p-8">
+      <p class="font-titre text-lg font-bold uppercase text-marine">
+        Le formulaire de candidature sera prochainement disponible.
+      </p>
+    </div>
+  )
+}
