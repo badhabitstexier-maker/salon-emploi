@@ -90,4 +90,49 @@ const programme = defineCollection({
   }),
 });
 
-export const collections = { exposants, programme };
+/*
+  Collection « offres » — Lot 1 du dispositif « Offres et candidatures »
+  (voir docs/OFFRES.md). Une entrée = un fichier Markdown dans
+  src/content/offres/ (frontmatter uniquement ; le corps du fichier n'est
+  pas utilisé).
+
+  Contrairement à `exposants` et `programme`, il n'y a pas de champ `slug` :
+  le nom de fichier fait foi (voir docs/OFFRES.md, procédure d'ajout). Le
+  champ `reference` (ex. SEF26-001) est un identifiant métier distinct,
+  utilisé pour la sélection par paramètres URL (`offre1`..`offre5`) — il
+  n'est pas nécessairement égal au nom de fichier.
+*/
+const offres = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/offres' }),
+  schema: z.object({
+    reference: z.string(),
+    status: z.enum(['recue', 'a-completer', 'validee', 'publiee', 'retiree', 'cloturee']),
+    intitule: z.string(),
+    exposantId: z.string(),
+    exposantNom: z.string(),
+    formule: z.enum(['standard', 'silver', 'gold']),
+    secteur: z.string(),
+    typeContrat: z
+      .array(z.enum(['CDI', 'CDD', 'Alternance', 'Stage', 'Intérim', 'Saisonnier', 'Autre']))
+      .min(1),
+    lieu: z.string(),
+    nombrePostes: z.number().int().positive().default(1),
+    datePrisePoste: z.string().optional(),
+    niveauFormation: z.array(z.string()).default([]),
+    niveauExperience: z.string(),
+    sansExperience: z.boolean().default(false),
+    descriptionCourte: z.string(),
+    missions: z.array(z.string()).default([]),
+    competencesPrerequis: z.array(z.string()).default([]),
+    accepteCandidaturesEnLigne: z.boolean().default(true),
+    datePublication: z.coerce.date(),
+    // Durée de conservation des données 2026 (CLAUDE.md) : ne jamais utiliser
+    // le 31 octobre 2026 (date de fin du salon) comme date de clôture.
+    dateCloture: z.coerce.date(),
+    // Champ conservé pour un usage éditorial futur — ne doit PAS influencer
+    // le tri ni le classement des offres (docs/OFFRES.md, section « tri »).
+    miseEnAvant: z.boolean().default(false),
+  }),
+});
+
+export const collections = { exposants, programme, offres };

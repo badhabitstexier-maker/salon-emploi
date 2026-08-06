@@ -84,3 +84,19 @@ body {
     clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%);
   }
 }
+
+/*
+  Espace réservé en bas de page quand le tiroir de sélection d'offres
+  (#tiroir-selection, SelectionDrawer.astro) est visible, pour ne pas
+  masquer le contenu sous cette barre fixe. Classe posée/retirée par
+  src/lib/selection-ui.ts.
+*/
+body.has-selection-drawer {
+  padding-bottom: 7rem;
+}
+
+@media (min-width: 640px) {
+  body.has-selection-drawer {
+    padding-bottom: 5rem;
+  }
+}

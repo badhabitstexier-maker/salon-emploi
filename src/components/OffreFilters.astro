@@ -1,0 +1,192 @@
+---
+interface Props {
+  total: number;
+  entreprises: string[];
+  secteurs: string[];
+  typesContrat: string[];
+  lieux: string[];
+  niveauxFormation: string[];
+}
+
+const { total, entreprises, secteurs, typesContrat, lieux, niveauxFormation } = Astro.props;
+---
+
+<form id="filtres-offres" class="rounded-2xl border border-marine/15 bg-brume p-5 sm:p-6">
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <label for="recherche-offre" class="block text-xs font-bold uppercase tracking-wide text-marine">
+        Rechercher
+      </label>
+      <input
+        id="recherche-offre"
+        name="recherche"
+        type="search"
+        placeholder="Intitulé, entreprise, mot-clé…"
+        class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+      />
+    </div>
+
+    <div>
+      <label for="filtre-entreprise" class="block text-xs font-bold uppercase tracking-wide text-marine">
+        Entreprise
+      </label>
+      <select
+        id="filtre-entreprise"
+        name="entreprise"
+        class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+      >
+        <option value="">Toutes</option>
+        {entreprises.map((entreprise) => <option value={entreprise}>{entreprise}</option>)}
+      </select>
+    </div>
+
+    {secteurs.length > 0 && (
+      <div>
+        <label for="filtre-secteur-offre" class="block text-xs font-bold uppercase tracking-wide text-marine">
+          Secteur d'activité
+        </label>
+        <select
+          id="filtre-secteur-offre"
+          name="secteur"
+          class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+        >
+          <option value="">Tous</option>
+          {secteurs.map((secteur) => <option value={secteur}>{secteur}</option>)}
+        </select>
+      </div>
+    )}
+
+    {typesContrat.length > 0 && (
+      <div>
+        <label for="filtre-type-contrat" class="block text-xs font-bold uppercase tracking-wide text-marine">
+          Type de contrat
+        </label>
+        <select
+          id="filtre-type-contrat"
+          name="typeContrat"
+          class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+        >
+          <option value="">Tous</option>
+          {typesContrat.map((type) => <option value={type}>{type}</option>)}
+        </select>
+      </div>
+    )}
+
+    {niveauxFormation.length > 0 && (
+      <div>
+        <label for="filtre-niveau-formation" class="block text-xs font-bold uppercase tracking-wide text-marine">
+          Niveau de formation
+        </label>
+        <select
+          id="filtre-niveau-formation"
+          name="niveauFormation"
+          class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+        >
+          <option value="">Tous</option>
+          {niveauxFormation.map((niveau) => <option value={niveau}>{niveau}</option>)}
+        </select>
+      </div>
+    )}
+
+    {lieux.length > 1 && (
+      <div>
+        <label for="filtre-lieu" class="block text-xs font-bold uppercase tracking-wide text-marine">
+          Lieu de travail
+        </label>
+        <select
+          id="filtre-lieu"
+          name="lieu"
+          class="mt-1.5 w-full rounded-md border border-marine/20 bg-blanc px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+        >
+          <option value="">Tous</option>
+          {lieux.map((lieu) => <option value={lieu}>{lieu}</option>)}
+        </select>
+      </div>
+    )}
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+    <label class="flex items-center gap-2 text-sm font-semibold text-marine">
+      <input id="filtre-debutant" name="debutant" type="checkbox" class="h-4 w-4 rounded border-marine/30 text-village focus:ring-village/40" />
+      Débutant accepté
+    </label>
+    <label class="flex items-center gap-2 text-sm font-semibold text-marine">
+      <input id="filtre-recent" name="recent" type="checkbox" class="h-4 w-4 rounded border-marine/30 text-village focus:ring-village/40" />
+      Offres récemment publiées
+    </label>
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+    <p id="resultats-compte-offres" class="text-sm font-semibold text-marine" aria-live="polite">
+      {total} {total > 1 ? 'résultats' : 'résultat'}
+    </p>
+    <button
+      type="reset"
+      id="reinitialiser-filtres-offres"
+      class="rounded-md border border-marine/30 px-4 py-2 text-sm font-semibold text-marine transition-colors hover:bg-marine hover:text-blanc"
+    >
+      Réinitialiser les filtres
+    </button>
+  </div>
+</form>
+
+<script>
+  const form = document.getElementById('filtres-offres') as HTMLFormElement | null;
+  const compte = document.getElementById('resultats-compte-offres');
+  const aucunResultat = document.getElementById('aucun-resultat-offres');
+  const champRecherche = document.getElementById('recherche-offre') as HTMLInputElement | null;
+
+  if (form && compte) {
+    const cartes = Array.from(document.querySelectorAll<HTMLElement>('[data-offre-card]'));
+
+    const normaliser = (valeur: string) =>
+      valeur
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    const appliquerFiltres = () => {
+      const donnees = new FormData(form);
+      const recherche = normaliser(String(donnees.get('recherche') ?? '').trim());
+      const entreprise = String(donnees.get('entreprise') ?? '');
+      const secteur = String(donnees.get('secteur') ?? '');
+      const typeContrat = String(donnees.get('typeContrat') ?? '');
+      const niveauFormation = String(donnees.get('niveauFormation') ?? '');
+      const lieu = String(donnees.get('lieu') ?? '');
+      const debutant = donnees.get('debutant') === 'on';
+      const recent = donnees.get('recent') === 'on';
+
+      let visibles = 0;
+
+      for (const carte of cartes) {
+        const typesCarte = (carte.dataset.typesContrat ?? '').split('|');
+        const niveauxCarte = (carte.dataset.niveaux ?? '').split('|');
+
+        const visible =
+          (!recherche || (carte.dataset.search ?? '').includes(recherche)) &&
+          (!entreprise || carte.dataset.entreprise === entreprise) &&
+          (!secteur || carte.dataset.secteur === secteur) &&
+          (!typeContrat || typesCarte.includes(typeContrat)) &&
+          (!niveauFormation || niveauxCarte.includes(niveauFormation)) &&
+          (!lieu || carte.dataset.lieu === lieu) &&
+          (!debutant || carte.dataset.sansExperience === 'true') &&
+          (!recent || carte.dataset.recent === 'true');
+
+        carte.classList.toggle('hidden', !visible);
+        if (visible) visibles += 1;
+      }
+
+      compte.textContent = `${visibles} ${visibles > 1 || visibles === 0 ? 'résultats' : 'résultat'}`;
+      aucunResultat?.classList.toggle('hidden', visibles !== 0);
+    };
+
+    form.addEventListener('input', appliquerFiltres);
+    form.addEventListener('change', appliquerFiltres);
+    form.addEventListener('reset', () => {
+      window.setTimeout(appliquerFiltres, 0);
+      champRecherche?.focus();
+    });
+
+    appliquerFiltres();
+  }
+</script>
