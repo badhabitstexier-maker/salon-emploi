@@ -170,7 +170,20 @@ const tallyBaseUrl = import.meta.env.PUBLIC_TALLY_CANDIDATURE_URL ?? '';
     const caseOrientation = document.getElementById('case-orientation') as HTMLInputElement | null;
     const iframe = document.getElementById('tally-candidature-iframe') as HTMLIFrameElement | null;
     const etatChargement = document.getElementById('tally-etat-chargement');
+    const secours = document.getElementById('tally-secours');
+    const secoursLien = document.getElementById('tally-secours-lien') as HTMLAnchorElement | null;
     const tallyBase = iframe?.dataset.tallyBase ?? '';
+
+    // Filet de sécurité : si l'iframe n'a toujours pas chargé après 8s
+    // (message « Chargement… » encore visible), propose un lien pour ouvrir
+    // le formulaire dans un nouvel onglet. Disparaît dès que l'iframe charge.
+    let minuteurSecours: ReturnType<typeof setTimeout> | undefined;
+    function armerSecours(): void {
+      window.clearTimeout(minuteurSecours);
+      minuteurSecours = window.setTimeout(() => {
+        secours?.classList.remove('hidden');
+      }, 8000);
+    }
 
     // État initial de la case : jamais précochée, sauf si l'URL contient déjà orientation=1.
     if (caseOrientation) {
@@ -192,22 +205,29 @@ const tallyBaseUrl = import.meta.env.PUBLIC_TALLY_CANDIDATURE_URL ?? '';
       const orientation = caseOrientation?.checked ?? false;
       const urlComplete = construireUrlTally(tallyBase, offresValides, orientation);
       if (iframe.dataset.tallySrc !== urlComplete) {
-        // data-tally-src : c'est cet attribut que le script officiel Tally
+        // Le chargement de l'iframe ne doit jamais dépendre du script Tally :
+        // on affecte `src` nous-mêmes, directement, pour un chargement
+        // immédiat et fiable. `data-tally-src` reste renseigné avec la même
+        // valeur car c'est cet attribut que le script officiel Tally
         // (widgets/embed.js, chargé par TallyCandidatureEmbed.astro) utilise
-        // pour retrouver l'iframe à redimensionner lors des messages
-        // Tally.FormHeightChanged. On affecte `data-tally-src` d'abord, puis
-        // on appelle tallyInitEmbed() : c'est lui (jamais nous directement)
-        // qui affecte `src` et déclenche le scan Tally — dans cet ordre,
-        // sinon le mécanisme de hauteur dynamique ne s'initialise jamais.
+        // pour retrouver l'iframe et écouter les messages
+        // Tally.FormHeightChanged. tallyInitEmbed() est appelé ensuite
+        // uniquement pour activer ce mécanisme de hauteur dynamique — jamais
+        // pour le chargement initial de l'iframe.
+        if (secoursLien) secoursLien.href = urlComplete;
+        secours?.classList.add('hidden');
         iframe.dataset.tallySrc = urlComplete;
-        iframe.removeAttribute('src');
+        iframe.src = urlComplete;
         (window as any).tallyInitEmbed?.();
+        armerSecours();
       }
     }
 
     iframe?.addEventListener('load', () => {
       iframe.classList.remove('hidden');
       etatChargement?.classList.add('hidden');
+      secours?.classList.add('hidden');
+      window.clearTimeout(minuteurSecours);
     });
 
     document.addEventListener(EVENEMENT_SELECTION_CHANGEE, () => {

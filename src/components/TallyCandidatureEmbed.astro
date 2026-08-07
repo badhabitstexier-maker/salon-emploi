@@ -16,10 +16,11 @@
   Initialisation : ce composant se contente de charger widgets/embed.js. Il
   ne connaît pas encore l'URL complète (elle dépend de la sélection du
   visiteur, calculée côté page dans /candidater). C'est /candidater.astro qui
-  affecte `data-tally-src` puis appelle `window.tallyInitEmbed()` (exposée
-  ci-dessous) pour que le script Tally traite réellement l'iframe — suivre
-  cet ordre est indispensable : lancer `Tally.loadEmbeds()` avant que
-  `data-tally-src` existe ne redimensionne rien.
+  affecte directement `src` (et `data-tally-src`, avec la même valeur) sur
+  l'iframe, puis appelle `window.tallyInitEmbed()` (exposée ci-dessous) —
+  jamais l'inverse : le chargement de l'iframe ne doit jamais dépendre du
+  script Tally, qui ne sert ici qu'à activer le mécanisme de hauteur
+  dynamique une fois l'iframe déjà en cours de chargement.
 
   Sans URL configurée : aucune iframe, aucun bouton mort — un état d'attente
   propre (voir docs/CANDIDATURES_TALLY.md, section « Configuration »).
@@ -46,6 +47,13 @@ const configuree = tallyBaseUrl.trim().length > 0;
           class="hidden w-full border-0"
           style="height: 200px;"
         />
+        <p id="tally-secours" class="hidden p-6 text-sm text-encre" role="status" aria-live="polite">
+          Le formulaire ne s'affiche pas ?{' '}
+          <a id="tally-secours-lien" href={tallyBaseUrl} class="font-semibold text-marine underline" target="_blank" rel="noopener noreferrer">
+            Ouvrir le formulaire dans un nouvel onglet
+          </a>
+          .
+        </p>
       </div>
       <noscript>
         <p class="border-t border-marine/15 bg-blanc p-6 text-sm text-encre">
@@ -62,10 +70,11 @@ const configuree = tallyBaseUrl.trim().length > 0;
         // lui qui écoute les messages de redimensionnement envoyés par
         // l'iframe Tally et ajuste sa hauteur en conséquence.
         //
-        // `tallyInitEmbed` (exposée sur window) doit être appelée par
-        // /candidater.astro juste après avoir affecté `data-tally-src` sur
-        // l'iframe — jamais avant, sous peine d'un scan Tally sur une iframe
-        // sans URL, qui ne redimensionnera ensuite plus jamais l'iframe.
+        // `tallyInitEmbed` (exposée sur window) est appelée par
+        // /candidater.astro juste après avoir affecté `src` ET
+        // `data-tally-src` directement sur l'iframe — le chargement de
+        // l'iframe ne dépend jamais de cette fonction, qui ne sert qu'à
+        // activer le mécanisme de hauteur dynamique (Tally.loadEmbeds()).
         const SRC_EMBED_TALLY = 'https://tally.so/widgets/embed.js';
 
         function initialiserTally(): void {
