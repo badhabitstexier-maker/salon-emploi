@@ -11,9 +11,20 @@ import { glob } from 'astro/loaders';
   champ `slug` en frontmatter permet de le forcer explicitement (utile pour
   les noms accentués ou en cas de renommage de fichier).
 */
+/*
+  `exposantId` (Lot 4A, voir docs/EXPOSANTS_IMPORT.md) : identifiant métier
+  stable, indépendant du nom affiché et du slug, attribué séquentiellement
+  par le pipeline d'import (scripts/import-exposants.mjs) et destiné à
+  rester constant même si l'exposant change de nom. Introduit pendant que la
+  collection est encore vide (aucune fiche existante à migrer) — obligatoire
+  pour toute nouvelle fiche, manuelle ou importée.
+*/
+const EXPOSANT_ID_REGEX = /^EXP26-\d{3,}$/;
+
 const exposants = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/exposants' }),
   schema: z.object({
+    exposantId: z.string().regex(EXPOSANT_ID_REGEX, 'Format attendu : EXP26-XXX'),
     nom: z.string(),
     slug: z.string().optional(),
     univers: z.enum(['emploi', 'formation']),
@@ -63,9 +74,19 @@ const intervenant = z.object({
 
 const heureRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+/*
+  `programmeId` (Lot 4A, voir docs/PROGRAMME_IMPORT.md) : identifiant
+  métier stable, indépendant du titre et du slug, attribué séquentiellement
+  par le pipeline d'import (scripts/import-programme.mjs). Une correction de
+  titre ne doit jamais créer une nouvelle activité. Introduit pendant que la
+  collection est encore vide — obligatoire pour toute nouvelle fiche.
+*/
+const PROGRAMME_ID_REGEX = /^PROG26-\d{3,}$/;
+
 const programme = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/programme' }),
   schema: z.object({
+    programmeId: z.string().regex(PROGRAMME_ID_REGEX, 'Format attendu : PROG26-XXX'),
     titre: z.string(),
     slug: z.string().optional(),
     date: z.enum(['2026-10-30', '2026-10-31']),
