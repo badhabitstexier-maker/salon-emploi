@@ -36,7 +36,7 @@ const configuree = tallyBaseUrl.trim().length > 0;
 {
   configuree ? (
     <div class="w-full rounded-2xl border border-marine/15 bg-brume">
-      <div class="relative min-h-[240px] w-full">
+      <div class="relative w-full min-h-[clamp(620px,72vh,820px)]">
         <p id="tally-etat-chargement" class="p-6 text-sm text-encre">
           Chargement du formulaire de candidature…
         </p>
@@ -44,8 +44,7 @@ const configuree = tallyBaseUrl.trim().length > 0;
           id="tally-candidature-iframe"
           title="Formulaire de candidature — Salon de l'Emploi et de la Formation 2026"
           data-tally-base={tallyBaseUrl}
-          class="hidden w-full border-0"
-          style="height: 200px;"
+          class="hidden w-full min-h-[clamp(620px,72vh,820px)] border-0"
         />
         <p id="tally-secours" class="hidden p-6 text-sm text-encre" role="status" aria-live="polite">
           Le formulaire ne s'affiche pas ?{' '}
