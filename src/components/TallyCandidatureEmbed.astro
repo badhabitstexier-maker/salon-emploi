@@ -13,6 +13,14 @@
   Objectif : un seul scroll (celui de la page), jamais de scroll interne à
   l'iframe. Voir docs/CANDIDATURES_TALLY.md.
 
+  Initialisation : ce composant se contente de charger widgets/embed.js. Il
+  ne connaît pas encore l'URL complète (elle dépend de la sélection du
+  visiteur, calculée côté page dans /candidater). C'est /candidater.astro qui
+  affecte `data-tally-src` puis appelle `window.tallyInitEmbed()` (exposée
+  ci-dessous) pour que le script Tally traite réellement l'iframe — suivre
+  cet ordre est indispensable : lancer `Tally.loadEmbeds()` avant que
+  `data-tally-src` existe ne redimensionne rien.
+
   Sans URL configurée : aucune iframe, aucun bouton mort — un état d'attente
   propre (voir docs/CANDIDATURES_TALLY.md, section « Configuration »).
 */
@@ -36,7 +44,7 @@ const configuree = tallyBaseUrl.trim().length > 0;
           title="Formulaire de candidature — Salon de l'Emploi et de la Formation 2026"
           data-tally-base={tallyBaseUrl}
           class="hidden w-full border-0"
-          style="height: 1px;"
+          style="height: 200px;"
         />
       </div>
       <noscript>
@@ -53,20 +61,41 @@ const configuree = tallyBaseUrl.trim().length > 0;
         // même si ce composant venait à être rendu plusieurs fois) : c'est
         // lui qui écoute les messages de redimensionnement envoyés par
         // l'iframe Tally et ajuste sa hauteur en conséquence.
+        //
+        // `tallyInitEmbed` (exposée sur window) doit être appelée par
+        // /candidater.astro juste après avoir affecté `data-tally-src` sur
+        // l'iframe — jamais avant, sous peine d'un scan Tally sur une iframe
+        // sans URL, qui ne redimensionnera ensuite plus jamais l'iframe.
         const SRC_EMBED_TALLY = 'https://tally.so/widgets/embed.js';
 
-        function chargerEmbedTally(): void {
-          if (typeof (window as any).Tally !== 'undefined') {
-            (window as any).Tally.loadEmbeds();
+        function initialiserTally(): void {
+          const tally = (window as any).Tally;
+          if (typeof tally !== 'undefined') {
+            tally.loadEmbeds();
             return;
           }
+          // Script pas encore chargé (ou en échec) : reprend le
+          // comportement du snippet officiel Tally en affectant directement
+          // `src` depuis `data-tally-src` sur les iframes en attente.
+          document.querySelectorAll('iframe[data-tally-src]:not([src])').forEach((element) => {
+            const iframeEnAttente = element as HTMLIFrameElement;
+            if (iframeEnAttente.dataset.tallySrc) {
+              iframeEnAttente.src = iframeEnAttente.dataset.tallySrc;
+            }
+          });
+        }
+
+        function chargerScriptTally(): void {
           if (document.querySelector(`script[src="${SRC_EMBED_TALLY}"]`)) return;
           const script = document.createElement('script');
           script.src = SRC_EMBED_TALLY;
+          script.onload = initialiserTally;
+          script.onerror = initialiserTally;
           document.body.appendChild(script);
         }
 
-        chargerEmbedTally();
+        (window as any).tallyInitEmbed = initialiserTally;
+        chargerScriptTally();
       </script>
     </div>
   ) : (

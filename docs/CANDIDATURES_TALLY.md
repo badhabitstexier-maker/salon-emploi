@@ -153,10 +153,26 @@ messages `Tally.FormHeightChanged` envoyés par Tally à chaque changement
 d'étape et ajuste automatiquement la hauteur de l'iframe en conséquence.
 Combiné à `dynamicHeight=1` dans l'URL, cela garantit un seul scroll — celui
 de la page `salonemploi.nc` — sans scroll interne imbriqué dans le
-formulaire. L'attribut `data-tally-src` de l'iframe (mis à jour par
-`recalculerTally()` dans `src/pages/candidater.astro`, en parallèle de
-`src`) est ce que le script officiel utilise pour retrouver l'iframe à
-redimensionner.
+formulaire.
+
+**Ordre d'initialisation (important, corrigé le 06/08/2026)** : `data-tally-src`
+doit exister sur l'iframe *avant* que le script Tally ne la traite — dans
+l'ordre inverse, le formulaire reste invisible (rectangle vide, hauteur
+bloquée à ~1px). `recalculerTally()` (`src/pages/candidater.astro`) affecte
+donc d'abord `data-tally-src`, retire l'attribut `src` s'il existait déjà,
+puis appelle `window.tallyInitEmbed()` (fonction exposée par
+`TallyCandidatureEmbed.astro`) qui reproduit le snippet officiel Tally :
+`Tally.loadEmbeds()` si le script est déjà chargé, sinon affectation directe
+de `src` depuis `data-tally-src` en attendant que le script finisse de
+charger (son `onload` rappelle alors la même fonction). La hauteur initiale
+de l'iframe est fixée à 200px (valeur de sécurité recommandée par Tally) en
+attendant le premier message `Tally.FormHeightChanged` — plus jamais 1px.
+
+**URL `/r/` vs `/embed/`** : `PUBLIC_TALLY_CANDIDATURE_URL` reste un lien de
+partage `/r/{id}` (ex. `https://tally.so/r/xX7gek`, voir section 6) — ne pas
+la changer. `construireUrlTally()` la convertit en `/embed/{id}` uniquement
+au moment de construire l'URL finale de l'iframe, car c'est ce format
+qu'attend le mécanisme officiel de hauteur dynamique.
 
 ## 9. Règles de validation des références
 
