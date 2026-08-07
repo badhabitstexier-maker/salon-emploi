@@ -55,13 +55,13 @@ descriptionCourte: >
   Une description synthétique de l'offre.
 accepteCandidaturesEnLigne: true
 datePublication: 2026-09-15
-dateCloture: 2026-12-31
 ---
 ```
 
 Champs facultatifs : `datePrisePoste`, `niveauFormation` (liste),
 `sansExperience` (booléen, `false` par défaut), `missions` (liste),
-`competencesPrerequis` (liste), `miseEnAvant` (booléen, `false` par défaut).
+`competencesPrerequis` (liste), `dateCloture` (voir section 6),
+`miseEnAvant` (booléen, `false` par défaut).
 
 `nombrePostes` vaut `1` par défaut si absent. `accepteCandidaturesEnLigne`
 vaut `true` par défaut si absent.
@@ -89,12 +89,25 @@ l'exposant (voir `/exposer`). Sur le site, `silver` affiche le badge discret
 modifient jamais le tri des offres** (voir section 9) : ils sont purement
 informatifs.
 
-## 6. La règle `dateCloture: 2026-12-31`
+## 6. Le champ facultatif `dateCloture`
 
-`dateCloture` correspond à la **durée de conservation des données** pour
-l'édition 2026, pas à la date de fin du salon. Elle sert de repère pour la
-suppression manuelle des fiches après le 31 décembre 2026. **Ne jamais
-utiliser le 31 octobre 2026** (fin du salon) comme valeur de ce champ.
+`dateCloture` est une date **facultative** de fin de validité de l'offre /
+fin de période de candidature (ex. « ce poste n'accepte plus de
+candidatures après le 20 octobre »). Elle ne concerne que l'offre — **ne
+jamais** l'utiliser pour représenter autre chose.
+
+Si aucune date limite n'est connue pour une offre, **laisser le champ
+absent** : ne jamais inventer une date par défaut. Quand elle est
+renseignée, elle alimente le champ `validThrough` des données structurées
+`JobPosting` (schema.org) de la fiche offre ; sans `dateCloture`,
+`validThrough` n'est simplement pas généré.
+
+> Ce champ est indépendant de la **durée de conservation des données
+> candidat** (fixée au 31 décembre 2026), qui concerne les données
+> personnelles collectées via le formulaire Tally de candidature — voir
+> `docs/CANDIDATURES_TALLY.md`. Les fiches offres ne portent aucune donnée
+> personnelle et ne sont donc pas concernées par cette règle de
+> conservation.
 
 ## 7. Procédure manuelle pour ajouter une offre
 
@@ -186,11 +199,23 @@ route inexistante — voir la description de la PR pour le détail de ce choix.
 La logique de construction d'URL (`hrefAvecSelection`) est déjà prête et
 sera réutilisée telle quelle pour activer ces CTA au Lot 2.
 
-## 15. Articulation future avec le Lot 3
+## 15. Import automatisé (Lot 3)
 
-Le Lot 3 décrira l'import automatisé des offres depuis le Google Forms
+Le Lot 3 a ajouté l'import automatisé des offres depuis le Google Forms
 exposant et Google Sheets (validation LabEvents → génération des fichiers
-`src/content/offres/`). La structure de champs définie dans ce document
-(section 3) est conçue pour correspondre directement aux colonnes
-attendues d'un futur export CSV/Sheets, sans changement de schéma prévu à
-ce stade.
+`src/content/offres/`). Le schéma décrit dans ce document (section 3) n'a
+pas changé — l'import génère exactement le même format de fichier que
+l'ajout manuel.
+
+Voir :
+- `docs/OFFRES_EXPOSANTS.md` — structure du Google Form et du Google Sheet.
+- `docs/WORKFLOW_OFFRES_2026.md` — procédure complète, de la confirmation
+  d'un exposant à la publication de ses offres.
+- `npm run offres:import -- <fichier.csv> --dry-run` — vérifier un import
+  avant de l'appliquer.
+- `npm run offres:check` — contrôler la collection existante (doublons,
+  quotas), sans CSV.
+
+L'ajout manuel fichier par fichier (sections 1 à 8 de ce document) reste
+possible et n'est pas remplacé par l'import : les deux méthodes produisent
+le même format de fichier et peuvent coexister.

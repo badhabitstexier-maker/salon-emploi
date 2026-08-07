@@ -16,3 +16,9 @@ npm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# exports Google Forms/Sheets réels (données de contact exposants — voir
+# docs/WORKFLOW_OFFRES_2026.md) : ne jamais committer, seul le CSV normalisé
+# de data/templates/ est un modèle fictif destiné au dépôt.
+exports/
+*.offres-export.csv

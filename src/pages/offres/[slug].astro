@@ -41,7 +41,9 @@ const jobPostingSchema = {
     value: data.reference,
   },
   datePosted: data.datePublication.toISOString().slice(0, 10),
-  validThrough: data.dateCloture.toISOString().slice(0, 10),
+  // `validThrough` n'est généré que si l'offre a une date de fin de
+  // validité connue — ne jamais inventer une date de clôture.
+  ...(data.dateCloture ? { validThrough: data.dateCloture.toISOString().slice(0, 10) } : {}),
   employmentType: data.typeContrat,
   hiringOrganization: {
     '@type': 'Organization',
