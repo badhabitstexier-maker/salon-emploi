@@ -186,11 +186,23 @@ route inexistante — voir la description de la PR pour le détail de ce choix.
 La logique de construction d'URL (`hrefAvecSelection`) est déjà prête et
 sera réutilisée telle quelle pour activer ces CTA au Lot 2.
 
-## 15. Articulation future avec le Lot 3
+## 15. Import automatisé (Lot 3)
 
-Le Lot 3 décrira l'import automatisé des offres depuis le Google Forms
+Le Lot 3 a ajouté l'import automatisé des offres depuis le Google Forms
 exposant et Google Sheets (validation LabEvents → génération des fichiers
-`src/content/offres/`). La structure de champs définie dans ce document
-(section 3) est conçue pour correspondre directement aux colonnes
-attendues d'un futur export CSV/Sheets, sans changement de schéma prévu à
-ce stade.
+`src/content/offres/`). Le schéma décrit dans ce document (section 3) n'a
+pas changé — l'import génère exactement le même format de fichier que
+l'ajout manuel.
+
+Voir :
+- `docs/OFFRES_EXPOSANTS.md` — structure du Google Form et du Google Sheet.
+- `docs/WORKFLOW_OFFRES_2026.md` — procédure complète, de la confirmation
+  d'un exposant à la publication de ses offres.
+- `npm run offres:import -- <fichier.csv> --dry-run` — vérifier un import
+  avant de l'appliquer.
+- `npm run offres:check` — contrôler la collection existante (doublons,
+  quotas), sans CSV.
+
+L'ajout manuel fichier par fichier (sections 1 à 8 de ce document) reste
+possible et n'est pas remplacé par l'import : les deux méthodes produisent
+le même format de fichier et peuvent coexister.
