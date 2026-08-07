@@ -166,7 +166,8 @@ ce Lot (voir § 8).
 - **Accessibilité** (`accessibilite.spec.ts`) : scan axe-core (violations
   `serious`/`critical` uniquement) sur 5 pages représentatives, plus
   contrôles structurels (H1 unique, liens/boutons nommés, `alt` sur les
-  images, labels de formulaire). Voir § 8 pour l'exception documentée.
+  images, labels de formulaire). Aucune exception n'est masquée dans ce
+  test — voir § 8.1 pour le correctif de contraste appliqué avant fusion.
 - **Responsive** (`responsive.spec.ts`) : absence de débordement horizontal
   significatif sur les pages critiques, desktop et mobile.
 
@@ -182,22 +183,37 @@ ce Lot (voir § 8).
 - **Accessibilité** : couverture volontairement raisonnable (5 pages
   représentatives, violations `serious`/`critical` uniquement, tags WCAG
   2A/2AA) — pas une correction exhaustive WCAG.
-  - **Exception documentée** : les boutons/CTA sur fond `bg-village` avec
-    texte blanc (ex. « Devenir exposant » du header, et une dizaine
-    d'autres CTA à travers le site) ont un contraste mesuré de **3.19:1**,
-    sous le seuil WCAG AA de 4.5:1 pour du texte de cette taille — le même
-    problème que documenté dans `CLAUDE.md` (section 10) pour le texte de
-    corps sur fond `village`, mais ici sur des boutons répartis dans une
-    dizaine de fichiers. Corriger cela changerait la couleur du texte des
-    CTA principaux dans tout le site : une décision de palette/branding qui
-    revient à Philippe (`CLAUDE.md`, section 12), pas un correctif ponctuel
-    de ce Lot. Le test d'accessibilité ignore précisément cette combinaison
-    connue (`tests/e2e/accessibilite.spec.ts`,
-    `estExceptionContrasteBoutonVillageConnue`) tout en continuant à
-    détecter tout **autre** problème de contraste.
-    **ACTION MANUELLE PHILIPPE** : décider si le texte de ces CTA doit
-    passer en `text-marine` (comme déjà pratiqué ailleurs sur fond
-    `village`, ex. `OffreCard.astro`).
+
+### 8.1. Correctif de contraste CTA `bg-village` (appliqué avant fusion)
+
+La recette avait détecté que les boutons/CTA sur fond `bg-village` avec
+texte blanc (« Devenir exposant » du header, et une quinzaine d'autres CTA à
+travers le site) avaient un contraste mesuré de **3.19:1**, sous le seuil
+WCAG AA de 4.5:1 pour du texte de cette taille — le même problème que celui
+déjà documenté dans `CLAUDE.md` (section 10) pour le texte de corps sur fond
+`village`.
+
+Une première version avait exclu cette combinaison connue du test
+d'accessibilité plutôt que de la corriger, en la présentant comme une
+décision de palette relevant de Philippe. Sur validation de Philippe, le
+correctif le plus léger possible a finalement été appliqué : le texte de ces
+CTA passe de `text-blanc` à **`text-marine`** (couleur déjà présente dans la
+charte, déjà utilisée dans le même contexte par `OffreCard.astro`), sans
+toucher au fond `bg-village` lui-même ni créer de nouvelle couleur.
+
+| | Avant | Après |
+|---|---|---|
+| Contraste | 3.19:1 (`#ffffff` sur `#2fa36b`) | 4.93:1 (`#10233f` sur `#2fa36b`) |
+| Seuil WCAG AA (texte normal) | ❌ non conforme (< 4.5:1) | ✅ conforme |
+
+18 occurrences corrigées dans 8 fichiers : `src/components/Header.astro`,
+`src/pages/index.astro`, `src/pages/le-salon.astro`, `src/pages/exposants.astro`,
+`src/pages/programme.astro`, `src/pages/offres/index.astro`,
+`src/pages/preparer-ma-visite.astro`, `src/pages/exposer.astro`. Les badges
+sur fond `bg-village-dark` (déjà conformes, contraste ≈ 8.17:1) n'ont pas été
+touchés. L'exception dans `tests/e2e/accessibilite.spec.ts` a été supprimée
+— le test d'accessibilité ne masque plus aucune violation de contraste
+connue.
 - **Performance** : audit léger uniquement (pas de Lighthouse). Aucune image
   manifestement excessive ni script tiers global inutile constaté lors de
   l'audit du Lot 4B.

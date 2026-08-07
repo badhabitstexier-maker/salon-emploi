@@ -11,23 +11,13 @@ import AxeBuilder from '@axe-core/playwright';
   L'intérieur cross-origin de l'iframe Tally n'est jamais analysé (axe-core
   ne peut de toute façon pas y accéder).
 
-  Exception documentée (voir docs/RECETTE_AUTOMATISEE.md) : les boutons/CTA
-  sur fond `bg-village` avec texte blanc (ex. « Devenir exposant » du header)
-  ont un contraste mesuré de 3.19:1, sous le seuil WCAG AA de 4.5:1 exigé pour
-  du texte de cette taille. C'est la même famille de problème que
-  l'exception déjà actée pour le texte de corps dans CLAUDE.md (section 10),
-  mais ici sur des boutons répartis dans une dizaine de fichiers à travers
-  tout le site — un changement de cette ampleur touche à l'identité visuelle
-  des CTA principaux et relève d'une décision de Philippe (CLAUDE.md, section
-  12), pas d'un correctif ponctuel de ce Lot. Le test ignore donc précisément
-  cette combinaison connue, tout en continuant à détecter tout autre problème
-  de contraste (nouveau ou existant) ailleurs sur la page.
+  Ancienne exception « CTA bg-village en texte blanc » (contraste 3.19:1)
+  supprimée : les CTA concernés utilisent désormais `text-marine` sur
+  `bg-village` (contraste ≈ 4.93:1, conforme AA) — voir CLAUDE.md section 10
+  et docs/RECETTE_AUTOMATISEE.md. Aucune violation de contraste connue ne
+  reste donc masquée ici.
 */
 const PAGES_REPRESENTATIVES = ['/', '/exposants', '/programme', '/offres', '/candidater'];
-
-function estExceptionContrasteBoutonVillageConnue(node: { html: string }): boolean {
-  return node.html.includes('bg-village') && !node.html.includes('bg-village-dark') && node.html.includes('text-blanc');
-}
 
 test.describe('Accessibilité automatisée (axe-core)', () => {
   for (const chemin of PAGES_REPRESENTATIVES) {
@@ -40,13 +30,7 @@ test.describe('Accessibilité automatisée (axe-core)', () => {
         .withTags(['wcag2a', 'wcag2aa'])
         .analyze();
 
-      const violationsGraves = resultats.violations
-        .filter((v) => v.impact === 'serious' || v.impact === 'critical')
-        .map((v) => ({
-          ...v,
-          nodes: v.id === 'color-contrast' ? v.nodes.filter((n) => !estExceptionContrasteBoutonVillageConnue(n)) : v.nodes,
-        }))
-        .filter((v) => v.nodes.length > 0);
+      const violationsGraves = resultats.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
 
       const resume = violationsGraves
         .map((v) => `[${v.impact}] ${v.id} — ${v.help} (${v.nodes.length} occurrence(s))`)
