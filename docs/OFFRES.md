@@ -55,13 +55,13 @@ descriptionCourte: >
   Une description synthétique de l'offre.
 accepteCandidaturesEnLigne: true
 datePublication: 2026-09-15
-dateCloture: 2026-12-31
 ---
 ```
 
 Champs facultatifs : `datePrisePoste`, `niveauFormation` (liste),
 `sansExperience` (booléen, `false` par défaut), `missions` (liste),
-`competencesPrerequis` (liste), `miseEnAvant` (booléen, `false` par défaut).
+`competencesPrerequis` (liste), `dateCloture` (voir section 6),
+`miseEnAvant` (booléen, `false` par défaut).
 
 `nombrePostes` vaut `1` par défaut si absent. `accepteCandidaturesEnLigne`
 vaut `true` par défaut si absent.
@@ -89,12 +89,25 @@ l'exposant (voir `/exposer`). Sur le site, `silver` affiche le badge discret
 modifient jamais le tri des offres** (voir section 9) : ils sont purement
 informatifs.
 
-## 6. La règle `dateCloture: 2026-12-31`
+## 6. Le champ facultatif `dateCloture`
 
-`dateCloture` correspond à la **durée de conservation des données** pour
-l'édition 2026, pas à la date de fin du salon. Elle sert de repère pour la
-suppression manuelle des fiches après le 31 décembre 2026. **Ne jamais
-utiliser le 31 octobre 2026** (fin du salon) comme valeur de ce champ.
+`dateCloture` est une date **facultative** de fin de validité de l'offre /
+fin de période de candidature (ex. « ce poste n'accepte plus de
+candidatures après le 20 octobre »). Elle ne concerne que l'offre — **ne
+jamais** l'utiliser pour représenter autre chose.
+
+Si aucune date limite n'est connue pour une offre, **laisser le champ
+absent** : ne jamais inventer une date par défaut. Quand elle est
+renseignée, elle alimente le champ `validThrough` des données structurées
+`JobPosting` (schema.org) de la fiche offre ; sans `dateCloture`,
+`validThrough` n'est simplement pas généré.
+
+> Ce champ est indépendant de la **durée de conservation des données
+> candidat** (fixée au 31 décembre 2026), qui concerne les données
+> personnelles collectées via le formulaire Tally de candidature — voir
+> `docs/CANDIDATURES_TALLY.md`. Les fiches offres ne portent aucune donnée
+> personnelle et ne sont donc pas concernées par cette règle de
+> conservation.
 
 ## 7. Procédure manuelle pour ajouter une offre
 

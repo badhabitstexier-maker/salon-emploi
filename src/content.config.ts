@@ -126,9 +126,13 @@ const offres = defineCollection({
     competencesPrerequis: z.array(z.string()).default([]),
     accepteCandidaturesEnLigne: z.boolean().default(true),
     datePublication: z.coerce.date(),
-    // Durée de conservation des données 2026 (CLAUDE.md) : ne jamais utiliser
-    // le 31 octobre 2026 (date de fin du salon) comme date de clôture.
-    dateCloture: z.coerce.date(),
+    // Date facultative de fin de validité de l'offre / fin de période de
+    // candidature (ex. alimente `validThrough` du JSON-LD JobPosting sur la
+    // fiche offre). Ne pas confondre avec la durée de conservation des
+    // données candidat au 31 décembre 2026 : celle-ci concerne les données
+    // collectées via Tally (voir docs/CANDIDATURES_TALLY.md), pas les
+    // fiches offres.
+    dateCloture: z.coerce.date().optional(),
     // Champ conservé pour un usage éditorial futur — ne doit PAS influencer
     // le tri ni le classement des offres (docs/OFFRES.md, section « tri »).
     miseEnAvant: z.boolean().default(false),

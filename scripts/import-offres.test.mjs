@@ -40,7 +40,7 @@ function ligneValide(overrides = {}) {
     competencesPrerequis: '',
     accepteCandidaturesEnLigne: 'oui',
     datePublication: '2026-09-01',
-    dateCloture: '2026-12-31',
+    dateCloture: '2026-10-20',
     miseEnAvant: '',
     ...overrides,
   };
@@ -178,8 +178,33 @@ test('formule incohérente pour un même exposant est une erreur', () => {
   assert.match(resultat.erreurs[0], /formule incohérente/);
 });
 
-test('dateCloture ne peut pas être une date de fin de salon', () => {
-  const r = validerLigne(ligneValide({ dateCloture: '2026-10-31' }), 2);
+test('offre sans dateCloture est valide (champ facultatif, jamais inventé)', () => {
+  const r = validerLigne(ligneValide({ dateCloture: '' }), 2);
+  assert.equal(r.ok, true);
+  assert.equal(r.offre.dateCloture, undefined);
+  assert.equal(r.avertissements.length, 0);
+});
+
+test('offre avec dateCloture correcte est valide', () => {
+  const r = validerLigne(ligneValide({ dateCloture: '2026-10-20' }), 2);
+  assert.equal(r.ok, true);
+  assert.equal(r.offre.dateCloture, '2026-10-20');
+});
+
+test('dateCloture mal formatée est une erreur', () => {
+  const r = validerLigne(ligneValide({ dateCloture: '20-10-2026' }), 2);
   assert.equal(r.ok, false);
-  assert.ok(r.erreurs.some((e) => /fin du salon/.test(e)));
+  assert.ok(r.erreurs.some((e) => /dateCloture.*format/.test(e)));
+});
+
+test('génération Markdown sans dateCloture : le champ est absent du frontmatter', () => {
+  const r = validerLigne(ligneValide({ dateCloture: '' }), 2);
+  const contenu = genererContenuOffre(r.offre);
+  assert.ok(!/^dateCloture:/m.test(contenu));
+});
+
+test('génération Markdown avec dateCloture : le champ est présent dans le frontmatter', () => {
+  const r = validerLigne(ligneValide({ dateCloture: '2026-10-20' }), 2);
+  const contenu = genererContenuOffre(r.offre);
+  assert.ok(/^dateCloture: 2026-10-20$/m.test(contenu));
 });

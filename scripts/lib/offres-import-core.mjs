@@ -20,7 +20,6 @@ export const TYPES_CONTRAT = ['CDI', 'CDD', 'Alternance', 'Stage', 'Intérim', '
 export const QUOTAS = { standard: 5, silver: 10, gold: null };
 
 export const REFERENCE_REGEX = /^SEF26-\d{3,}$/;
-export const DATE_CLOTURE_INTERDITE = new Set(['2026-10-30', '2026-10-31']);
 
 /*
   Colonnes du CSV normalisé (une offre par ligne) — voir
@@ -178,16 +177,17 @@ export function validerLigne(ligne, numeroLigne) {
     erreurs.push(`« datePublication » doit être au format AAAA-MM-JJ (reçu : « ${datePublicationBrut} »).`);
   }
 
-  let dateClotureBrut = (ligne.dateCloture ?? '').trim();
-  if (!dateClotureBrut) {
-    dateClotureBrut = '2026-12-31';
-    avertissements.push('« dateCloture » absente : valeur par défaut 2026-12-31 appliquée (durée de conservation des données, CLAUDE.md).');
-  } else if (!DATE_REGEX.test(dateClotureBrut)) {
-    erreurs.push(`« dateCloture » doit être au format AAAA-MM-JJ (reçu : « ${dateClotureBrut} »).`);
-  } else if (DATE_CLOTURE_INTERDITE.has(dateClotureBrut)) {
-    erreurs.push(
-      `« dateCloture » ne doit jamais être la date de fin du salon (${dateClotureBrut}) — c'est une date de conservation des données, pas la date du salon.`,
-    );
+  // `dateCloture` est une date facultative de fin de validité de l'offre —
+  // ne pas confondre avec la conservation des données candidat (Tally, voir
+  // docs/CANDIDATURES_TALLY.md). Absente : on ne l'invente jamais.
+  const dateClotureBrutSaisie = (ligne.dateCloture ?? '').trim();
+  let dateCloture;
+  if (dateClotureBrutSaisie) {
+    if (!DATE_REGEX.test(dateClotureBrutSaisie)) {
+      erreurs.push(`« dateCloture » doit être au format AAAA-MM-JJ (reçu : « ${dateClotureBrutSaisie} »).`);
+    } else {
+      dateCloture = dateClotureBrutSaisie;
+    }
   }
 
   if (erreurs.length > 0) {
@@ -218,7 +218,7 @@ export function validerLigne(ligne, numeroLigne) {
       competencesPrerequis,
       accepteCandidaturesEnLigne,
       datePublication: datePublicationBrut,
-      dateCloture: dateClotureBrut,
+      dateCloture,
       miseEnAvant,
     },
   };
@@ -367,11 +367,9 @@ export function genererContenuOffre(offre) {
     ligneYamlListe('competencesPrerequis', offre.competencesPrerequis),
     `accepteCandidaturesEnLigne: ${offre.accepteCandidaturesEnLigne}`,
     `datePublication: ${offre.datePublication}`,
-    `dateCloture: ${offre.dateCloture}`,
-    `miseEnAvant: ${offre.miseEnAvant}`,
-    '---',
-    '',
   );
+  if (offre.dateCloture) lignes.push(`dateCloture: ${offre.dateCloture}`);
+  lignes.push(`miseEnAvant: ${offre.miseEnAvant}`, '---', '');
   return lignes.join('\n');
 }
 

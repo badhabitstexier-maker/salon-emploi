@@ -77,7 +77,17 @@ Pour chaque bloc « Offre N », questions dans cet ordre :
 | Offre N — Compétences / prérequis | Paragraphe | Facultatif |
 | Offre N — Nombre de postes à pourvoir | Réponse courte (nombre) | Facultatif, LabEvents applique 1 par défaut si vide |
 | Offre N — Rémunération (facultatif, communiquée uniquement si vous le souhaitez) | Réponse courte | Facultatif |
+| Offre N — Date limite de candidature, si connue | Date | Non — laissez vide si aucune date limite n'est fixée |
 | Offre N — Cette offre accepte-t-elle les candidatures en ligne ? | Choix unique : Oui / Non | Facultatif, LabEvents applique « Oui » par défaut si vide |
+
+> Champ « Date limite de candidature » : devient le champ `dateCloture` de
+> l'offre lors de la normalisation Sheets → CSV (voir section 9). Il s'agit
+> **uniquement** de la date de fin de validité de cette offre précise — pas
+> de la durée de conservation des données candidat (fixée au 31 décembre
+> 2026 pour les données collectées via Tally, voir
+> `docs/CANDIDATURES_TALLY.md`), qui n'a aucun lien avec ce champ. Si
+> l'exposant ne fixe aucune date limite, laisser la question vide : ne
+> jamais inventer une date de clôture.
 
 > Champ « Temps de travail » : **non repris ici**, car le schéma Astro
 > actuel de la collection `offres` (`src/content.config.ts`) ne comporte
