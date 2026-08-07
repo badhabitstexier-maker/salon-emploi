@@ -11,7 +11,15 @@
     "astro": "astro",
     "offres:import": "node scripts/import-offres.mjs",
     "offres:check": "node scripts/import-offres.mjs --check",
-    "offres:test": "node --test scripts/*.test.mjs"
+    "offres:test": "node --test scripts/import-offres.test.mjs",
+    "exposants:import": "node scripts/import-exposants.mjs",
+    "exposants:check": "node scripts/import-exposants.mjs --check",
+    "exposants:test": "node --test scripts/import-exposants.test.mjs",
+    "programme:import": "node scripts/import-programme.mjs",
+    "programme:check": "node scripts/import-programme.mjs --check",
+    "programme:test": "node --test scripts/import-programme.test.mjs",
+    "content:check": "node scripts/check-public-content.mjs",
+    "content:test": "npm run offres:test && npm run exposants:test && npm run programme:test && npm run content:check"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

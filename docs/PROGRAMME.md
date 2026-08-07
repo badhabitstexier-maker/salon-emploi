@@ -34,6 +34,7 @@ frontmatter, qui contient tous les champs. Rien n'est écrit après le second
 
 ```markdown
 ---
+programmeId: "PROG26-001"
 titre: "Exemple non publié"
 date: "2026-10-30"
 heure_debut: "09:30"
@@ -70,6 +71,7 @@ date_mise_a_jour: 2026-08-05
 
 | Champ | Obligatoire | Description |
 |---|---|---|
+| `programmeId` | oui | Identifiant métier stable, format `PROG26-XXX` (voir `docs/PROGRAMME_IMPORT.md`, section 3). Ne jamais réutiliser un identifiant déjà attribué à une autre activité. Pour une fiche créée à la main, choisir le prochain numéro disponible (voir `npm run programme:check`). |
 | `titre` | oui | Titre affiché de l'élément de programme. |
 | `slug` | non | Force l'adresse de la fiche si le nom du fichier ne convient pas (accents, renommage). Sinon, l'adresse vient automatiquement du nom du fichier. |
 | `date` | oui | Journée concernée — voir les valeurs autorisées en section 4. |

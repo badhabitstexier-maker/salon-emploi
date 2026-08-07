@@ -34,6 +34,7 @@ frontmatter, qui contient tous les champs. Rien n'est écrit après le second
 
 ```markdown
 ---
+exposantId: "EXP26-001"
 nom: "Exemple non publié"
 univers: emploi
 type_structure: entreprise
@@ -62,6 +63,7 @@ date_mise_a_jour: 2026-08-05
 
 | Champ | Obligatoire | Description |
 |---|---|---|
+| `exposantId` | oui | Identifiant métier stable, format `EXP26-XXX` (voir `docs/EXPOSANTS_IMPORT.md`, section 3). Ne jamais réutiliser un identifiant déjà attribué à un autre exposant. Pour une fiche créée à la main, choisir le prochain numéro disponible (voir `npm run exposants:check`). |
 | `nom` | oui | Nom affiché de l'exposant. |
 | `slug` | non | Force l'adresse de la fiche si le nom du fichier ne convient pas (accents, renommage). Sinon, l'adresse vient automatiquement du nom du fichier. |
 | `univers` | oui | `emploi` ou `formation` (voir section 4). |
