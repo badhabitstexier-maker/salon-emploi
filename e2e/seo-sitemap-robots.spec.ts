@@ -60,6 +60,13 @@ test.describe('Sitemap', () => {
     // elle doit apparaître dans le sitemap comme n'importe quelle offre
     // publique, ce qui confirme que le filtre ne cible bien que les TEST.
     expect(chemins.some((chemin) => chemin.includes(`/offres/${FIXTURE_SLUG}`))).toBe(true);
+
+    // Admin (Lot Admin-0, voir docs/ADMIN.md) : jamais indexé, la balise
+    // noindex sur la page ne suffit pas, il doit aussi être absent du
+    // sitemap (astro.config.mjs, filtre sitemap()).
+    expect(chemins.some((chemin) => chemin.includes('/admin')), '/admin ne doit pas figurer dans le sitemap').toBe(
+      false,
+    );
   });
 });
 
@@ -77,5 +84,11 @@ test.describe('robots.txt', () => {
     const correspondanceSitemap = /Sitemap:\s*(\S+)/i.exec(contenu);
     expect(correspondanceSitemap).not.toBeNull();
     expect(correspondanceSitemap?.[1]).toContain(baseURL as string);
+
+    // Admin (Lot Admin-0) : disallow explicite indépendant de PUBLIC_NOINDEX
+    // (astro.config.mjs). Rappel : cette directive n'est qu'une convention
+    // pour les robots respectueux, pas une protection — la vraie barrière
+    // est l'authentification .htaccess côté OVH (voir docs/ADMIN.md).
+    expect(contenu).toMatch(/Disallow:\s*\/admin\/?\s*$/im);
   });
 });

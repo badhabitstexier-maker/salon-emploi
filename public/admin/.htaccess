@@ -1,0 +1,21 @@
+# Protection du répertoire /admin — Salon de l'Emploi & de la Formation 2026
+#
+# Ce fichier est commité (il ne contient aucun secret) et déployé tel quel
+# par le pipeline FTP existant (voir .github/workflows/deploy-preprod.yml et
+# deploy-production.yml) vers <FTP_REMOTE_DIR>/admin/.htaccess.
+#
+# Le fichier .htpasswd référencé ci-dessous N'EST JAMAIS commité dans ce
+# dépôt. Il est créé et maintenu directement sur l'hébergement OVH, en
+# dehors de l'arborescence synchronisée par le déploiement FTP (voir
+# docs/ADMIN.md, section « Créer ou modifier le .htpasswd »).
+#
+# IMPORTANT : AuthUserFile attend un chemin ABSOLU sur le système de
+# fichiers du serveur OVH (pas une URL, pas un chemin relatif au site).
+# La valeur ci-dessous est un gabarit à adapter précisément à
+# l'arborescence réelle du compte d'hébergement — voir docs/ADMIN.md avant
+# toute mise en service réelle de cette protection.
+
+AuthType Basic
+AuthName "Acces reserve LabEvents"
+AuthUserFile /home/VOTRE-LOGIN-OVH/.htpasswd-admin-salon-emploi
+Require valid-user
