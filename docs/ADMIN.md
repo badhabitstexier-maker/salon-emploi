@@ -67,12 +67,14 @@ directives Apache :
 ```apache
 AuthType Basic
 AuthName "Acces reserve LabEvents"
-AuthUserFile /home/VOTRE-LOGIN-OVH/.htpasswd-admin-salon-emploi
+AuthUserFile /home/salonez/.htpasswd-salonemploi-preprod
 Require valid-user
 ```
 
-Le chemin `/home/VOTRE-LOGIN-OVH/...` est un **gabarit à corriger** avant
-mise en service réelle (voir 4.3).
+Chemin confirmé pour la **préproduction** (compte OVH `salonez`, racine du
+site `/home/salonez/salon-emploi-preprod`). Ce chemin est propre à cet
+environnement — à vérifier/adapter séparément le jour où la production
+sera mise en place (voir 4.3 et 4.4).
 
 ### 4.2 Ce qui n'est JAMAIS commité
 
@@ -90,39 +92,33 @@ risque qu'un futur déploiement supprime ou écrase le `.htpasswd` (il ne
 fait pas partie du build Astro, donc rien ne garantit le comportement de
 l'outil de synchronisation vis-à-vis d'un fichier « en trop » sur le
 serveur), **le `.htpasswd` doit être placé en dehors de l'arborescence
-`${FTP_REMOTE_DIR}`** — par exemple un niveau au-dessus, dans une zone du
-compte d'hébergement non touchée par le déploiement FTP. Le chemin exact
-dépend de l'arborescence réelle du compte OVH (voir 4.4, action manuelle
-nécessaire).
+`${FTP_REMOTE_DIR}`**.
 
-### 4.4 Actions manuelles nécessaires côté OVH (à réaliser par Philippe)
+**Confirmé pour la préproduction** : racine du compte OVH
+`/home/salonez`, racine du site préprod `/home/salonez/salon-emploi-preprod`
+(= `${FTP_REMOTE_DIR}` pour cet environnement), `.htpasswd` déposé à
+`/home/salonez/.htpasswd-salonemploi-preprod` — un niveau au-dessus de la
+racine du site, donc bien en dehors de ce que le déploiement FTP
+synchronise.
 
-Ces étapes ne peuvent pas être faites depuis ce dépôt ni automatisées par
-Claude Code — accès au Manager OVH / FTP / SSH requis :
+### 4.4 Actions manuelles réalisées côté OVH (préproduction)
 
-1. **Identifier le chemin absolu réel** du répertoire d'hébergement (ex. via
-   une connexion SSH si disponible sur l'offre, ou via les informations
-   FTP du Manager OVH) — c'est ce chemin qui remplace
-   `/home/VOTRE-LOGIN-OVH/` dans `public/admin/.htaccess`.
-2. **Créer le fichier `.htpasswd`** en dehors de `${FTP_REMOTE_DIR}` (voir
-   4.3), avec au moins un identifiant et un mot de passe. Un hash
-   compatible Apache est nécessaire (ex. généré avec `htpasswd` en ligne
-   de commande si disponible, ou un générateur `.htpasswd` de confiance —
-   à confirmer selon ce que permet l'offre OVH ; certains Managers OVH
-   proposent un outil dédié).
-3. **Mettre à jour `AuthUserFile`** dans `public/admin/.htaccess` avec le
-   chemin réel déterminé à l'étape 1, dans une Pull Request dédiée (ce
-   fichier ne contient aucun secret, il peut être committé une fois
-   corrigé).
-4. **Vérifier HTTPS actif** sur `https://preprod.salonemploinc.com/admin`
-   avant tout test réel — l'authentification HTTP Basic transmet les
-   identifiants encodés (pas chiffrés) à chaque requête ; sans HTTPS ce
-   serait une fuite en clair.
+Réalisées par Philippe, hors du dépôt :
 
-**Tant que ces actions ne sont pas réalisées, `/admin` reste accessible
-sans mot de passe une fois déployé.** Le `.htaccess` commis dans ce lot
-ne protège rien tant que le `.htpasswd` réel n'existe pas côté serveur ET
-que le chemin `AuthUserFile` n'est pas corrigé en conséquence.
+1. ✅ Chemin absolu du compte confirmé : `/home/salonez`.
+2. ✅ `.htpasswd` créé et transféré : `/home/salonez/.htpasswd-salonemploi-preprod`
+   (54 octets, permissions 644).
+3. ✅ `AuthUserFile` mis à jour dans `public/admin/.htaccess` avec ce chemin.
+4. ⬜ **Reste à vérifier avant test réel** : HTTPS actif sur
+   `https://preprod.salonemploinc.com/admin` — l'authentification HTTP
+   Basic transmet les identifiants encodés (pas chiffrés) à chaque
+   requête ; sans HTTPS ce serait une fuite en clair.
+
+**Production** : ce chemin (`/home/salonez/...`) est propre à
+l'environnement de préproduction. Le jour où la production sera mise en
+place, vérifier si elle partage le même compte d'hébergement ou un compte
+distinct avant de réutiliser un chemin identique ou non pour son propre
+`.htpasswd`.
 
 ### 4.5 Changer un mot de passe
 
