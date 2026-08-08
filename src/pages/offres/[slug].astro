@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SelectionDrawer from '../../components/SelectionDrawer.astro';
-import { getOffresPubliees, offreSlug, formuleLabels, type Offre } from '../../lib/offres';
+import { getOffresPubliees, offreSlug, formuleLabels, estOffreTest, type Offre } from '../../lib/offres';
 
 export async function getStaticPaths() {
   const offres = await getOffresPubliees();
@@ -18,6 +18,7 @@ interface Props {
 
 const { offre, toutesLesOffres } = Astro.props;
 const { data } = offre;
+const testOffre = estOffreTest(offre);
 
 const badgeFormule = data.formule === 'silver' || data.formule === 'gold' ? formuleLabels[data.formule] : null;
 
@@ -60,9 +61,13 @@ const jobPostingSchema = {
 };
 ---
 
-<BaseLayout title={`${data.intitule} — ${data.exposantNom}`} description={data.descriptionCourte}>
+<BaseLayout
+  title={`${data.intitule} — ${data.exposantNom}`}
+  description={data.descriptionCourte}
+  noindex={testOffre}
+>
   <Fragment slot="head">
-    <script type="application/ld+json" set:html={JSON.stringify(jobPostingSchema)} />
+    {!testOffre && <script type="application/ld+json" set:html={JSON.stringify(jobPostingSchema)} />}
   </Fragment>
 
   <section class="bg-marine text-blanc">
@@ -182,6 +187,10 @@ const jobPostingSchema = {
           >
             Ajouter cette offre à ma sélection
           </button>
+        ) : testOffre ? (
+          <p class="rounded-2xl border border-marine/15 bg-brume p-4 text-sm text-encre">
+            Offre fictive de démonstration — présentée uniquement pour illustrer le fonctionnement du catalogue.
+          </p>
         ) : (
           <p class="rounded-2xl border border-marine/15 bg-brume p-4 text-sm text-encre">
             Cette offre est à découvrir directement auprès de l'exposant pendant le salon.

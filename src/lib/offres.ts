@@ -24,6 +24,16 @@ export function offreSlug(offre: Offre): string {
   return offre.id;
 }
 
+/*
+  Offre fictive de démonstration : intitulé commençant exactement par
+  `TEST —` (voir docs/OFFRES.md). Ne modifie aucun comportement des offres
+  réelles — sert uniquement à masquer les CTA de candidature/sélection et le
+  référencement SEO de ces fiches de démonstration.
+*/
+export function estOffreTest(offre: Offre): boolean {
+  return offre.data.intitule.startsWith('TEST —');
+}
+
 /** Offres publiées uniquement — jamais les fiches au statut différent de `publiee`. */
 export async function getOffresPubliees(): Promise<Offre[]> {
   const toutes = await getCollection('offres');
