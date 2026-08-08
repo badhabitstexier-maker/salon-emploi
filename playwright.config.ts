@@ -9,6 +9,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
+  globalTeardown: './e2e/global-teardown.ts',
   use: {
     baseURL,
     trace: 'on-first-retry',
@@ -24,7 +25,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run build && npm run preview -- --port ${port}`,
+    // La fixture E2E (scripts/e2e-fixtures.mjs) doit exister sur le disque
+    // *avant* `astro build` (site statique) pour apparaître dans le build —
+    // elle est retirée après coup par globalTeardown, jamais committée.
+    command: `node scripts/e2e-fixtures.mjs create && npm run build && npm run preview -- --port ${port}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

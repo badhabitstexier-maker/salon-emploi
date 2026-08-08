@@ -23,6 +23,11 @@ npm-debug.log*
 /blob-report/
 /playwright/.cache/
 
+# Fixture E2E jetable (Lot 4B-2, voir scripts/e2e-fixtures.mjs) — créée avant
+# le build Playwright, supprimée par e2e/global-teardown.ts ; filet de
+# sécurité si le teardown est interrompu.
+src/content/offres/e2e-fixture-offre.md
+
 # exports Google Forms/Sheets réels (données de contact exposants — voir
 # docs/WORKFLOW_OFFRES_2026.md) : ne jamais committer, seul le CSV normalisé
 # de data/templates/ est un modèle fictif destiné au dépôt.
