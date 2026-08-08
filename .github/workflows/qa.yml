@@ -1,8 +1,17 @@
 name: QA (E2E Playwright)
 
-# Job informatif — Lot 4B-1 à 4B-3 : ne bloque pas la fusion (voir CLAUDE.md
-# section 7 et 13). Distinct de pr-check.yml (build-check), qui reste
-# bloquant et n'est pas modifié ici. Passage en bloquant prévu au Lot 4B-4.
+# Job bloquant depuis le Lot 4B-4 (voir CLAUDE.md section 7 et 13) : la
+# suite est restée stable sur 3 exécutions consécutives (desktop + mobile,
+# aucune dépendance réseau externe, aucune fixture résiduelle), condition
+# posée pour lever le caractère informatif hérité des Lots 4B-1 à 4B-3.
+# Distinct de pr-check.yml (build-check), qui reste bloquant et n'est pas
+# modifié ici.
+#
+# Note : ce workflow bloque désormais la fusion via son propre statut de
+# check, mais ne devient "required" au sens de la protection de branche
+# GitHub que si ce check est ajouté aux règles requises dans les paramètres
+# du dépôt (Settings → Branches) — action manuelle hors périmètre du code,
+# voir CLAUDE.md section 13.
 on:
   pull_request:
     branches:
@@ -11,7 +20,6 @@ on:
 jobs:
   qa-e2e:
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - name: Récupérer le code

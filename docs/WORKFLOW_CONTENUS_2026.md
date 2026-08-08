@@ -98,9 +98,10 @@ partenariat AMD n'est pas confirmé — ne pas le réintroduire (voir
   l'exclusion des emplacements 22/23/24 (voir `docs/EXPOSANTS_IMPORT.md`,
   section 7). Un contrôle manuel reste nécessaire au-delà.
 
-## Hors périmètre (Lot 4B)
+## Hors périmètre (couvert séparément par le Lot 4B)
 
 Ces trois pipelines ne couvrent ni la recette E2E (Playwright), ni l'audit
-SEO/accessibilité/performance automatisé, ni le JSON-LD, ni la CI. Voir la
-mission Lot 4A, sections 28 à 30 — traité séparément dans le Lot 4B, après
-validation explicite de Philippe.
+SEO/accessibilité/performance automatisé, ni le JSON-LD, ni la CI : ce
+périmètre est traité par le dispositif QA (Lots 4B-1 à 4B-4, **terminé**),
+documenté dans CLAUDE.md section 13 plutôt que dans ce document consacré
+aux trois pipelines d'import de contenu.

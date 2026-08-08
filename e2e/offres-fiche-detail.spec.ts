@@ -6,7 +6,7 @@ test.describe('Fiche détail — offres TEST', () => {
     await page.goto('/offres');
     const carteTest = offreCards(page).filter({ hasText: 'TEST —' }).first();
     const reference = await carteTest.getAttribute('data-reference');
-    const intitule = await carteTest.locator('h3').textContent();
+    const intitule = await carteTest.locator('h2').textContent();
 
     await carteTest.getByRole('link', { name: "Voir l'offre" }).click();
 

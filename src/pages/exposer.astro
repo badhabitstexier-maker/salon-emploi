@@ -8,7 +8,7 @@ const accessKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '';
   fin de page intercepte l'envoi via fetch et n'y a normalement pas recours).
   Construites depuis `Astro.site` (lui-même dérivé de PUBLIC_SITE_URL, voir
   astro.config.mjs) pour ne jamais coder un domaine en dur : la préproduction
-  redirige vers preprod.salonemploic.com, la production vers son propre domaine.
+  redirige vers preprod.salonemploinc.com, la production vers son propre domaine.
 */
 const redirectExposant = new URL('/merci?type=exposant', Astro.site).toString();
 const redirectVisiteur = new URL('/merci?type=visiteur', Astro.site).toString();

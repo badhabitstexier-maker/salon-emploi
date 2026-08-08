@@ -7,10 +7,12 @@ import { FIXTURE_REFERENCE } from '../scripts/e2e-fixtures.mjs';
   publiques principales, sur les deux projets Playwright existants
   (chromium-desktop / chromium-mobile — voir playwright.config.ts).
 
-  Règle de blocage : 0 violation "critical" ou "serious". Les violations de
-  niveau "moderate"/"minor" sont loggées pour information mais ne font pas
-  échouer le test — elles relèvent d'un futur lot de correction ciblée, pas
-  de ce Lot 4B-3 dont le périmètre est l'automatisation des contrôles.
+  Règle de blocage, maintenue au Lot 4B-4 : 0 violation "critical" ou
+  "serious". Les violations "moderate"/"minor" sont loggées pour
+  information (annotation `axe-info`) mais ne font pas échouer le test —
+  c'est une règle de blocage minimale assumée, pas un oubli : voir
+  CLAUDE.md section 13 pour la revue Lot 4B-4 de ces violations et le
+  détail de ce qui a été corrigé (heading-order sur /offres) vs. différé.
 */
 
 const NIVEAUX_BLOQUANTS = new Set(['critical', 'serious']);
