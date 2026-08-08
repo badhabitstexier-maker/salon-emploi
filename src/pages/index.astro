@@ -6,6 +6,9 @@ const eventSchema = {
   '@context': 'https://schema.org',
   '@type': 'Event',
   name: "Salon de l'Emploi & de la Formation 2026",
+  // `url` manquait au schéma (Lot 4B-3) : ajouté, propriété attendue par
+  // schema.org/Event et déjà disponible via Astro.site (voir Seo.astro).
+  url: new URL('/', Astro.site).toString(),
   startDate: '2026-10-30',
   endDate: '2026-10-31',
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
@@ -201,7 +204,7 @@ const infosPratiques = [
         <div class="mt-8 flex flex-col gap-3 sm:flex-row">
           <a
             href="/exposer"
-            class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+            class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-marine transition-opacity hover:opacity-90"
           >
             Devenir exposant
           </a>
@@ -451,7 +454,7 @@ const infosPratiques = [
         </p>
         <a
           href="/exposer"
-          class="mt-7 inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+          class="mt-7 inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-marine transition-opacity hover:opacity-90"
         >
           Découvrir les offres exposants
         </a>
