@@ -17,6 +17,12 @@ npm-debug.log*
 # macOS-specific files
 .DS_Store
 
+# Playwright (Lot 4B — QA E2E)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # exports Google Forms/Sheets réels (données de contact exposants — voir
 # docs/WORKFLOW_OFFRES_2026.md) : ne jamais committer, seul le CSV normalisé
 # de data/templates/ est un modèle fictif destiné au dépôt.
