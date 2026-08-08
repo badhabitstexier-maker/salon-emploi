@@ -2,10 +2,9 @@
 
 > Constitution du projet pour Claude Code. À lire au début de **chaque** session.
 > Objectif de ce fichier : garder le cap, éviter le sur-engineering, refléter l'état réel du projet.
-> v4 — 08/08/2026. Mise à jour de fond après clôture du chantier Offres (pipeline d'import,
-> sécurisation/diversification des offres TEST) et avant l'ouverture du chantier Administration.
-> Corrige plusieurs décalages entre la v3 et l'état réel du dépôt (arborescence, stack, statut QA) —
-> voir la section 7 pour le détail lot par lot.
+> v4.1 — 08/08/2026. Clôture du chantier QA (Lots 4B-1 à 4B-4) avant l'ouverture du chantier
+> Administration. Corrige la section 13 (QA) et la section 7 (statut des lots) pour refléter la
+> suite Playwright désormais opérationnelle et bloquante — voir ces deux sections pour le détail.
 
 ---
 
@@ -179,7 +178,7 @@ Documentée en détail dans `docs/OFFRES.md`, `docs/CANDIDATURES_TALLY.md`, `doc
 - **Lot 2 — Candidature (Tally)** : **terminé**. `/candidater`, embed Tally, dispatch de la sélection.
 - **Lot 3 — Import automatisé des offres** : **terminé**. Pipeline CSV → collection `offres` (voir section 11).
 - **Lot 4A — Import exposants et programme** : **terminé** côté pipeline (`scripts/import-exposants.mjs`, `scripts/import-programme.mjs`) ; collections toujours vides de données réelles.
-- **Lot 4B — QA (E2E, accessibilité, SEO automatisé, CI)** : **non commencé**. Voir section 13 — ne pas le déclarer fait sans vérification.
+- **Lot 4B — QA (E2E, accessibilité, SEO automatisé, CI)** : **terminé** (Lots 4B-1 à 4B-4). Voir section 13 pour le détail — dispositif Playwright opérationnel, desktop + mobile, workflow CI bloquant.
 
 ### Offres TEST (démonstration)
 5 offres fictives (`SEF26-001` à `SEF26-005`) publiées sur `/offres` à des fins de démonstration visuelle du catalogue, avec sécurisation SEO/UI dédiée. Voir section 12 — ne pas les compter comme un « Lot » à part, ni comme de vraies données exposant.
@@ -283,19 +282,57 @@ Règle implémentée et vérifiée en production (08/08/2026) : toute offre dont
 
 ---
 
-## 13. QA / Lot 4B — état réel (à ne pas survendre)
+## 13. QA / Lot 4B — état réel (terminé, Lots 4B-1 à 4B-4)
 
-**Non implémenté à ce jour.** Vérifié dans le dépôt le 08/08/2026 :
-- Aucune dépendance Playwright dans `package.json`.
-- Aucun script `npm run qa`.
-- Aucun audit accessibilité/SEO/performance automatisé.
-- `docs/WORKFLOW_CONTENUS_2026.md` confirme explicitement : « Ces trois pipelines ne couvrent ni la recette E2E (Playwright), ni l'audit SEO/accessibilité/performance automatisé, ni le JSON-LD, ni la CI [...] — traité séparément dans le Lot 4B ».
+**Implémenté et opérationnel** (vérifié dans le dépôt le 08/08/2026, à l'issue du Lot 4B-4). Le
+dispositif QA repose sur **Playwright** (`@playwright/test`, `@axe-core/playwright`), avec deux
+projets — `chromium-desktop` et `chromium-mobile` (voir `playwright.config.ts`). **Uniquement
+Chromium : pas de Firefox, pas de WebKit, pas de visual regression/captures d'écran** — choix
+assumé, pas une lacune.
 
-Ce qui existe réellement comme filet de sécurité aujourd'hui :
+**Commande standard : `npm run qa`** (alias de `npm run qa:e2e`, donc de `playwright test`).
+Lance toute la suite `e2e/` sur les deux projets. Le serveur de prévisualisation (`astro build` +
+`astro preview`) est démarré automatiquement par Playwright (`webServer`, voir
+`playwright.config.ts`) ; aucune étape manuelle n'est nécessaire avant de lancer `npm run qa`.
+
+**Couverture de la suite `e2e/` :**
+- **Smoke tests** (`smoke.spec.ts`) : chargement de l'accueil, navigation principale, menu burger mobile.
+- **Parcours Offres** (`offres-catalogue.spec.ts`, `offres-filtres.spec.ts`, `offres-fiche-detail.spec.ts`, `offres-selection.spec.ts`) : catalogue, filtres, fiche détail, sélection 0-5 et sa limite.
+- **Accessibilité** (`accessibilite.spec.ts`, `accessibilite-clavier.spec.ts`) : audit axe-core sur les pages publiques principales et les deux fiches offre (TEST + non-TEST), navigation clavier du header et du formulaire `/exposer`. **Règle de blocage : 0 violation `critical`/`serious`.** Les violations `moderate`/`minor` sont loggées pour information (annotation `axe-info`) sans faire échouer le test — revue faite au Lot 4B-4 (voir ci-dessous), pas un oubli.
+- **SEO** (`seo-balises.spec.ts`, `seo-event.spec.ts`, `seo-jobposting.spec.ts`, `seo-offres-test.spec.ts`, `seo-sitemap-robots.spec.ts`) : balises title/description/canonical, JSON-LD `Event` (accueil) et `JobPosting` (fiche offre réelle), règles spécifiques aux offres TEST (section 12), sitemap et robots.txt.
+- **Liens internes** (`liens-internes.spec.ts`, Lot 4B-4) : découvre automatiquement les routes statiques depuis `src/pages/` (pas de liste figée), y ajoute une fiche offre TEST et une fiche offre non-TEST (fixture E2E), visite chaque page (Header/Footer inclus via `BaseLayout`) et vérifie que chaque lien interne résout en dessous de 400. Ignore `mailto:`, `tel:`, les ancres pures et les liens externes ; ne teste jamais une URL externe.
+- **Comportement 404** (`404.spec.ts`, Lot 4B-4) : vérifie qu'une route inexistante répond bien en HTTP 404 (via le fallback par défaut d'`astro preview`), pas en 200 silencieux. Aucune page 404 personnalisée n'existe à ce jour — dette restante, voir plus bas.
+
+**Fixture E2E** (`scripts/e2e-fixtures.mjs`) : crée une offre factice publiée et acceptant les
+candidatures en ligne juste avant le build Playwright (nécessaire car les 5 offres TEST masquent
+volontairement le bouton de sélection), supprimée par `e2e/global-teardown.ts` quelle que soit
+l'issue des tests. Jamais committée (`.gitignore`).
+
+**Contrôles complémentaires, toujours en place :**
 - `npm run build` (bloquant en CI via `pr-check.yml`).
 - `npm run content:check` (recherche de mentions obsolètes dans les sources publiques).
 - `npm run offres:test` / `exposants:test` / `programme:test` (tests unitaires Node natifs sur la logique pure des pipelines d'import).
 - `npm run offres:check` / `exposants:check` / `programme:check` (contrôle des collections sans CSV).
+
+**Revue accessibilité `moderate`/`minor` (Lot 4B-4) :** une seule violation trouvée sur l'ensemble
+des pages contrôlées, desktop et mobile — `heading-order` (moderate) sur `/offres`, dû à un saut
+direct de `<h1>` (hero) à `<h3>` (titre de chaque `OffreCard`) quand le catalogue contient des
+offres. Corrigé en remontant le titre de `OffreCard.astro` en `<h2>` (composant utilisé uniquement
+sur cette page). **0 violation `moderate`/`minor` restante** après correction.
+
+**CI (`.github/workflows/qa.yml`) : bloquant depuis le Lot 4B-4** (`continue-on-error: true`
+retiré). Condition posée pour ce passage : 3 exécutions consécutives de `npm run qa` sans échec
+sur desktop et mobile, aucune dépendance réseau externe, aucune fixture résiduelle — validée le
+08/08/2026. Le check GitHub Actions correspondant échoue désormais si la suite échoue, mais **il
+ne devient "required" au sens de la protection de branche que si un humain l'ajoute aux règles
+requises dans Settings → Branches du dépôt** — action manuelle non automatisable depuis le code,
+toujours à faire si souhaité. `pr-check.yml` (`build-check`) reste inchangé et bloquant, indépendamment de ce workflow.
+
+**Dettes restantes après le Lot 4B :**
+- Page 404 personnalisée (design) — le comportement technique (statut HTTP 404) est correct et
+  testé, mais la page affichée est le fallback générique d'Astro, pas une page à la charte du site.
+- Rendre le check `qa-e2e` réellement "required" dans la protection de branche GitHub (action
+  manuelle, voir ci-dessus).
 
 **Ne jamais déclarer le Lot 4B « fusionné » ou « terminé » sans vérification directe sur `main`** (voir avertissement section 4 sur les fusions en squash).
 

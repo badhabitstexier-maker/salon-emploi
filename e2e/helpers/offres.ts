@@ -26,7 +26,7 @@ export async function offreCardsData(page: Page): Promise<OffreCardData[]> {
       secteur: element.getAttribute('data-secteur') ?? '',
       lieu: element.getAttribute('data-lieu') ?? '',
       typesContrat: (element.getAttribute('data-types-contrat') ?? '').split('|').filter(Boolean),
-      estTest: (element.querySelector('h3')?.textContent ?? '').includes('TEST —'),
+      estTest: (element.querySelector('h2')?.textContent ?? '').includes('TEST —'),
     })),
   );
 }
