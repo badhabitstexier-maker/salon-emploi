@@ -259,7 +259,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
       <div class="mt-9 flex flex-col gap-3 sm:flex-row">
         <a
           href="#demande-exposant"
-          class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+          class="inline-flex items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-marine transition-opacity hover:opacity-90"
         >
           Réserver mon emplacement
         </a>
@@ -379,7 +379,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
               <a
                 href="#demande-exposant"
                 data-preselect-formule={formule.valeur}
-                class="mt-5 inline-flex items-center justify-center rounded-md bg-village px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+                class="mt-5 inline-flex items-center justify-center rounded-md bg-village px-5 py-2.5 font-titre text-base font-bold uppercase tracking-wide text-marine transition-opacity hover:opacity-90"
               >
                 Demander cette formule
               </a>
@@ -397,7 +397,12 @@ const labelClass = 'block text-sm font-semibold text-marine';
         Comparer les formules en un coup d'œil
       </h2>
 
-      <div class="mt-10 overflow-x-auto rounded-2xl border border-marine/15">
+      <div
+        class="mt-10 overflow-x-auto rounded-2xl border border-marine/15"
+        tabindex="0"
+        role="region"
+        aria-label="Comparatif des formules Standard, Silver et Gold — défilement horizontal"
+      >
         <table class="w-full min-w-[640px] border-collapse text-left text-sm">
           <caption class="sr-only">Comparatif des formules Standard, Silver et Gold</caption>
           <thead>
@@ -439,7 +444,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
   <!-- =================== DISPOSITIF DE CANDIDATURES =================== -->
   <section class="border-t border-marine/10 bg-village text-marine">
     <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
-      <p class="text-xs font-bold uppercase tracking-widest text-marine/70">Recrutement</p>
+      <p class="text-xs font-bold uppercase tracking-widest text-marine">Recrutement</p>
       <h2 class="mt-2 font-titre text-3xl font-bold uppercase leading-tight sm:text-4xl">
         Votre recrutement commence avant le salon
       </h2>
@@ -511,7 +516,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
         </ul>
       </div>
 
-      <p class="mt-6 max-w-3xl text-xs leading-relaxed text-marine/80">
+      <p class="mt-6 max-w-3xl text-xs leading-relaxed text-marine">
         Les candidatures nominatives sont transmises après la clôture du salon afin de préserver
         la rencontre physique pendant l'événement. Le nombre de candidatures reçues et leur
         adéquation avec les besoins de l'exposant ne peuvent être garantis par LabEvents.
@@ -788,7 +793,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
             <button
               type="submit"
               data-submit-btn
-              class="inline-flex w-full items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto"
+              class="inline-flex w-full items-center justify-center rounded-md bg-village px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-marine transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto"
             >
               Envoyer ma demande
             </button>
