@@ -19,7 +19,13 @@
     "programme:check": "node scripts/import-programme.mjs --check",
     "programme:test": "node --test scripts/import-programme.test.mjs",
     "content:check": "node scripts/check-public-content.mjs",
-    "content:test": "npm run offres:test && npm run exposants:test && npm run programme:test && npm run content:check"
+    "content:test": "npm run offres:test && npm run exposants:test && npm run programme:test && npm run content:check",
+    "unit:test": "node --test tests/unit/*.test.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:desktop": "playwright test --project=desktop",
+    "test:e2e:mobile": "playwright test --project=mobile",
+    "test:e2e:smoke": "playwright test --project=desktop --grep @smoke",
+    "qa": "npm run content:test && npm run unit:test && npm run build && npm run test:e2e"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
@@ -27,5 +33,9 @@
     "astro": "^7.1.6",
     "astro-robots-txt": "^1.0.0",
     "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.1"
   }
 }

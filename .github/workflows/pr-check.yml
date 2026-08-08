@@ -1,13 +1,17 @@
 name: Vérifier le build (avant fusion)
 
 # Se déclenche sur chaque Pull Request vers main.
-# N'importe rien nulle part — vérifie seulement que le site compile.
+# N'importe rien nulle part — vérifie seulement que le site compile et que la
+# recette automatisée de base (Lot 4B) passe.
 on:
   pull_request:
     branches:
       - main
 
 jobs:
+  # IMPORTANT (Lot 4B) : ne jamais renommer ce job — la protection de branche
+  # sur `main` référence "build-check" par son nom, un renommage casse la
+  # fusion des PR (voir docs/RECETTE_AUTOMATISEE.md).
   build-check:
     runs-on: ubuntu-latest
 
@@ -23,6 +27,9 @@ jobs:
       - name: Installer les dépendances
         run: npm ci
 
+      - name: Tests des pipelines de contenu (offres, exposants, programme)
+        run: npm run content:test
+
       - name: Construire le site (contrôle uniquement)
         run: npm run build
         env:
@@ -30,3 +37,9 @@ jobs:
           # il n'est jamais déployé nulle part.
           PUBLIC_SITE_URL: "http://localhost:4321"
           PUBLIC_WEB3FORMS_ACCESS_KEY: "check-only"
+
+      - name: Installer uniquement Chromium pour Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Recette E2E — smoke test critique (@smoke)
+        run: npm run test:e2e:smoke

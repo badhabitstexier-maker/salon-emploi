@@ -22,3 +22,10 @@ npm-debug.log*
 # de data/templates/ est un modèle fictif destiné au dépôt.
 exports/
 *.offres-export.csv
+
+# recette E2E (Lot 4B) : builds de test temporaires et rapports Playwright —
+# voir docs/RECETTE_AUTOMATISEE.md.
+.e2e-dist/
+playwright-report/
+test-results/
+blob-report/
