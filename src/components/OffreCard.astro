@@ -1,5 +1,5 @@
 ---
-import { formuleLabels, offreSlug, estRecente, type Offre } from '../lib/offres';
+import { formuleLabels, offreSlug, estRecente, estOffreTest, type Offre } from '../lib/offres';
 
 interface Props {
   offre: Offre;
@@ -8,6 +8,7 @@ interface Props {
 const { offre } = Astro.props;
 const { data } = offre;
 const slug = offreSlug(offre);
+const testOffre = estOffreTest(offre);
 
 const badgeFormule = data.formule === 'silver' || data.formule === 'gold' ? formuleLabels[data.formule] : null;
 
@@ -91,14 +92,18 @@ const texteRecherche = normaliser(
       >
         Voir l'offre
       </a>
-      <button
-        type="button"
-        data-offre-toggle={data.reference}
-        aria-pressed="false"
-        class="inline-flex flex-1 items-center justify-center rounded-md border-2 border-village px-4 py-2.5 font-titre text-sm font-bold uppercase tracking-wide text-marine transition-colors hover:bg-village"
-      >
-        Ajouter à ma sélection
-      </button>
+      {
+        !testOffre && (
+          <button
+            type="button"
+            data-offre-toggle={data.reference}
+            aria-pressed="false"
+            class="inline-flex flex-1 items-center justify-center rounded-md border-2 border-village px-4 py-2.5 font-titre text-sm font-bold uppercase tracking-wide text-marine transition-colors hover:bg-village"
+          >
+            Ajouter à ma sélection
+          </button>
+        )
+      }
     </div>
   </div>
 </article>
