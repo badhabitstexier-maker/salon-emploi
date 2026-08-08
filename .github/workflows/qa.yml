@@ -1,0 +1,45 @@
+name: QA (E2E Playwright)
+
+# Job informatif — Lot 4B-1 à 4B-3 : ne bloque pas la fusion (voir CLAUDE.md
+# section 7 et 13). Distinct de pr-check.yml (build-check), qui reste
+# bloquant et n'est pas modifié ici. Passage en bloquant prévu au Lot 4B-4.
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  qa-e2e:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Installer Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
+
+      - name: Lancer les tests E2E
+        run: npm run qa
+        env:
+          # Valeurs neutres : cette exécution ne sert qu'au contrôle QA,
+          # rien n'est déployé nulle part (même logique que pr-check.yml).
+          PUBLIC_SITE_URL: "http://localhost:4321"
+          PUBLIC_WEB3FORMS_ACCESS_KEY: "check-only"
+
+      - name: Publier le rapport Playwright
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

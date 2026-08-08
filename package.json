@@ -19,7 +19,9 @@
     "programme:check": "node scripts/import-programme.mjs --check",
     "programme:test": "node --test scripts/import-programme.test.mjs",
     "content:check": "node scripts/check-public-content.mjs",
-    "content:test": "npm run offres:test && npm run exposants:test && npm run programme:test && npm run content:check"
+    "content:test": "npm run offres:test && npm run exposants:test && npm run programme:test && npm run content:check",
+    "qa:e2e": "playwright test",
+    "qa": "npm run qa:e2e"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
@@ -27,5 +29,8 @@
     "astro": "^7.1.6",
     "astro-robots-txt": "^1.0.0",
     "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
   }
 }
