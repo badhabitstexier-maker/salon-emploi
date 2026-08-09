@@ -19,6 +19,8 @@ const offres = (await getCollection('offres')).sort(
   (a, b) => b.data.datePublication.getTime() - a.data.datePublication.getTime(),
 );
 
+const nbOffresTest = offres.filter(estOffreTest).length;
+
 const entreprises = entreprisesDisponibles(offres);
 const typesContrat = typesContratDisponibles(offres);
 const statuts = Object.entries(statutLabels);
@@ -28,7 +30,10 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
 
 <AdminLayout title="Offres" section="offres">
   <h1 class="text-2xl font-bold text-marine">Offres</h1>
-  <p class="mt-2 text-sm text-encre/80">{offres.length} {offres.length > 1 ? 'offres' : 'offre'} dans la collection.</p>
+  <p class="mt-2 text-sm text-encre/80">
+    {`${offres.length} ${offres.length > 1 ? 'offres enregistrées' : 'offre enregistrée'}`}
+    {nbOffresTest > 0 && `, dont ${nbOffresTest} ${nbOffresTest > 1 ? 'offres TEST' : 'offre TEST'}`}.
+  </p>
 
   {
     offres.length > 0 ? (
