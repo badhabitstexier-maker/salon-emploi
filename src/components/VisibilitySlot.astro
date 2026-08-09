@@ -1,29 +1,23 @@
 ---
 /*
-  Emplacement de visibilité publicitaire (Lot Admin-2, voir docs/VISIBILITE.md).
-
-  Centralise toute la logique de sélection : les pages appelantes ne font
+  Emplacement de visibilité publicitaire (Lot Admin-2 / Admin-2B, voir
+  docs/VISIBILITE.md). Centralise le balisage : les pages appelantes ne font
   que déclarer `page` + `emplacement`, jamais de règle publicitaire écrite
-  en dur dans la page (voir docs/VISIBILITE.md section « intégration »).
+  en dur dans la page.
 
-  Si aucune visibilité n'est envoyable (aucune campagne active et couvrant
-  ce (page, emplacement), voir `visibilitesEnvoyables`), ce composant ne
-  rend RIEN (pas de section, pas de conteneur vide) — voir cadrage Admin-2,
-  § 6 : « ne pas laisser d'espace vide disgracieux ».
-
-  IMPORTANT : `visibilitesEnvoyables` ne filtre PAS sur les dates
-  (dateDebut/dateFin) — ces dates sont réévaluées côté client à chaque
-  chargement de page (voir src/lib/visibilite-ui.ts), pour qu'une campagne
-  démarre/s'arrête à l'heure dite sans nouveau build (voir
-  docs/VISIBILITE.md section 7). Conséquence : la <section> peut être
-  envoyée au build alors qu'aucune campagne n'est *actuellement* dans sa
-  fenêtre de dates (ex. campagne programmée dans le futur) — dans ce cas,
-  toute la section reste `hidden` (pas seulement le visuel) : aucun espace
-  vide ni bandeau de fond ne doit apparaître tant qu'aucun tirage n'a eu
-  lieu côté client.
+  CHANGEMENT Admin-2B : jusqu'ici, ce composant interrogeait
+  `getCollection('visibilites')` AU BUILD et ne rendait la <section> que
+  s'il existait au moins une campagne envoyable — impossible depuis
+  Admin-2B, puisque les campagnes vivent uniquement dans visibilites.json
+  sur le serveur (voir public/api/visibilites.php), inconnu d'Astro au
+  moment du build. La <section> est donc désormais TOUJOURS rendue, mais
+  masquée par défaut (`hidden`) : c'est le contrôleur client
+  (src/lib/visibilite-ui.ts) qui va chercher les candidats via l'API
+  publique et ne révèle la section que s'il en trouve un éligible. Le
+  résultat visible pour un visiteur est identique (aucun espace vide tant
+  qu'aucun tirage n'a abouti) — voir cadrage Admin-2B §5/§12.
 */
-import { getCollection } from 'astro:content';
-import { visibilitesEnvoyables, visibiliteResume, type PageVisibilite, type EmplacementVisibilite } from '../lib/visibilites';
+import type { PageVisibilite, EmplacementVisibilite } from '../lib/visibilites';
 
 interface Props {
   page: PageVisibilite;
@@ -31,29 +25,24 @@ interface Props {
 }
 
 const { page, emplacement = 'principal' } = Astro.props;
-
-const toutes = await getCollection('visibilites');
-const envoyables = visibilitesEnvoyables(toutes, { page, emplacement });
-const candidats = envoyables.map(visibiliteResume);
-
-const idDonnees = `visibilite-donnees-${page}-${emplacement}`;
 const idSection = `visibilite-slot-${page}-${emplacement}`;
 ---
 
-{
-  candidats.length > 0 && (
-    <section id={idSection} class="hidden border-t border-marine/10 bg-brume" aria-label="Espace partenaires">
-      <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        <div
-          data-visibility-visual
-          class="aspect-[6/1] w-full overflow-hidden rounded-xl bg-marine/5 sm:aspect-[8/1]"
-        />
-      </div>
-      <script type="application/json" id={idDonnees} data-visibility-json data-section={idSection} set:html={JSON.stringify(candidats)} />
-      <script>
-        import { initAllVisibilitySlots } from '../lib/visibilite-ui';
-        initAllVisibilitySlots();
-      </script>
-    </section>
-  )
-}
+<section
+  id={idSection}
+  data-visibility-page={page}
+  data-visibility-emplacement={emplacement}
+  class="hidden border-t border-marine/10 bg-brume"
+  aria-label="Espace partenaires"
+>
+  <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+    <div
+      data-visibility-visual
+      class="aspect-[6/1] w-full overflow-hidden rounded-xl bg-marine/5 sm:aspect-[8/1]"
+    />
+  </div>
+</section>
+<script>
+  import { initAllVisibilitySlots } from '../lib/visibilite-ui';
+  initAllVisibilitySlots();
+</script>

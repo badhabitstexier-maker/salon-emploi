@@ -2,9 +2,10 @@
 
 > Constitution du projet pour Claude Code. À lire au début de **chaque** session.
 > Objectif de ce fichier : garder le cap, éviter le sur-engineering, refléter l'état réel du projet.
-> v4.1 — 08/08/2026. Clôture du chantier QA (Lots 4B-1 à 4B-4) avant l'ouverture du chantier
-> Administration. Corrige la section 13 (QA) et la section 7 (statut des lots) pour refléter la
-> suite Playwright désormais opérationnelle et bloquante — voir ces deux sections pour le détail.
+> v4.2 — 09/08/2026. Lot Admin-2B (CRUD Visibilité) implémenté : `/admin/visibilite` passe de
+> lecture seule à un CRUD complet, adossé à une API PHP dédiée et strictement scopée à ce seul
+> module (voir section 4 et section 14). Corrige les sections 4, 7 et 14 en conséquence — voir
+> `docs/VISIBILITE.md` section 15 pour l'architecture technique complète.
 
 ---
 
@@ -64,6 +65,7 @@ Les deux coexistent : Web3Forms pour la prise de contact commerciale, Tally pour
 - **Formulaires** : Web3Forms (contact commercial) + Tally (candidature) — voir section 3bis. **Pas de Supabase, pas de base de données côté site public.**
 - **Contenus dynamiques** : **Astro Content Collections**, définies dans `src/content.config.ts` — trois collections actives : `offres`, `exposants`, `programme`. Chacune a son propre pipeline d'import CSV → Markdown (voir section 11 pour `offres` ; `docs/EXPOSANTS_IMPORT.md` et `docs/PROGRAMME_IMPORT.md` pour les deux autres). `exposants` et `programme` ont leur schéma et leur pipeline prêts mais **sont vides à ce jour** (aucune donnée réelle importée) — seule `offres` contient du contenu (5 offres TEST, voir section 12).
 - **CMS d'édition** : aucun aujourd'hui (édition à la main des fichiers de contenu, ou import CSV). Keystatic reste une **piste évoquée, pas une décision ferme** — voir section 15.
+- **PHP (Admin-2B, 09/08/2026)** : introduit **strictement pour le module Visibilité de `/admin`** (`public/admin-api/visibilites.php`, `public/api/visibilites.php`) — confirmé disponible sur l'hébergement OVH mutualisé (PHP 8.0.30) par un test réel avant codage. Ce n'est **pas** une bascule générale du site public vers un backend dynamique : le reste du site (pages vitrine, offres, exposants, programme) reste 100 % statique, sans PHP. Les données de ce module (`visibilites.json`) vivent hors du dépôt Git, sur le serveur OVH (`/home/salonez/salon-emploi-data-preprod/`) — voir `docs/VISIBILITE.md` section 15. Ne pas étendre l'usage de PHP à d'autres pages sans un cadrage aussi explicite que celui-ci.
 - **Node** : 20 LTS ou 22 (les workflows CI utilisent Node 22 — Node 20 posait un problème avec Astro 7, voir historique).
 - **Hébergement** : OVH, en fichiers statiques (transfert FTP de `dist/`), automatisé par CI (voir ci-dessous). Préproduction en ligne : `https://preprod.salonemploinc.com`.
 - **Environnement de prévisualisation** : chaque lot produit une version consultable en préprod sans toucher à la production.
@@ -89,7 +91,7 @@ Les secrets (clé Web3Forms, `PUBLIC_TALLY_CANDIDATURE_URL`, identifiants FTP, `
 - Pas de Next.js, pas de rendu côté serveur pour le site public.
 - Pas de dépendances lourdes non justifiées (ex. React tant qu'aucune brique ne le justifie réellement).
 - On ne code pas au-delà du lot en cours.
-- ~~Pas de back-office custom en V1~~ — clause assouplie le 08/08/2026, voir section 14 : un module d'administration LabEvents peut désormais être **étudié** (architecture d'abord, pas de code avant validation).
+- ~~Pas de back-office custom en V1~~ — clause assouplie le 08/08/2026, voir section 14. Un premier module concret existe depuis le 09/08/2026 (CRUD Visibilité, `/admin/visibilite`) : garde-fou reformulé en **« pas de backend général pour le site public, un backend PHP strictement scopé par module Admin, étudié et validé avant codage »** — pas une porte ouverte à toute évolution future de `/admin` sans le même passage par une étude d'architecture.
 
 ---
 
@@ -161,7 +163,7 @@ public/         → images, polices, favicon, logos, dossier exposant PDF
 
 ---
 
-## 7. Priorité V1 (l'ordre des lots) — statut réel au 08/08/2026
+## 7. Priorité V1 (l'ordre des lots) — statut réel au 09/08/2026
 
 Un lot n'est considéré **terminé** que si tous ses critères sont cochés et que le dépôt le confirme. Ne pas déclarer un lot fini sur la base d'une intention ou d'un commit poussé — vérifier sur `main` distant (voir avertissement section 4).
 
@@ -182,6 +184,12 @@ Documentée en détail dans `docs/OFFRES.md`, `docs/CANDIDATURES_TALLY.md`, `doc
 
 ### Offres TEST (démonstration)
 5 offres fictives (`SEF26-001` à `SEF26-005`) publiées sur `/offres` à des fins de démonstration visuelle du catalogue, avec sécurisation SEO/UI dédiée. Voir section 12 — ne pas les compter comme un « Lot » à part, ni comme de vraies données exposant.
+
+### Chantier Administration LabEvents — numérotation propre (voir section 14)
+- **Admin-0 — socle et protection d'accès** : **terminé**. `/admin`, Basic Auth Apache. Voir `docs/ADMIN.md`.
+- **Admin-1 — tableau de bord, exposants, offres** : **terminé** (lecture seule, calculé au build depuis les Content Collections).
+- **Admin-2 — Visibilité publicitaire (lecture seule)** : **terminé puis remplacé par Admin-2B** (voir ci-dessous) — ne plus s'y référer comme état actuel.
+- **Admin-2B — Visibilité publicitaire (CRUD complet)** : **terminé** (09/08/2026). `/admin/visibilite` permet créer/modifier/activer/désactiver/supprimer une campagne sans commit ni déploiement, via une API PHP dédiée (`public/admin-api/visibilites.php`, `public/api/visibilites.php`) et un fichier JSON hors dépôt sur l'hébergement OVH préproduction. Voir `docs/VISIBILITE.md` section 15 pour l'architecture complète. **Aucune configuration production créée** — préproduction uniquement à ce stade.
 
 ---
 
@@ -338,19 +346,14 @@ toujours à faire si souhaité. `pr-check.yml` (`build-check`) reste inchangé e
 
 ---
 
-## 14. Administration LabEvents — chantier à l'étude (décision du 08/08/2026)
+## 14. Administration LabEvents — état réel au 09/08/2026
 
-La clause précédente « Pas de back-office custom en V1 » était trop absolue et bloque à tort ce chantier. Nouvelle décision, plus précise :
+La clause initiale « Pas de back-office custom en V1 » a été assouplie le 08/08/2026 pour permettre l'étude du chantier Admin, puis un premier module concret (Admin-2B) a été livré le 09/08/2026. Ce que ça change, précisément :
 
-- Un **module d'administration réservé à LabEvents** peut désormais être **étudié**, dans un lot dédié.
-- **Aucun développement avant qu'une proposition d'architecture n'ait été produite et validée**, portant notamment sur :
-  - l'authentification (qui y accède, comment) ;
-  - la source des données (le module ne doit pas partir du principe qu'il faut remplacer Google Sheets tout de suite) ;
-  - les conséquences du caractère **statique** du site Astro actuel (un module d'administration implique très probablement une brique différente du site public statique — à documenter, pas à trancher par défaut).
-- **Ne pas décider par avance** qu'une base de données, un CMS ou du SSR est nécessaire : ce choix doit ressortir de l'étude d'architecture, pas être posé en prérequis.
-- **Première cible envisagée** (à confirmer lors de l'étude) : tableau de bord, consultation des exposants, consultation des offres, recherche/filtres, statuts et indicateurs, fiches détail, éventuellement une assistance aux opérations de publication/import déjà existantes (section 11) — **jamais un second pipeline parallèle**.
-- **Hors périmètre pour cette première étape** : gestion des candidatures, CVthèque, comptes exposants, remplacement immédiat du Google Sheet, nouvelle base de données sans justification explicite dans l'étude d'architecture.
-- Le pipeline Google Forms / Google Sheets / import CSV existant (section 11) reste la référence tant qu'une décision explicite n'en dispose pas autrement.
+- Le principe validé pour Admin-2B, à reproduire pour tout futur module Admin nécessitant de l'écriture : **étude d'architecture d'abord** (faisabilité hébergement, source des données, conséquences du caractère statique du site public), **audit technique réel avant codage** (test de faisabilité effectif sur l'hébergement, pas une hypothèse), **puis** développement, avec un backend (ici PHP) **strictement scopé au module concerné** — jamais une bascule générale du site.
+- Le pipeline Google Forms / Google Sheets / import CSV existant (section 11, offres) **reste la référence** pour les offres — Admin-2B ne le remplace pas et ne le concurrence pas : c'est un module distinct (Visibilité publicitaire), pas une seconde voie d'import.
+- **Hors périmètre, toujours** : gestion des candidatures, CVthèque, comptes exposants, remplacement du Google Sheet, nouvelle base de données sans justification explicite — Admin-2B n'a ouvert la porte qu'à ce module précis (Visibilité), rien d'autre par extension implicite.
+- **Prochain module Admin envisagé, s'il y en a un** : à cadrer avec le même formalisme qu'Admin-2B (étude → audit réel → validation explicite → code), pas en présupposant que la voie PHP/JSON ouverte pour Visibilité s'applique automatiquement à un autre besoin (ex. édition des exposants/programme) sans nouvelle décision.
 
 ---
 

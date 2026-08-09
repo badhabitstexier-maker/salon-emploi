@@ -1,27 +1,70 @@
-import type { CollectionEntry } from 'astro:content';
-
 /*
-  Moteur de visibilité publicitaire (Lot Admin-2, voir docs/VISIBILITE.md).
+  Moteur de visibilité publicitaire (Lot Admin-2 / Admin-2B, voir docs/VISIBILITE.md).
 
   IMPORTANT (principe métier — voir docs/VISIBILITE.md section 1 et
   CLAUDE.md) : rien dans ce fichier ne doit jamais lire ou dériver quoi que
-  ce soit à partir de `exposant.data.formule` (standard/silver/gold). Le
-  poids et l'éligibilité d'une visibilité sont des données saisies à la main
-  par LabEvents dans la collection `visibilites`, jamais un automatisme lié
-  à la formule commerciale exposant.
+  ce soit à partir de `exposant.data.formule`. Le poids et l'éligibilité
+  d'une visibilité sont des données saisies à la main par LabEvents, jamais
+  un automatisme lié à la formule commerciale exposant.
 
-  Fonctions pures uniquement (pas d'accès à `astro:content` au runtime, pas
-  de DOM) — testables directement via `node --test` (voir
-  scripts/visibilites-lib.test.mjs) et réutilisables côté client dans
-  src/lib/visibilite-ui.ts (voir OffreSelection/selection-ui.ts pour le même
-  principe de séparation logique pure / contrôleur DOM).
+  Fonctions pures uniquement (aucun accès réseau, aucun DOM, aucun
+  `astro:content`) — testables directement via `node --test` (voir
+  scripts/visibilites-lib.test.mjs).
+
+  CHANGEMENT Admin-2B (voir docs/VISIBILITE.md section « Admin-2B ») :
+  jusqu'ici, une visibilité était une entrée `CollectionEntry<'visibilites'>`
+  (Content Collection Astro alimentée par des fichiers Markdown). Depuis
+  Admin-2B, la source de vérité est un fichier JSON hébergé sur le serveur
+  (`visibilites.json`, hors dépôt Git, hors webroot), géré via une API PHP
+  (voir public/admin-api/visibilites.php et public/api/visibilites.php) —
+  Astro n'a plus aucune connaissance de ces données au build. `Visibilite`
+  est donc désormais un simple objet plat (plus de wrapper `{ id, data }`),
+  et les dates y sont des chaînes ISO 8601 (comme dans un JSON), jamais des
+  `Date`. Les fonctions ci-dessous sont volontairement le miroir exact de la
+  logique implémentée en PHP côté serveur (public/api/visibilites.php pour
+  le filtrage page/emplacement/actif, public/admin-api/visibilites.php pour
+  la validation) : toute évolution de règle métier doit être répercutée aux
+  deux endroits, en le signalant explicitement (jamais une extension
+  silencieuse d'un seul côté).
 */
 
-export type Visibilite = CollectionEntry<'visibilites'>;
-export type PageVisibilite = Visibilite['data']['pages'][number];
-export type EmplacementVisibilite = Visibilite['data']['emplacement'];
+export const PAGES_VISIBILITE = ['accueil', 'offres', 'exposants', 'programme'] as const;
+export const EMPLACEMENTS_VISIBILITE = ['principal'] as const;
+export const TYPES_ANNONCEUR = [
+  'exposant',
+  'sponsor',
+  'partenaire',
+  'institution',
+  'annonceur_externe',
+  'autre',
+] as const;
+export const FORMATS_VISIBILITE = ['bandeau_horizontal'] as const;
 
-export const typeAnnonceurLabels: Record<Visibilite['data']['typeAnnonceur'], string> = {
+export type PageVisibilite = (typeof PAGES_VISIBILITE)[number];
+export type EmplacementVisibilite = (typeof EMPLACEMENTS_VISIBILITE)[number];
+export type TypeAnnonceur = (typeof TYPES_ANNONCEUR)[number];
+export type FormatVisibilite = (typeof FORMATS_VISIBILITE)[number];
+
+/** Enregistrement complet, tel que renvoyé par l'API Admin (`/admin-api/visibilites.php`, authentifiée). */
+export interface Visibilite {
+  id: string;
+  nomInterne: string;
+  annonceur: string;
+  typeAnnonceur: TypeAnnonceur;
+  exposantId?: string;
+  format: FormatVisibilite;
+  visuel: string;
+  alt: string;
+  lien?: string;
+  pages: PageVisibilite[];
+  emplacement: EmplacementVisibilite;
+  dateDebut?: string;
+  dateFin?: string;
+  poids: number;
+  actif: boolean;
+}
+
+export const typeAnnonceurLabels: Record<TypeAnnonceur, string> = {
   exposant: 'Exposant',
   sponsor: 'Sponsor',
   partenaire: 'Partenaire',
@@ -30,7 +73,7 @@ export const typeAnnonceurLabels: Record<Visibilite['data']['typeAnnonceur'], st
   autre: 'Autre',
 };
 
-export const formatLabels: Record<Visibilite['data']['format'], string> = {
+export const formatLabels: Record<FormatVisibilite, string> = {
   bandeau_horizontal: 'Bandeau horizontal',
 };
 
@@ -71,15 +114,14 @@ export function estDansPeriode(dateDebut: Date | undefined, dateFin: Date | unde
 }
 
 /*
-  Calcul du statut à partir des champs bruts (pas d'un CollectionEntry) —
-  seule définition de la règle Actif/À venir/Expiré/Désactivé du dépôt.
-  Réutilisée par :
-  - `statutVisibilite` ci-dessous, côté serveur (build, y compris pour le
-    premier rendu HTML de `/admin/visibilite`) ;
-  - `src/pages/admin/visibilite/index.astro`, côté client au chargement de
-    la page, pour recalculer le statut avec l'heure réelle du navigateur
-    (voir docs/VISIBILITE.md section 10) — l'Admin ne doit jamais afficher
-    un statut figé au dernier build.
+  Calcul du statut à partir des champs bruts — seule définition de la règle
+  Actif/À venir/Expiré/Désactivé du dépôt. Réutilisée par `statutVisibilite`
+  ci-dessous, et par `src/pages/admin/visibilite/index.astro` côté client,
+  pour recalculer le statut avec l'heure réelle du navigateur (voir
+  docs/VISIBILITE.md section 10) — l'Admin ne doit jamais afficher un statut
+  figé (et depuis Admin-2B, il n'y a de toute façon plus de « build » qui
+  connaîtrait ces données : tout est calculé côté client, à chaque
+  chargement, à partir de la réponse de l'API Admin).
 */
 export function calculerStatut(
   actif: boolean,
@@ -93,9 +135,14 @@ export function calculerStatut(
   return 'expire';
 }
 
-/** Statut calculé au moment de l'appel — jamais stocké en frontmatter (voir docs/VISIBILITE.md). */
-export function statutVisibilite(visibilite: Visibilite, maintenant: Date = new Date()): StatutVisibilite {
-  return calculerStatut(visibilite.data.actif, visibilite.data.dateDebut, visibilite.data.dateFin, maintenant);
+/** Statut calculé au moment de l'appel — jamais stocké. Accepte des dates en ISO (comme reçues de l'API). */
+export function statutVisibilite(
+  visibilite: Pick<Visibilite, 'actif' | 'dateDebut' | 'dateFin'>,
+  maintenant: Date = new Date(),
+): StatutVisibilite {
+  const dateDebut = visibilite.dateDebut ? new Date(visibilite.dateDebut) : undefined;
+  const dateFin = visibilite.dateFin ? new Date(visibilite.dateFin) : undefined;
+  return calculerStatut(visibilite.actif, dateDebut, dateFin, maintenant);
 }
 
 export interface CriteresEligibilite {
@@ -104,27 +151,25 @@ export interface CriteresEligibilite {
 }
 
 /** Page + emplacement couverts par la visibilité, indépendamment de `actif` et des dates. */
-export function couvre(visibilite: Visibilite, criteres: CriteresEligibilite): boolean {
-  if (visibilite.data.emplacement !== criteres.emplacement) return false;
-  return visibilite.data.pages.includes(criteres.page);
+export function couvre(visibilite: Pick<Visibilite, 'pages' | 'emplacement'>, criteres: CriteresEligibilite): boolean {
+  if (visibilite.emplacement !== criteres.emplacement) return false;
+  return visibilite.pages.includes(criteres.page);
 }
 
 /*
   Éligible à un (page, emplacement) donné à un instant `maintenant` donné :
   actif + page/emplacement couverts + dans la fenêtre de dates. Utile pour
-  un contrôle ponctuel (tests, futurs usages serveur) — le site public
-  n'utilise PAS cette fonction pour décider quoi envoyer au navigateur (voir
+  un contrôle ponctuel (tests, futurs usages serveur) — l'API publique
+  n'utilise PAS cette fonction pour décider quoi renvoyer au navigateur (voir
   visibilitesEnvoyables plus bas : les dates doivent être réévaluées côté
-  client, pas figées au build).
+  client, pas figées au moment de la requête serveur).
 */
-export function estEligible(
-  visibilite: Visibilite,
-  criteres: CriteresEligibilite,
-  maintenant: Date = new Date(),
-): boolean {
-  if (!visibilite.data.actif) return false;
+export function estEligible(visibilite: Visibilite, criteres: CriteresEligibilite, maintenant: Date = new Date()): boolean {
+  if (!visibilite.actif) return false;
   if (!couvre(visibilite, criteres)) return false;
-  return estDansPeriode(visibilite.data.dateDebut, visibilite.data.dateFin, maintenant);
+  const dateDebut = visibilite.dateDebut ? new Date(visibilite.dateDebut) : undefined;
+  const dateFin = visibilite.dateFin ? new Date(visibilite.dateFin) : undefined;
+  return estDansPeriode(dateDebut, dateFin, maintenant);
 }
 
 export function visibilitesEligibles(
@@ -136,16 +181,24 @@ export function visibilitesEligibles(
 }
 
 /*
-  Ce que le build envoie au navigateur pour un (page, emplacement) donné :
-  actif + page/emplacement couverts, SANS filtrer sur les dates — les dates
-  sont volontairement réévaluées côté client à chaque chargement de page
-  (voir src/lib/visibilite-ui.ts, estDansPeriodeResume), pour qu'une
-  campagne démarre/s'arrête à l'heure dite sans nécessiter un nouveau build.
-  Une visibilité `actif: false` ou hors scope (page/emplacement) n'est en
-  revanche jamais envoyée : ce sont des leviers manuels, pas des dates.
+  Ce que l'API publique (`GET /api/visibilites.php?page=...&emplacement=...`,
+  voir public/api/visibilites.php) renvoie au navigateur pour un
+  (page, emplacement) donné : actif + page/emplacement couverts, SANS
+  filtrer sur les dates — les dates sont volontairement réévaluées côté
+  client à chaque chargement de page (voir src/lib/visibilite-ui.ts), pour
+  qu'une campagne démarre/s'arrête à l'heure dite. Une visibilité
+  `actif: false` ou hors scope (page/emplacement) n'est en revanche jamais
+  envoyée : ce sont des leviers manuels, pas des dates.
+
+  Miroir exact de la logique implémentée en PHP dans
+  public/api/visibilites.php — conservée ici pour que
+  scripts/visibilites-lib.test.mjs documente et verrouille le comportement
+  attendu, même si ce n'est plus cette fonction TS qui s'exécute au moment
+  de la requête réelle (c'est le PHP, en l'absence de build Astro qui
+  connaîtrait ces données).
 */
 export function visibilitesEnvoyables(liste: Visibilite[], criteres: CriteresEligibilite): Visibilite[] {
-  return liste.filter((visibilite) => visibilite.data.actif && couvre(visibilite, criteres));
+  return liste.filter((visibilite) => visibilite.actif && couvre(visibilite, criteres));
 }
 
 /*
@@ -176,14 +229,12 @@ export function selectionnerPonderee<T extends { poids: number }>(
 
 /*
   Résumé public d'une visibilité — strictement ce qui est nécessaire pour
-  l'affichage et le tirage côté client (voir VisibilitySlot.astro). Ne
+  l'affichage et le tirage côté client. C'est exactement la forme (et la
+  whitelist de champs) renvoyée par `GET /api/visibilites.php` — voir
+  public/api/visibilites.php, qui construit ce même objet côté PHP. Ne
   jamais y ajouter `nomInterne`, `typeAnnonceur` ou `exposantId` : ce sont
   des données réservées à l'usage interne LabEvents (voir Admin), sans
-  utilité pour le rendu public. `dateDebut`/`dateFin` sont en ISO (pas des
-  `Date`, non sérialisables telles quelles dans le JSON embarqué) et ne
-  sont présentes que si la campagne les définit — indispensables pour que
-  le client puisse réévaluer la fenêtre de dates lui-même (voir
-  estDansPeriodeResume ci-dessous).
+  utilité pour le rendu public.
 */
 export interface VisibiliteResume {
   id: string;
@@ -196,17 +247,24 @@ export interface VisibiliteResume {
   dateFin?: string;
 }
 
+const CHAMPS_RESUME_PUBLIC = ['id', 'annonceur', 'visuel', 'alt', 'lien', 'poids', 'dateDebut', 'dateFin'] as const;
+
 export function visibiliteResume(visibilite: Visibilite): VisibiliteResume {
   return {
     id: visibilite.id,
-    annonceur: visibilite.data.annonceur,
-    visuel: visibilite.data.visuel,
-    alt: visibilite.data.alt,
-    lien: visibilite.data.lien,
-    poids: visibilite.data.poids,
-    dateDebut: visibilite.data.dateDebut?.toISOString(),
-    dateFin: visibilite.data.dateFin?.toISOString(),
+    annonceur: visibilite.annonceur,
+    visuel: visibilite.visuel,
+    alt: visibilite.alt,
+    lien: visibilite.lien,
+    poids: visibilite.poids,
+    dateDebut: visibilite.dateDebut,
+    dateFin: visibilite.dateFin,
   };
+}
+
+/** Vrai si l'objet ne porte strictement que les champs publics attendus (utilisé par les tests). */
+export function estResumePublicValide(objet: Record<string, unknown>): boolean {
+  return Object.keys(objet).every((cle) => (CHAMPS_RESUME_PUBLIC as readonly string[]).includes(cle));
 }
 
 /** Même règle que `estDansPeriode`, appliquée à un VisibiliteResume (dates en ISO côté client). */
