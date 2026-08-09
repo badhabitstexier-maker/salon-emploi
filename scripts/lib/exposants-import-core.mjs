@@ -14,6 +14,13 @@ import { listeDepuisCellule, boolDepuisCellule, SLUG_REGEX, DATE_REGEX } from '.
 export const UNIVERS = ['emploi', 'formation'];
 export const TYPES_STRUCTURE = ['entreprise', 'organisme-formation', 'institution', 'accompagnement', 'association', 'autre'];
 
+/*
+  Formule commerciale de l'exposant (Lot Admin-1B, docs/EXPOSANTS_IMPORT.md).
+  Convention identique à `offres.formule` (scripts/lib/offres-import-core.mjs).
+  Appartient à l'exposant, n'est jamais déduite de ses offres.
+*/
+export const FORMULES = ['standard', 'silver', 'gold'];
+
 export const EXPOSANT_ID_REGEX = /^EXP26-\d{3,}$/;
 
 /*
@@ -35,7 +42,7 @@ export const STANDS_NON_COMMERCIALISES = ['22', '23', '24'];
 export const EXTENSIONS_LOGO_AUTORISEES = ['svg', 'png', 'jpg', 'jpeg', 'webp'];
 
 /* Colonnes toujours attendues dans l'en-tête (même si la valeur peut être vide). */
-export const COLONNES_REQUISES = ['exposantId', 'slug', 'nom', 'univers', 'type_structure', 'secteurs', 'accroche', 'description', 'mise_en_avant', 'publie'];
+export const COLONNES_REQUISES = ['exposantId', 'slug', 'nom', 'formule', 'univers', 'type_structure', 'secteurs', 'accroche', 'description', 'mise_en_avant', 'publie'];
 
 /* Colonnes facultatives reconnues — absence de l'en-tête tolérée sans avertissement. */
 export const COLONNES_FACULTATIVES = ['logo', 'site_web', 'numero_stand', 'email_public', 'telephone_public', 'ordre', 'date_mise_a_jour', 'metiers', 'formations', 'opportunites', 'mots_cles'];
@@ -73,6 +80,11 @@ export function validerLigne(ligne, numeroLigne) {
   }
 
   const nom = champTexte('nom');
+
+  const formule = champTexte('formule');
+  if (formule && !FORMULES.includes(formule)) {
+    erreurs.push(`« formule » « ${formule} » invalide (valeurs autorisées : ${FORMULES.join(', ')}).`);
+  }
 
   const univers = champTexte('univers');
   if (univers && !UNIVERS.includes(univers)) {
@@ -153,6 +165,7 @@ export function validerLigne(ligne, numeroLigne) {
       exposantId: exposantId || null, // null => rapprochement ou attribution automatique
       slug,
       nom,
+      formule,
       univers,
       type_structure: typeStructure,
       secteurs,
@@ -282,6 +295,7 @@ export function genererContenuExposant(exposant) {
     '---',
     `exposantId: ${JSON.stringify(exposant.exposantId)}`,
     `nom: ${JSON.stringify(exposant.nom)}`,
+    `formule: ${JSON.stringify(exposant.formule)}`,
     `univers: ${JSON.stringify(exposant.univers)}`,
     `type_structure: ${JSON.stringify(exposant.type_structure)}`,
     ligneYamlListe('secteurs', exposant.secteurs) ?? 'secteurs: []',

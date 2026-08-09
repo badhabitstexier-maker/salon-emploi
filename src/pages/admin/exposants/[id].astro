@@ -1,7 +1,13 @@
 ---
 import { getCollection } from 'astro:content';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { universLabels, typeStructureLabels, type Exposant } from '../../../lib/exposants';
+import {
+  universLabels,
+  typeStructureLabels,
+  formuleLabels,
+  CAPACITE_OFFRES_PAR_FORMULE,
+  type Exposant,
+} from '../../../lib/exposants';
 import { statutLabels } from '../../../lib/offres';
 import { offresRattachees } from '../../../lib/admin';
 
@@ -10,8 +16,10 @@ import { offresRattachees } from '../../../lib/admin';
   pour tous les exposants de la collection, publiés ou non — l'admin doit
   pouvoir consulter une fiche en cours de préparation.
 
-  Pas de champ « formule » ici : n'existe pas dans le schéma `exposants`
-  (voir docs/ADMIN.md pour le détail de cette décision).
+  Formule (Lot Admin-1B) : affichée avec un indicateur de capacité indicatif
+  (5 offres Standard, 10 Silver, pas de plafond automatique Gold). Purement
+  informatif — aucun blocage, aucune modification automatique (voir
+  docs/EXPOSANTS_IMPORT.md).
 */
 
 export async function getStaticPaths() {
@@ -31,6 +39,9 @@ const offres = await getCollection('offres');
 const offresLiees = offresRattachees(exposant, offres);
 
 const { data } = exposant;
+
+const plafondFormule = CAPACITE_OFFRES_PAR_FORMULE[data.formule];
+const depassementFormule = plafondFormule !== undefined && offresLiees.length > plafondFormule;
 
 const listesComplementaires = [
   { titre: 'Métiers présentés', valeurs: data.metiers },
@@ -56,6 +67,9 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
         {universLabels[data.univers]} · {typeStructureLabels[data.type_structure]}
         {data.numero_stand && ` · Stand ${data.numero_stand}`}
       </p>
+      <span class="mt-2 inline-block w-fit rounded-full bg-marine/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-marine">
+        Formule {formuleLabels[data.formule]}
+      </span>
     </div>
     <span
       class:list={[
@@ -143,6 +157,18 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
         <h2 class="font-titre text-sm font-bold uppercase text-marine">
           Offres rattachées ({offresLiees.length})
         </h2>
+        <p class="mt-1 text-xs text-encre/70">
+          {plafondFormule !== undefined
+            ? `Capacité indicative formule ${formuleLabels[data.formule]} : jusqu'à ${plafondFormule} offres.`
+            : `Formule ${formuleLabels[data.formule]} : pas de plafond prédéfini, sous validation LabEvents.`}
+        </p>
+        {
+          depassementFormule && (
+            <p class="mt-2 w-fit rounded-full bg-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-orange-dark">
+              Alerte interne : {offresLiees.length} offres réelles pour un plafond indicatif de {plafondFormule} — aucun blocage, aucune modification automatique.
+            </p>
+          )
+        }
         {
           offresLiees.length > 0 ? (
             <ul class="mt-2 space-y-2 text-sm">

@@ -1,4 +1,5 @@
 import type { CollectionEntry } from 'astro:content';
+import { estOffreTest } from './offres';
 
 export type Exposant = CollectionEntry<'exposants'>;
 export type Offre = CollectionEntry<'offres'>;
@@ -14,9 +15,13 @@ export type Offre = CollectionEntry<'offres'>;
   que la collection `exposants` n'est pas alimentée avec des données
   réelles, ce rattachement reste vide pour les offres réelles : c'est un
   état de données attendu, pas un bug de cette fonction.
+
+  Offres TEST (voir docs/OFFRES.md, `estOffreTest`) toujours exclues : ce
+  sont des fiches de démonstration, pas de vraies offres exposant (Lot
+  Admin-1B, « nombre d'offres RÉELLES rattachées »).
 */
 export function offresRattachees(exposant: Exposant, offres: Offre[]): Offre[] {
-  return offres.filter((offre) => offre.data.exposantId === exposant.data.exposantId);
+  return offres.filter((offre) => !estOffreTest(offre) && offre.data.exposantId === exposant.data.exposantId);
 }
 
 export interface Repartition {
