@@ -28,7 +28,9 @@ const lignes = exposants
 
 <AdminLayout title="Exposants" section="exposants">
   <h1 class="text-2xl font-bold text-marine">Exposants</h1>
-  <p class="mt-2 text-sm text-encre/80">{exposants.length} {exposants.length > 1 ? 'exposants' : 'exposant'} dans la collection.</p>
+  <p class="mt-2 text-sm text-encre/80">
+    {exposants.length} {exposants.length > 1 ? 'exposants enregistrés' : 'exposant enregistré'} à ce jour.
+  </p>
 
   {
     lignes.length > 0 ? (
@@ -132,7 +134,7 @@ const lignes = exposants
       </Fragment>
     ) : (
       <p class="mt-8 rounded-2xl border border-marine/15 bg-blanc p-8 text-center text-sm text-encre">
-        La collection « exposants » est vide — aucune fiche importée à ce jour.
+        Aucun exposant n'a encore été importé dans l'espace d'administration.
       </p>
     )
   }
