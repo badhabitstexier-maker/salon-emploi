@@ -50,19 +50,19 @@ export const statutLabels: Record<StatutVisibilite, string> = {
   desactive: 'Désactivé',
 };
 
-/*
-  Fenêtre de dates — brique commune réutilisée à la fois par statutVisibilite
-  (Admin, calculé côté serveur) ET par le contrôleur client
-  (src/lib/visibilite-ui.ts), pour que les deux évaluent la même règle avec
-  la même définition de « maintenant ».
+/** Classes de badge Tailwind par statut — partagées entre le rendu serveur et le recalcul client de l'Admin. */
+export const statutBadgeClasses: Record<StatutVisibilite, string> = {
+  actif: 'bg-village text-marine',
+  'a-venir': 'bg-orange/20 text-orange-dark',
+  expire: 'bg-marine/10 text-marine/60',
+  desactive: 'bg-marine/10 text-marine/60',
+};
 
-  IMPORTANT (site statique, voir docs/VISIBILITE.md section 7) : sur
-  l'Admin, `maintenant` vaut l'heure du build — le statut affiché reflète
-  donc l'état au dernier déploiement. Côté site public en revanche, cette
-  même fonction est appelée par le navigateur à chaque chargement de page
-  (voir estDansPeriodeResume ci-dessous), avec l'heure réelle du visiteur :
-  une campagne démarre ou s'arrête donc bien à l'heure dite, sans dépendre
-  d'un nouveau build.
+/*
+  Fenêtre de dates — brique commune réutilisée par calculerStatut/estEligible
+  (donc par statutVisibilite ET par le contrôleur client
+  src/lib/visibilite-ui.ts), pour qu'aucune de ces évaluations n'ait sa
+  propre définition de la période.
 */
 export function estDansPeriode(dateDebut: Date | undefined, dateFin: Date | undefined, maintenant: Date): boolean {
   if (dateDebut && maintenant.getTime() < dateDebut.getTime()) return false;
@@ -70,13 +70,32 @@ export function estDansPeriode(dateDebut: Date | undefined, dateFin: Date | unde
   return true;
 }
 
-/** Statut calculé au moment de l'appel — jamais stocké en frontmatter (voir docs/VISIBILITE.md). */
-export function statutVisibilite(visibilite: Visibilite, maintenant: Date = new Date()): StatutVisibilite {
-  if (!visibilite.data.actif) return 'desactive';
-  const { dateDebut, dateFin } = visibilite.data;
+/*
+  Calcul du statut à partir des champs bruts (pas d'un CollectionEntry) —
+  seule définition de la règle Actif/À venir/Expiré/Désactivé du dépôt.
+  Réutilisée par :
+  - `statutVisibilite` ci-dessous, côté serveur (build, y compris pour le
+    premier rendu HTML de `/admin/visibilite`) ;
+  - `src/pages/admin/visibilite/index.astro`, côté client au chargement de
+    la page, pour recalculer le statut avec l'heure réelle du navigateur
+    (voir docs/VISIBILITE.md section 10) — l'Admin ne doit jamais afficher
+    un statut figé au dernier build.
+*/
+export function calculerStatut(
+  actif: boolean,
+  dateDebut: Date | undefined,
+  dateFin: Date | undefined,
+  maintenant: Date,
+): StatutVisibilite {
+  if (!actif) return 'desactive';
   if (estDansPeriode(dateDebut, dateFin, maintenant)) return 'actif';
   if (dateDebut && maintenant.getTime() < dateDebut.getTime()) return 'a-venir';
   return 'expire';
+}
+
+/** Statut calculé au moment de l'appel — jamais stocké en frontmatter (voir docs/VISIBILITE.md). */
+export function statutVisibilite(visibilite: Visibilite, maintenant: Date = new Date()): StatutVisibilite {
+  return calculerStatut(visibilite.data.actif, visibilite.data.dateDebut, visibilite.data.dateFin, maintenant);
 }
 
 export interface CriteresEligibilite {

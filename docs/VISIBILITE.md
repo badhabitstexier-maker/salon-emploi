@@ -204,14 +204,16 @@ existe — à ajouter si un second format est introduit.)
 Le tableau de bord (`/admin/dashboard`) affiche un résumé léger : nombre de campagnes actives et, si
 non nul, nombre à venir, avec un lien vers `/admin/visibilite`.
 
-**Nuance sur le moment de calcul** : `/admin/visibilite` et `/admin/dashboard` sont eux-mêmes des
-pages statiques — leur statut affiché (Actif / À venir / Expiré / Désactivé) est donc calculé avec
-l'heure du **dernier build**, avec exactement la même fonction (`statutVisibilite()`,
-`src/lib/visibilites.ts`) que celle qui définit la fenêtre de dates réévaluée en temps réel côté
-public (section 7). Le site public, lui, réévalue cette même fenêtre à chaque chargement de page
-côté navigateur : il est donc plus réactif que la vue Admin sur ce point précis. En pratique, avec
-le déploiement automatique à chaque fusion (voir CLAUDE.md, section 4), l'écart entre les deux reste
-généralement de l'ordre de la minute à quelques heures.
+**Statut recalculé au chargement, jamais figé au build.** `/admin/visibilite` est une page statique,
+mais son statut affiché (Actif / À venir / Expiré / Désactivé) n'est pas celui du dernier build : un
+script recalcule chaque statut avec l'heure réelle du navigateur dès le chargement de la page, via
+`calculerStatut()` (`src/lib/visibilites.ts`) — exactement la même fonction que celle qui régit la
+fenêtre de dates réévaluée côté public (section 7). Les filtres (statut notamment) s'appliquent sur
+ce statut recalculé, pas sur celui rendu par le serveur. Concrètement : ouvrir `/admin/visibilite`,
+laisser l'onglet ouvert le temps qu'une campagne démarre ou expire, puis recharger la page suffit à
+voir le bon statut — aucun redéploiement n'est nécessaire. Seul `/admin/dashboard` (les compteurs du
+tableau de bord) reste calculé à l'heure du build, un résumé n'ayant pas besoin de la même précision
+seconde par seconde qu'une liste de campagnes individuelles.
 
 `/admin/visibilite` hérite du `noindex, nofollow` et de l'exclusion sitemap/robots.txt de tout
 l'espace `/admin` (voir docs/ADMIN.md) — rien de spécifique à ajouter ici.
@@ -241,11 +243,12 @@ appel réseau ni écriture d'aucune sorte.
 
 ## 13. Limites V1 (assumées, pas des oublis)
 
-- La fenêtre de dates (`dateDebut`/`dateFin`) est réévaluée en temps réel côté public (voir section
-  7) ; le statut affiché sur `/admin/visibilite` reflète, lui, l'heure du dernier build (voir section
-  10) — écart généralement de l'ordre de la minute à quelques heures avec le déploiement continu.
+- La fenêtre de dates (`dateDebut`/`dateFin`) est réévaluée en temps réel, sans rebuild, à la fois
+  côté public (voir section 7) et sur `/admin/visibilite` (voir section 10) — les deux partagent la
+  même fonction `calculerStatut()`/`estDansPeriode()`.
+- Seul le tableau de bord (`/admin/dashboard`) reste un résumé calculé à l'heure du build.
 - Le levier manuel `actif` (contrairement aux dates) nécessite bien une édition de fichier suivie
-  d'un build/déploiement pour prendre effet.
+  d'un build/déploiement pour prendre effet, sur le public comme sur l'Admin.
 - Un seul format (bandeau horizontal), un seul emplacement par page (`principal`).
 - Pas de champ `priorite` (voir section 9).
 - Aucune édition depuis l'Admin — uniquement en éditant les fichiers du dépôt.

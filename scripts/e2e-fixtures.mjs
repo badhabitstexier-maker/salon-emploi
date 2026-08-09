@@ -81,6 +81,7 @@ export const FIXTURE_VIS_EXPIREE_SLUG = 'e2e-fixture-visibilite-expiree';
   deux), pour prouver que la fenêtre est bien réévaluée à chaque chargement.
 */
 export const FIXTURE_VIS_PROGRAMMEE_SLUG = 'e2e-fixture-visibilite-programmee';
+export const FIXTURE_VIS_PROGRAMMEE_ANNONCEUR = 'Fixture E2E — programmée (an 3000)';
 export const FIXTURE_VIS_PROGRAMMEE_ALT = 'Bandeau fixture Playwright — programmé (réévaluation des dates côté client)';
 export const FIXTURE_VIS_PROGRAMMEE_DATE_DEBUT = '3000-01-01T00:00:00.000Z';
 export const FIXTURE_VIS_PROGRAMMEE_DATE_FIN = '3000-01-02T00:00:00.000Z';
@@ -238,6 +239,12 @@ alt: "Fixture E2E — désactivée"
 pages:
   - "accueil"
 emplacement: "principal"
+# Dates volontairement dans la fenêtre active (2020-2099) : prouve que
+# actif: false l'emporte sur les dates, pas une coïncidence liée à
+# l'absence de dateDebut/dateFin (voir docs/VISIBILITE.md §1 et le test
+# Admin dédié dans e2e/visibilite.spec.ts).
+dateDebut: 2020-01-01
+dateFin: 2099-01-01
 poids: 1
 actif: false
 ---
@@ -277,7 +284,7 @@ actif: true
 
 const contenuFixtureVisProgrammee = `---
 nomInterne: "Fixture E2E — réévaluation des dates côté client"
-annonceur: "Fixture E2E — programmée (an 3000)"
+annonceur: "${FIXTURE_VIS_PROGRAMMEE_ANNONCEUR}"
 typeAnnonceur: "autre"
 format: "bandeau_horizontal"
 visuel: "${FIXTURE_VIS_VISUEL}"

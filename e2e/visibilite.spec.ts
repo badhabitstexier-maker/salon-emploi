@@ -5,6 +5,7 @@ import {
   FIXTURE_VIS_OFFRES_ALT,
   FIXTURE_VIS_OFFRES_ANNONCEUR,
   FIXTURE_VIS_PROGRAMMEE_ALT,
+  FIXTURE_VIS_PROGRAMMEE_ANNONCEUR,
   FIXTURE_VIS_PROGRAMMEE_DATE_DEBUT,
   FIXTURE_VIS_PROGRAMMEE_DATE_FIN,
   FIXTURE_EXPOSANT_NOM,
@@ -175,6 +176,60 @@ test.describe('Visibilité — Admin (Lot Admin-2)', () => {
 
     const ligneExpiree = page.locator('[data-visibilite-row]', { hasText: 'ne doit jamais apparaître (expirée)' });
     await expect(ligneExpiree.getByText('Expiré', { exact: true })).toBeVisible();
+  });
+
+  test('une campagne désactivée reste « Désactivé » même avec des dates qui seraient autrement « Actif »', async ({ page }) => {
+    // La fixture inactive porte volontairement dateDebut/dateFin couvrant
+    // l'horloge réelle du test (voir scripts/e2e-fixtures.mjs) : si le
+    // statut affiché était « Actif », ce serait la preuve que `actif`
+    // n'est pas prioritaire sur les dates.
+    await page.goto('/admin/visibilite');
+    const ligneInactive = page.locator('[data-visibilite-row]', { hasText: 'ne doit jamais apparaître (désactivée)' });
+    await expect(ligneInactive.getByText('Désactivé', { exact: true })).toBeVisible();
+    await expect(ligneInactive.getByText('Actif', { exact: true })).toHaveCount(0);
+  });
+
+  test('le statut affiché est recalculé côté navigateur, sans rebuild, au fil des dates', async ({ page }) => {
+    const debut = new Date(FIXTURE_VIS_PROGRAMMEE_DATE_DEBUT);
+    const fin = new Date(FIXTURE_VIS_PROGRAMMEE_DATE_FIN);
+    const ligne = () => page.locator('[data-visibilite-row]', { hasText: FIXTURE_VIS_PROGRAMMEE_ANNONCEUR });
+
+    // Avant dateDebut : À venir.
+    await page.clock.install({ time: new Date(debut.getTime() - 60_000) });
+    await page.goto('/admin/visibilite');
+    await expect(ligne().getByText('À venir', { exact: true })).toBeVisible();
+    await expect(ligne()).toHaveAttribute('data-statut', 'a-venir');
+
+    // dateDebut atteinte, sans rebuild (même serveur, simple rechargement
+    // après avoir avancé l'horloge du navigateur) : Actif.
+    await page.clock.setFixedTime(new Date(debut.getTime() + 1_000));
+    await page.reload();
+    await expect(ligne().getByText('Actif', { exact: true })).toBeVisible();
+    await expect(ligne()).toHaveAttribute('data-statut', 'actif');
+
+    // dateFin dépassée, toujours sans rebuild : Expiré.
+    await page.clock.setFixedTime(new Date(fin.getTime() + 60_000));
+    await page.reload();
+    await expect(ligne().getByText('Expiré', { exact: true })).toBeVisible();
+    await expect(ligne()).toHaveAttribute('data-statut', 'expire');
+  });
+
+  test('le filtre Statut reste cohérent avec le statut recalculé (pas celui du build)', async ({ page }) => {
+    const debut = new Date(FIXTURE_VIS_PROGRAMMEE_DATE_DEBUT);
+    const ligne = () => page.locator('[data-visibilite-row]', { hasText: FIXTURE_VIS_PROGRAMMEE_ANNONCEUR });
+
+    // Une fois la campagne « programmée » entrée dans sa fenêtre (sans
+    // rebuild), le filtre "Actif" doit la retenir — alors que le HTML
+    // généré au build la marquait "À venir".
+    await page.clock.install({ time: new Date(debut.getTime() + 1_000) });
+    await page.goto('/admin/visibilite');
+    await expect(ligne().getByText('Actif', { exact: true })).toBeVisible();
+
+    await page.selectOption('#filtre-statut-admin', 'actif');
+    await expect(ligne()).toBeVisible();
+
+    await page.selectOption('#filtre-statut-admin', 'a-venir');
+    await expect(ligne()).toBeHidden();
   });
 
   test('le filtre statut masque les campagnes qui ne correspondent pas', async ({ page }) => {

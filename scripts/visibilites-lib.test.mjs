@@ -16,6 +16,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   statutVisibilite,
+  calculerStatut,
   estEligible,
   visibilitesEligibles,
   visibilitesEnvoyables,
@@ -266,4 +267,29 @@ test('statutVisibilite : cohérent avec estDansPeriode à la même date de réf�
     const statut = statutVisibilite(v, maintenant);
     assert.equal(statut === 'actif', dansLaPeriode, `dateDebut=${dateDebut} dateFin=${dateFin} maintenant=${maintenant}`);
   }
+});
+
+test('calculerStatut : même résultat que statutVisibilite(v) — c\'est la fonction que réutilise /admin/visibilite côté client pour recalculer sans rebuild', () => {
+  const casTest = [
+    { actif: true, dateDebut: undefined, dateFin: undefined },
+    { actif: true, dateDebut: new Date('2026-01-01'), dateFin: new Date('2026-12-31') },
+    { actif: true, dateDebut: new Date('2099-01-01'), dateFin: undefined },
+    { actif: true, dateDebut: undefined, dateFin: new Date('2020-01-01') },
+    // actif=false l'emporte, même avec des dates qui seraient sinon "actif".
+    { actif: false, dateDebut: new Date('2020-01-01'), dateFin: new Date('2099-01-01') },
+  ];
+  const maintenant = new Date('2026-08-09');
+  for (const { actif, dateDebut, dateFin } of casTest) {
+    const v = visibilite({ data: { actif, dateDebut, dateFin } });
+    assert.equal(
+      calculerStatut(actif, dateDebut, dateFin, maintenant),
+      statutVisibilite(v, maintenant),
+      `actif=${actif} dateDebut=${dateDebut} dateFin=${dateFin}`,
+    );
+  }
+});
+
+test('calculerStatut : actif=false prime sur des dates qui seraient sinon "actif" (indépendance du levier manuel)', () => {
+  const maintenant = new Date('2026-08-09');
+  assert.equal(calculerStatut(false, new Date('2020-01-01'), new Date('2099-01-01'), maintenant), 'desactive');
 });

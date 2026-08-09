@@ -7,6 +7,7 @@ import {
   formatLabels,
   pageLabels,
   statutLabels,
+  statutBadgeClasses,
   statutVisibilite,
 } from '../../../lib/visibilites';
 
@@ -17,10 +18,13 @@ import {
   programme en éditant à la main un fichier dans src/content/visibilites/
   (voir docs/VISIBILITE.md, procédure d'ajout).
 
-  Le statut (Actif / À venir / Expiré / Désactivé) est calculé au chargement
-  de cette page — jamais stocké — via `statutVisibilite` (voir
-  src/lib/visibilites.ts), la même fonction que celle utilisée par le
-  moteur de sélection public.
+  Le statut (Actif / À venir / Expiré / Désactivé) affiché ici n'est JAMAIS
+  figé au dernier build : le rendu serveur ci-dessous (via `statutVisibilite`,
+  à l'heure du build) n'est qu'un premier affichage — le script en bas de
+  page le recalcule immédiatement au chargement avec l'heure réelle du
+  navigateur, via `calculerStatut` (src/lib/visibilites.ts), exactement la
+  même fonction que celle utilisée par le moteur de sélection public. Les
+  filtres lisent ce statut recalculé (`data-statut`), pas celui du build.
 */
 
 const toutes = await getCollection('visibilites');
@@ -48,13 +52,6 @@ const lignes = toutes
     };
   })
   .sort((a, b) => a.visibilite.data.annonceur.localeCompare(b.visibilite.data.annonceur, 'fr'));
-
-const statutBadge: Record<(typeof lignes)[number]['statut'], string> = {
-  actif: 'bg-village text-marine',
-  'a-venir': 'bg-orange/20 text-orange-dark',
-  expire: 'bg-marine/10 text-marine/60',
-  desactive: 'bg-marine/10 text-marine/60',
-};
 ---
 
 <AdminLayout title="Visibilité" section="visibilite">
@@ -144,6 +141,9 @@ const statutBadge: Record<(typeof lignes)[number]['statut'], string> = {
                     data-statut={statut}
                     data-type={visibilite.data.typeAnnonceur}
                     data-pages={visibilite.data.pages.join(' ')}
+                    data-actif={String(visibilite.data.actif)}
+                    data-date-debut={visibilite.data.dateDebut?.toISOString()}
+                    data-date-fin={visibilite.data.dateFin?.toISOString()}
                     class="border-b border-marine/10 last:border-0 align-top hover:bg-brume/60"
                   >
                     <td class="px-4 py-3">
@@ -172,7 +172,10 @@ const statutBadge: Record<(typeof lignes)[number]['statut'], string> = {
                     <td class="px-4 py-3 text-encre">{periode}</td>
                     <td class="px-4 py-3 font-titre font-bold text-marine">{visibilite.data.poids}</td>
                     <td class="px-4 py-3">
-                      <span class:list={['rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide', statutBadge[statut]]}>
+                      <span
+                        data-statut-badge
+                        class:list={['rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide', statutBadgeClasses[statut]]}
+                      >
                         {statutLabels[statut]}
                       </span>
                     </td>
@@ -201,10 +204,37 @@ const statutBadge: Record<(typeof lignes)[number]['statut'], string> = {
 </AdminLayout>
 
 <script>
-  const form = document.getElementById('filtres-visibilite-admin') as HTMLFormElement | null;
+  import { calculerStatut, statutLabels, statutBadgeClasses } from '../../../lib/visibilites';
+
   const corps = document.getElementById('corps-visibilite-admin');
+  const form = document.getElementById('filtres-visibilite-admin') as HTMLFormElement | null;
   const compte = document.getElementById('resultats-compte-visibilite-admin');
   const aucunResultat = document.getElementById('aucun-resultat-visibilite-admin');
+
+  /*
+    Recalcul du statut avec l'heure réelle du navigateur, au chargement de
+    la page — jamais celui figé au dernier build (voir cadrage Admin-2 et
+    docs/VISIBILITE.md section 10). Doit s'exécuter AVANT le filtrage
+    ci-dessous, qui lit `data-statut` : c'est le cas ici, ce bloc et le
+    filtrage partagent le même script, exécuté dans l'ordre du fichier.
+  */
+  if (corps) {
+    const maintenant = new Date();
+    for (const ligne of corps.querySelectorAll<HTMLTableRowElement>('[data-visibilite-row]')) {
+      const actif = ligne.dataset.actif === 'true';
+      const dateDebut = ligne.dataset.dateDebut ? new Date(ligne.dataset.dateDebut) : undefined;
+      const dateFin = ligne.dataset.dateFin ? new Date(ligne.dataset.dateFin) : undefined;
+      const statut = calculerStatut(actif, dateDebut, dateFin, maintenant);
+
+      ligne.dataset.statut = statut;
+
+      const badge = ligne.querySelector<HTMLElement>('[data-statut-badge]');
+      if (badge) {
+        badge.textContent = statutLabels[statut];
+        badge.className = `rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${statutBadgeClasses[statut]}`;
+      }
+    }
+  }
 
   if (form && corps && compte && aucunResultat) {
     const lignes = Array.from(corps.querySelectorAll<HTMLTableRowElement>('[data-visibilite-row]'));
