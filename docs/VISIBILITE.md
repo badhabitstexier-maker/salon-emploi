@@ -125,6 +125,31 @@ besoin distinct à ce stade ; voir section 11 pour une piste Admin-2B.
 Volontairement **pas de carrousel automatique** : la sélection se fait une fois au chargement de la
 page et reste fixe pendant la consultation (voir section 6).
 
+## 5bis. Rendu du visuel — ratio naturel, sans recadrage
+
+**Depuis le lot « affichage responsive »** (09/08/2026), le bandeau public affiche le visuel dans
+son **ratio naturel intégral**, sans aucun recadrage :
+
+- `src/components/VisibilitySlot.astro` : le conteneur (`[data-visibility-visual]`) n'impose plus
+  d'`aspect-[6/1]`/`aspect-[8/1]` — sa largeur reste contrainte à 100% du slot, sa hauteur n'est plus
+  fixée.
+- `src/lib/visibilite-ui.ts` (fonction `remplir()`) : l'`<img>` injectée au chargement n'utilise plus
+  `object-cover` — elle est rendue en `w-full h-auto`, donc **entièrement visible, sans déformation
+  ni crop**, avec une hauteur qui découle mécaniquement du ratio réel du fichier image et de la
+  largeur disponible.
+
+**Conséquence assumée, à ne pas lire comme un bug** : un visuel très panoramique (ex. ratio proche de
+8:1) reste naturellement **peu haut** sur un écran étroit (mobile), puisque sa hauteur affichée est
+strictement proportionnelle à sa largeur affichée. Ce n'est plus un recadrage qui masque une partie
+de l'image — c'est l'image entière, simplement rendue plus compacte en hauteur sur les petits écrans.
+La recommandation de ratio (section 11) reste donc pertinente pour la lisibilité, même si elle n'est
+plus imposée techniquement.
+
+Historique : avant ce lot, le conteneur imposait `aspect-[6/1]` (mobile) / `aspect-[8/1]` (`sm:` et
+plus) avec `object-cover`, ce qui garantissait une hauteur stable mais rognait systématiquement toute
+image dont le ratio réel différait de ces valeurs — en particulier sur mobile, où le rognage était le
+plus visible. Ce comportement a été abandonné au profit de l'affichage intégral décrit ci-dessus.
+
 ## 6. Pages et emplacements intégrés
 
 Un seul emplacement par page (`principal`), sur 4 pages, choisies après audit du site existant pour
@@ -260,9 +285,9 @@ l'espace `/admin` (voir docs/ADMIN.md) — rien de spécifique à ajouter ici.
 6. Pour retirer une campagne sans la supprimer (garder une trace) : bouton **Désactiver**. Pour la
    retirer définitivement : bouton **Supprimer** (confirmation demandée, irréversible).
 
-**Recommandation visuelle** : bandeau large, ratio approximatif 6:1 à 8:1 (le conteneur public
-utilise `aspect-[6/1]` en mobile, `aspect-[8/1]` à partir de `sm:`), pour éviter un rognage excessif
-via `object-cover`.
+**Recommandation visuelle** : bandeau large, ratio approximatif 6:1 à 8:1 — c'est une recommandation
+de confort de lecture (un visuel trop étroit/haut reste peu lisible en bandeau), **pas une contrainte
+technique** : voir section 5bis, le conteneur public n'impose plus aucun ratio ni recadrage.
 
 ## 12. Absence de tracking
 

@@ -16,6 +16,12 @@
   publique et ne révèle la section que s'il en trouve un éligible. Le
   résultat visible pour un visiteur est identique (aucun espace vide tant
   qu'aucun tirage n'a abouti) — voir cadrage Admin-2B §5/§12.
+
+  CHANGEMENT ratio libre (voir docs/VISIBILITE.md §5bis) : plus d'aspect
+  ratio forcé (6:1 mobile / 8:1 desktop) ni de crop `object-cover`. Le
+  conteneur n'impose plus de hauteur : c'est l'image (rendue par
+  src/lib/visibilite-ui.ts) qui dicte la hauteur via son ratio naturel,
+  seule sa largeur reste contrainte à 100% du slot.
 */
 import type { PageVisibilite, EmplacementVisibilite } from '../lib/visibilites';
 
@@ -38,7 +44,7 @@ const idSection = `visibilite-slot-${page}-${emplacement}`;
   <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
     <div
       data-visibility-visual
-      class="aspect-[6/1] w-full overflow-hidden rounded-xl bg-marine/5 sm:aspect-[8/1]"
+      class="w-full overflow-hidden rounded-xl bg-marine/5"
     />
   </div>
 </section>
