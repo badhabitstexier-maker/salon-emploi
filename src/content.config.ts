@@ -210,4 +210,81 @@ const offres = defineCollection({
     }),
 });
 
-export const collections = { exposants, programme, offres };
+/*
+  Collection « visibilites » — Lot Admin-2 (voir CLAUDE.md et docs/VISIBILITE.md).
+  Une entrée = une campagne de visibilité publicitaire (bandeau) pilotée
+  librement par LabEvents, éditée à la main dans src/content/visibilites/
+  (frontmatter uniquement, pas de corps de fichier utilisé — même
+  organisation que exposants/programme). Aucun pipeline CSV : le volume de
+  campagnes attendu ne le justifie pas (voir docs/VISIBILITE.md).
+
+  IMPORTANT (principe métier, voir docs/VISIBILITE.md section 1) : la
+  visibilité publicitaire est un dispositif totalement distinct des droits
+  de fiche exposant (formule commerciale standard/silver/gold). Ce schéma ne
+  doit JAMAIS dériver `poids` ou l'éligibilité d'une visibilité à partir de
+  `formule` — le poids est une valeur saisie à la main par LabEvents, pas un
+  automatisme lié à la formule commerciale.
+*/
+
+/*
+  Pages publiques où une visibilité peut apparaître (V1, voir docs/VISIBILITE.md
+  section « emplacements »). Ajouter une page ici implique d'ajouter le
+  <VisibilitySlot /> correspondant sur la page concernée — les deux évoluent
+  ensemble, jamais l'un sans l'autre.
+*/
+const PAGES_VISIBILITE = ['accueil', 'offres', 'exposants', 'programme'] as const;
+
+/*
+  Emplacements possibles au sein d'une page. V1 : un seul emplacement par
+  page (« principal »). Volontairement limité — voir CLAUDE.md, § « ne pas
+  mettre de la publicité partout ». Étendre cette liste ne casse rien côté
+  moteur de sélection (filtré par égalité simple page+emplacement).
+*/
+const EMPLACEMENTS_VISIBILITE = ['principal'] as const;
+
+const visibilites = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/visibilites' }),
+  schema: z
+    .object({
+      nomInterne: z.string(),
+      annonceur: z.string(),
+      typeAnnonceur: z.enum(['exposant', 'sponsor', 'partenaire', 'institution', 'annonceur_externe', 'autre']),
+      // Facultatif : tous les annonceurs ne sont pas exposants (docs/VISIBILITE.md).
+      // Quand renseigné, doit être le exposantId canonique EXP26-XXX (même
+      // regex que la collection exposants) pour permettre un lien fiable
+      // vers la fiche Admin exposant — jamais une saisie libre.
+      exposantId: z.string().regex(EXPOSANT_ID_REGEX, 'Format attendu : EXP26-XXX').optional(),
+      // Un seul format en V1 (bandeau horizontal, voir docs/VISIBILITE.md).
+      // Modélisé en enum pour permettre une extension future sans migration
+      // de schéma incompatible.
+      format: z.enum(['bandeau_horizontal']),
+      visuel: z.string(),
+      alt: z.string(),
+      lien: z.string().optional(),
+      pages: z.array(z.enum(PAGES_VISIBILITE)).min(1),
+      emplacement: z.enum(EMPLACEMENTS_VISIBILITE).default('principal'),
+      dateDebut: z.coerce.date().optional(),
+      dateFin: z.coerce.date().optional(),
+      // Poids de diffusion, réglé librement par LabEvents — voir docs/VISIBILITE.md
+      // section « rotation ». N'a explicitement AUCUN lien avec la formule
+      // commerciale exposant (standard/silver/gold) : jamais dérivé, jamais
+      // plafonné par elle.
+      poids: z.number().int().positive().default(1),
+      actif: z.boolean().default(true),
+    })
+    .superRefine((visibilite, ctx) => {
+      if (
+        visibilite.dateDebut &&
+        visibilite.dateFin &&
+        visibilite.dateDebut.getTime() > visibilite.dateFin.getTime()
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['dateFin'],
+          message: 'dateFin doit être postérieure ou égale à dateDebut.',
+        });
+      }
+    }),
+});
+
+export const collections = { exposants, programme, offres, visibilites };

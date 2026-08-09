@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Visuel from '../components/Visuel.astro';
+import VisibilitySlot from '../components/VisibilitySlot.astro';
 
 const eventSchema = {
   '@context': 'https://schema.org',
@@ -229,6 +230,8 @@ const infosPratiques = [
       />
     </div>
   </section>
+
+  <VisibilitySlot page="accueil" />
 
   <!-- ====================== QUATRE PROMESSES =========================
        Bande infographique : colonnes centrées séparées par un filet fin,

@@ -4,8 +4,8 @@ import '../styles/global.css';
 
 interface Props {
   title: string;
-  /** Section active dans la navigation — omis sur les pages hors des 3 sections (ex. /admin racine). */
-  section?: 'dashboard' | 'exposants' | 'offres';
+  /** Section active dans la navigation — omis sur les pages hors des 4 sections (ex. /admin racine). */
+  section?: 'dashboard' | 'exposants' | 'offres' | 'visibilite';
 }
 
 // Espace interne LabEvents : toujours noindex, quel que soit PUBLIC_NOINDEX
@@ -14,15 +14,16 @@ interface Props {
 const { title, section } = Astro.props;
 
 /*
-  Navigation Admin-1 (voir CLAUDE.md section 14) : uniquement les 3 sections
-  livrées dans ce lot. Programme, Visibilité, Candidatures, Paramètres,
-  utilisateurs et statistiques avancées viendront dans des lots ultérieurs —
-  ne pas les ajouter par anticipation.
+  Navigation Admin (voir CLAUDE.md section 14 et docs/VISIBILITE.md pour le
+  Lot Admin-2) : uniquement les sections réellement livrées. Programme,
+  Candidatures, Paramètres, utilisateurs et statistiques avancées viendront
+  dans des lots ultérieurs — ne pas les ajouter par anticipation.
 */
 const liensNav = [
   { id: 'dashboard', label: 'Tableau de bord', href: '/admin/dashboard' },
   { id: 'exposants', label: 'Exposants', href: '/admin/exposants' },
   { id: 'offres', label: 'Offres', href: '/admin/offres' },
+  { id: 'visibilite', label: 'Visibilité', href: '/admin/visibilite' },
 ] as const;
 ---
 
