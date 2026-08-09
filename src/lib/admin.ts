@@ -24,6 +24,30 @@ export function offresRattachees(exposant: Exposant, offres: Offre[]): Offre[] {
   return offres.filter((offre) => !estOffreTest(offre) && offre.data.exposantId === exposant.data.exposantId);
 }
 
+/*
+  Anomalies internes (Lot Admin-1C, voir CLAUDE.md et docs/EXPOSANTS_IMPORT.md
+  section 3) — n'affectent jamais le build ni le site public, seulement
+  l'affichage Admin. Une offre réelle est en anomalie quand son `exposantId`
+  ne correspond à aucun exposant de la collection (import CSV réalisé avant
+  la création de l'exposant, faute de frappe, etc.) ou quand sa `formule`
+  dupliquée diverge de celle de l'exposant rattaché (voir Option B retenue :
+  duplication contrôlée plutôt que suppression du champ, `offre.formule`
+  reste utilisé pour l'affichage public — voir docs/OFFRES.md section 5).
+*/
+
+/** Offre réelle dont l'`exposantId` ne correspond à aucun exposant de la collection. */
+export function exposantIntrouvable(offre: Offre, exposants: Exposant[]): boolean {
+  if (estOffreTest(offre)) return false;
+  return !exposants.some((exposant) => exposant.data.exposantId === offre.data.exposantId);
+}
+
+/** Offre réelle dont la `formule` diverge de celle de l'exposant rattaché (quand celui-ci est connu). */
+export function formuleIncoherente(offre: Offre, exposants: Exposant[]): boolean {
+  if (estOffreTest(offre)) return false;
+  const exposant = exposants.find((e) => e.data.exposantId === offre.data.exposantId);
+  return exposant !== undefined && exposant.data.formule !== offre.data.formule;
+}
+
 export interface Repartition {
   valeur: string;
   total: number;

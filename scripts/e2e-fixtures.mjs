@@ -35,8 +35,40 @@ export const FIXTURE_EXPOSANT_ID = 'EXP26-999';
 export const FIXTURE_EXPOSANT_NOM = 'Fixture E2E LabEvents';
 export const FIXTURE_EXPOSANT_SLUG = 'e2e-fixture-exposant';
 
+/*
+  Fixtures d'anomalie (Lot Admin-1C, voir src/lib/admin.ts et
+  docs/EXPOSANTS_IMPORT.md) : deux offres réelles supplémentaires pour
+  exercer les badges internes Admin sans dépendre d'un vrai import CSV —
+  l'une avec un exposantId absent de la collection `exposants`, l'autre
+  rattachée à l'exposant fixture mais avec une formule dupliquée divergente.
+*/
+export const FIXTURE_ANOMALIE_EXPOSANT_REFERENCE = 'E2E-ANOMALIE-EXPOSANT';
+export const FIXTURE_ANOMALIE_EXPOSANT_INTITULE = 'Offre fixture — exposant introuvable (Playwright)';
+export const FIXTURE_ANOMALIE_EXPOSANT_SLUG = 'e2e-fixture-offre-anomalie-exposant';
+export const FIXTURE_ANOMALIE_EXPOSANT_ID = 'EXP26-998';
+
+export const FIXTURE_ANOMALIE_FORMULE_REFERENCE = 'E2E-ANOMALIE-FORMULE';
+export const FIXTURE_ANOMALIE_FORMULE_INTITULE = 'Offre fixture — formule incohérente (Playwright)';
+export const FIXTURE_ANOMALIE_FORMULE_SLUG = 'e2e-fixture-offre-anomalie-formule';
+
 const cheminFixtureOffre = path.join(__dirname, '..', 'src', 'content', 'offres', `${FIXTURE_SLUG}.md`);
 const cheminFixtureExposant = path.join(__dirname, '..', 'src', 'content', 'exposants', `${FIXTURE_EXPOSANT_SLUG}.md`);
+const cheminFixtureAnomalieExposant = path.join(
+  __dirname,
+  '..',
+  'src',
+  'content',
+  'offres',
+  `${FIXTURE_ANOMALIE_EXPOSANT_SLUG}.md`,
+);
+const cheminFixtureAnomalieFormule = path.join(
+  __dirname,
+  '..',
+  'src',
+  'content',
+  'offres',
+  `${FIXTURE_ANOMALIE_FORMULE_SLUG}.md`,
+);
 
 const contenuFixtureOffre = `---
 reference: "${FIXTURE_REFERENCE}"
@@ -79,14 +111,58 @@ publie: true
 ---
 `;
 
+const contenuFixtureAnomalieExposant = `---
+reference: "${FIXTURE_ANOMALIE_EXPOSANT_REFERENCE}"
+status: "publiee"
+intitule: "${FIXTURE_ANOMALIE_EXPOSANT_INTITULE}"
+exposantId: "${FIXTURE_ANOMALIE_EXPOSANT_ID}"
+exposantNom: "Fixture E2E — exposant absent de la collection"
+formule: "standard"
+secteur: "${FIXTURE_SECTEUR}"
+typeContrat:
+  - "${FIXTURE_TYPE_CONTRAT}"
+lieu: "${FIXTURE_LIEU}"
+nombrePostes: 1
+niveauExperience: "Débutant accepté"
+sansExperience: true
+descriptionCourte: "Fiche générée automatiquement par scripts/e2e-fixtures.mjs (Lot Admin-1C) : exposantId sans exposant correspondant dans la collection, pour tester le badge d'anomalie Admin."
+accepteCandidaturesEnLigne: true
+datePublication: 2026-08-08
+---
+`;
+
+const contenuFixtureAnomalieFormule = `---
+reference: "${FIXTURE_ANOMALIE_FORMULE_REFERENCE}"
+status: "publiee"
+intitule: "${FIXTURE_ANOMALIE_FORMULE_INTITULE}"
+exposantId: "${FIXTURE_EXPOSANT_ID}"
+exposantNom: "${FIXTURE_EXPOSANT_NOM}"
+formule: "gold"
+secteur: "${FIXTURE_SECTEUR}"
+typeContrat:
+  - "${FIXTURE_TYPE_CONTRAT}"
+lieu: "${FIXTURE_LIEU}"
+nombrePostes: 1
+niveauExperience: "Débutant accepté"
+sansExperience: true
+descriptionCourte: "Fiche générée automatiquement par scripts/e2e-fixtures.mjs (Lot Admin-1C) : formule 'gold' alors que l'exposant fixture est 'standard', pour tester le badge d'anomalie Admin."
+accepteCandidaturesEnLigne: true
+datePublication: 2026-08-08
+---
+`;
+
 function creer() {
   writeFileSync(cheminFixtureOffre, contenuFixtureOffre, 'utf8');
   writeFileSync(cheminFixtureExposant, contenuFixtureExposant, 'utf8');
+  writeFileSync(cheminFixtureAnomalieExposant, contenuFixtureAnomalieExposant, 'utf8');
+  writeFileSync(cheminFixtureAnomalieFormule, contenuFixtureAnomalieFormule, 'utf8');
 }
 
 function supprimer() {
   if (existsSync(cheminFixtureOffre)) rmSync(cheminFixtureOffre);
   if (existsSync(cheminFixtureExposant)) rmSync(cheminFixtureExposant);
+  if (existsSync(cheminFixtureAnomalieExposant)) rmSync(cheminFixtureAnomalieExposant);
+  if (existsSync(cheminFixtureAnomalieFormule)) rmSync(cheminFixtureAnomalieFormule);
 }
 
 /*

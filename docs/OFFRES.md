@@ -42,7 +42,7 @@ URL — elle peut différer du nom de fichier.
 reference: SEF26-001
 status: publiee
 intitule: Technicien de maintenance industrielle
-exposantId: pacific-industrie
+exposantId: EXP26-001
 exposantNom: Pacific Industrie
 formule: standard
 secteur: Maintenance industrielle
@@ -66,6 +66,24 @@ Champs facultatifs : `datePrisePoste`, `niveauFormation` (liste),
 `nombrePostes` vaut `1` par défaut si absent. `accepteCandidaturesEnLigne`
 vaut `true` par défaut si absent.
 
+## 3bis. `exposantId` — clé de rattachement avec la collection `exposants`
+
+`exposantId` est la **clé pivot** entre une offre et son exposant (voir
+`docs/EXPOSANTS_IMPORT.md` section 3bis, Lot Admin-1C) — jamais le nom
+d'entreprise, jamais le slug.
+
+- **Offre réelle** : `exposantId` est obligatoire et doit être exactement
+  l'`exposantId` `EXP26-XXX` de l'exposant correspondant dans la collection
+  `exposants` — jamais un texte libre inventé. Un identifiant mal formé ou
+  ne correspondant à aucun exposant connu est une erreur bloquante à
+  l'import (`npm run offres:import` / `npm run offres:check`, voir
+  `docs/EXPOSANTS_IMPORT.md` section 3bis).
+- **Offre TEST** (préfixe `TEST —` sur `intitule`, voir section 12 de
+  CLAUDE.md et `estOffreTest()` dans `src/lib/offres.ts`) : ne représente
+  aucun exposant réel. Convention retenue : `exposantId: TEST-EXPOSANT-NC`
+  — un identifiant dédié, jamais un vrai `EXP26-XXX`, pour qu'une offre de
+  démonstration ne puisse jamais être confondue avec un vrai rattachement.
+
 ## 4. Valeurs de statut (`status`)
 
 | Valeur | Sens |
@@ -88,6 +106,24 @@ l'exposant (voir `/exposer`). Sur le site, `silver` affiche le badge discret
 « Exposant partenaire » et `gold` « Partenaire premium ». **Ces badges ne
 modifient jamais le tri des offres** (voir section 9) : ils sont purement
 informatifs.
+
+**Architecture retenue (Lot Admin-1C) — duplication contrôlée.** `formule`
+appartient métier à l'**exposant** (`src/content.config.ts`, collection
+`exposants` — voir `docs/EXPOSANTS_IMPORT.md`), mais reste aussi présente
+sur chaque offre : la supprimer romprait l'affichage public des badges
+Silver/Gold (`OffreCard.astro`, `/offres/[slug].astro`), qui lisent
+aujourd'hui `offre.data.formule` sans jointure avec la collection
+`exposants`, et romprait le calcul des quotas commerciaux (voir section 15)
+tant que `exposants` n'est pas alimentée avec des données réelles. Plutôt
+que de supprimer le champ (migration jugée trop risquée tant que ces deux
+usages n'ont pas été réécrits pour joindre `exposants`), la duplication est
+conservée et **vérifiée automatiquement** : `npm run offres:import` et `npm
+run offres:check` comparent la `formule` de chaque offre réelle à celle de
+son exposant (via `exposantId`, voir section 3bis) quand le référentiel
+`exposants` est disponible, et lèvent une erreur bloquante en cas de
+divergence. Dans l'Admin, une offre déjà publiée dont la formule diverge de
+celle de son exposant porte un badge interne « Formule incohérente »
+(`src/lib/admin.ts`, `formuleIncoherente`).
 
 ## 6. Le champ facultatif `dateCloture`
 

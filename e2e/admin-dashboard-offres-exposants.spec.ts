@@ -4,6 +4,9 @@ import {
   FIXTURE_INTITULE,
   FIXTURE_EXPOSANT_NOM,
   FIXTURE_EXPOSANT_SLUG,
+  FIXTURE_ANOMALIE_EXPOSANT_REFERENCE,
+  FIXTURE_ANOMALIE_EXPOSANT_ID,
+  FIXTURE_ANOMALIE_FORMULE_REFERENCE,
 } from '../scripts/e2e-fixtures.mjs';
 
 /*
@@ -28,18 +31,19 @@ test.describe('Admin — tableau de bord (Lot Admin-1)', () => {
 
   /*
     En environnement E2E, la collection ne contient que des offres TEST
-    (SEF26-001 à 005) et la fixture offre réelle : « Offres réelles » doit
-    donc valoir 1 (la fixture), et l'indicateur secondaire doit signaler les
-    5 offres TEST sans les compter dans les KPI principaux.
+    (SEF26-001 à 005) et 3 offres réelles fixture (la fixture principale +
+    2 fixtures d'anomalie, voir scripts/e2e-fixtures.mjs, Lot Admin-1C) :
+    « Offres réelles » doit donc valoir 3, et l'indicateur secondaire doit
+    signaler les 5 offres TEST sans les compter dans les KPI principaux.
   */
   test('exclut les offres TEST des KPI et les signale séparément', async ({ page }) => {
     await page.goto('/admin/dashboard');
 
     const carteTotal = page.locator('p', { hasText: 'Offres réelles — total' }).locator('..');
-    await expect(carteTotal.locator('p').nth(1)).toHaveText('1');
+    await expect(carteTotal.locator('p').nth(1)).toHaveText('3');
 
     const cartePubliees = page.locator('p', { hasText: 'Offres réelles — publiées' }).locator('..');
-    await expect(cartePubliees.locator('p').nth(1)).toHaveText('1');
+    await expect(cartePubliees.locator('p').nth(1)).toHaveText('3');
 
     await expect(page.getByText('5 offres TEST')).toBeVisible();
 
@@ -134,6 +138,43 @@ test.describe('Admin — offres (Lot Admin-1)', () => {
     // Reste consultable en fiche détail, avec le même badge.
     await page.goto(`/admin/offres/${REFERENCE_OFFRE_TEST}`);
     await expect(page.getByText('TEST — exclue des indicateurs du tableau de bord')).toBeVisible();
+  });
+
+  /*
+    Lot Admin-1C (voir src/lib/admin.ts, docs/EXPOSANTS_IMPORT.md) : une
+    offre réelle dont l'exposantId ne correspond à aucun exposant de la
+    collection porte un badge « Exposant introuvable », à la fois en liste
+    et en fiche détail.
+  */
+  test('une offre avec un exposantId inconnu porte un badge « Exposant introuvable »', async ({ page }) => {
+    await page.goto('/admin/offres');
+    const ligne = page.locator('[data-offre-row]', { hasText: FIXTURE_ANOMALIE_EXPOSANT_REFERENCE });
+    await expect(ligne.getByText('Exposant introuvable')).toBeVisible();
+
+    await page.goto(`/admin/offres/${FIXTURE_ANOMALIE_EXPOSANT_REFERENCE}`);
+    await expect(page.getByText(`Anomalie — exposant « ${FIXTURE_ANOMALIE_EXPOSANT_ID} » introuvable`)).toBeVisible();
+  });
+
+  /*
+    Une offre réelle dont la `formule` diverge de celle de l'exposant
+    rattaché (duplication contrôlée, voir Option B retenue dans docs/OFFRES.md
+    section 5) porte un badge « Formule incohérente ».
+  */
+  test('une offre avec une formule incohérente avec son exposant porte un badge « Formule incohérente »', async ({
+    page,
+  }) => {
+    await page.goto('/admin/offres');
+    const ligne = page.locator('[data-offre-row]', { hasText: FIXTURE_ANOMALIE_FORMULE_REFERENCE });
+    await expect(ligne.getByText('Formule incohérente')).toBeVisible();
+
+    await page.goto(`/admin/offres/${FIXTURE_ANOMALIE_FORMULE_REFERENCE}`);
+    await expect(page.getByText('Anomalie — formule incohérente avec l\'exposant rattaché')).toBeVisible();
+  });
+
+  test('l\'offre fixture principale, cohérente, ne porte aucun badge d\'anomalie', async ({ page }) => {
+    await page.goto(`/admin/offres/${FIXTURE_REFERENCE}`);
+    await expect(page.getByText('Exposant introuvable')).toHaveCount(0);
+    await expect(page.getByText('Formule incohérente')).toHaveCount(0);
   });
 });
 

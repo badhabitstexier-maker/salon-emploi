@@ -75,9 +75,11 @@ par correspondance naturelle (référence+intitulé pour les offres, slug pour
 exposants et programme) pour garantir l'idempotence :
 
 - `reference` (offres) — `SEF26-XXX`.
-- `exposantId` (exposants) — `EXP26-XXX`. Introduit en Lot 4A ; destiné à
-  pouvoir rapprocher plus tard un exposant de ses offres (non automatisé
-  dans ce lot).
+- `exposantId` (exposants) — `EXP26-XXX`. Introduit en Lot 4A. Depuis le Lot
+  Admin-1C, c'est aussi le format obligatoire du champ `exposantId` sur
+  chaque offre réelle (collection `offres`) : le rattachement offre ↔
+  exposant est désormais vérifié automatiquement à l'import (voir
+  `docs/EXPOSANTS_IMPORT.md` section 3bis et `docs/OFFRES.md` section 3bis).
 - `programmeId` (programme) — `PROG26-XXX`. Introduit en Lot 4A.
 
 ## Halls et capacités (2026)

@@ -127,41 +127,87 @@ const programme = defineCollection({
   utilisé pour la sélection par paramètres URL (`offre1`..`offre5`) — il
   n'est pas nécessairement égal au nom de fichier.
 */
+/*
+  `exposantId` sur une offre (Lot Admin-1C, voir docs/OFFRES_EXPOSANTS.md
+  section 5 et docs/EXPOSANTS_IMPORT.md section 3) : doit être exactement le
+  même identifiant `EXP26-XXX` que celui de l'exposant correspondant dans la
+  collection `exposants` — jamais un texte libre ni le nom de l'entreprise.
+  C'est la clé technique du rattachement offres <-> exposant (voir
+  src/lib/admin.ts, `offresRattachees`).
+
+  Exception : les offres TEST (préfixe `TEST —`, voir `estOffreTest()` dans
+  src/lib/offres.ts) ne représentent aucun exposant réel — leur `exposantId`
+  n'est donc pas soumis au format EXP26-XXX. Convention retenue :
+  `TEST-EXPOSANT-NC`, un identifiant dédié qui ne peut jamais être confondu
+  avec un vrai `EXP26-XXX` ni être pris pour une vraie clé de rattachement.
+*/
+function estIntituleOffreTest(intitule: string): boolean {
+  return intitule.startsWith('TEST —');
+}
+
 const offres = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/offres' }),
-  schema: z.object({
-    reference: z.string(),
-    status: z.enum(['recue', 'a-completer', 'validee', 'publiee', 'retiree', 'cloturee']),
-    intitule: z.string(),
-    exposantId: z.string(),
-    exposantNom: z.string(),
-    formule: z.enum(['standard', 'silver', 'gold']),
-    secteur: z.string(),
-    typeContrat: z
-      .array(z.enum(['CDI', 'CDD', 'Alternance', 'Stage', 'Intérim', 'Saisonnier', 'Autre']))
-      .min(1),
-    lieu: z.string(),
-    nombrePostes: z.number().int().positive().default(1),
-    datePrisePoste: z.string().optional(),
-    niveauFormation: z.array(z.string()).default([]),
-    niveauExperience: z.string(),
-    sansExperience: z.boolean().default(false),
-    descriptionCourte: z.string(),
-    missions: z.array(z.string()).default([]),
-    competencesPrerequis: z.array(z.string()).default([]),
-    accepteCandidaturesEnLigne: z.boolean().default(true),
-    datePublication: z.coerce.date(),
-    // Date facultative de fin de validité de l'offre / fin de période de
-    // candidature (ex. alimente `validThrough` du JSON-LD JobPosting sur la
-    // fiche offre). Ne pas confondre avec la durée de conservation des
-    // données candidat au 31 décembre 2026 : celle-ci concerne les données
-    // collectées via Tally (voir docs/CANDIDATURES_TALLY.md), pas les
-    // fiches offres.
-    dateCloture: z.coerce.date().optional(),
-    // Champ conservé pour un usage éditorial futur — ne doit PAS influencer
-    // le tri ni le classement des offres (docs/OFFRES.md, section « tri »).
-    miseEnAvant: z.boolean().default(false),
-  }),
+  schema: z
+    .object({
+      reference: z.string(),
+      status: z.enum(['recue', 'a-completer', 'validee', 'publiee', 'retiree', 'cloturee']),
+      intitule: z.string(),
+      exposantId: z.string(),
+      exposantNom: z.string(),
+      formule: z.enum(['standard', 'silver', 'gold']),
+      secteur: z.string(),
+      typeContrat: z
+        .array(z.enum(['CDI', 'CDD', 'Alternance', 'Stage', 'Intérim', 'Saisonnier', 'Autre']))
+        .min(1),
+      lieu: z.string(),
+      nombrePostes: z.number().int().positive().default(1),
+      datePrisePoste: z.string().optional(),
+      niveauFormation: z.array(z.string()).default([]),
+      niveauExperience: z.string(),
+      sansExperience: z.boolean().default(false),
+      descriptionCourte: z.string(),
+      missions: z.array(z.string()).default([]),
+      competencesPrerequis: z.array(z.string()).default([]),
+      accepteCandidaturesEnLigne: z.boolean().default(true),
+      datePublication: z.coerce.date(),
+      // Date facultative de fin de validité de l'offre / fin de période de
+      // candidature (ex. alimente `validThrough` du JSON-LD JobPosting sur la
+      // fiche offre). Ne pas confondre avec la durée de conservation des
+      // données candidat au 31 décembre 2026 : celle-ci concerne les données
+      // collectées via Tally (voir docs/CANDIDATURES_TALLY.md), pas les
+      // fiches offres.
+      dateCloture: z.coerce.date().optional(),
+      // Champ conservé pour un usage éditorial futur — ne doit PAS influencer
+      // le tri ni le classement des offres (docs/OFFRES.md, section « tri »).
+      miseEnAvant: z.boolean().default(false),
+    })
+    .superRefine((offre, ctx) => {
+      if (estIntituleOffreTest(offre.intitule)) {
+        if (offre.exposantId.trim() === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['exposantId'],
+            message: 'exposantId est obligatoire, y compris pour une offre TEST (voir TEST-EXPOSANT-NC).',
+          });
+        }
+        return;
+      }
+      if (offre.exposantId.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['exposantId'],
+          message: 'exposantId est obligatoire pour une offre réelle (identifiant de l\'exposant, format EXP26-XXX).',
+        });
+        return;
+      }
+      if (!EXPOSANT_ID_REGEX.test(offre.exposantId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['exposantId'],
+          message: `Format attendu : EXP26-XXX (identifiant de l'exposant rattaché, reçu : « ${offre.exposantId} »).`,
+        });
+      }
+    }),
 });
 
 export const collections = { exposants, programme, offres };

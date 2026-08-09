@@ -23,10 +23,13 @@ participation est **confirmée** (contrat signé ou accord explicite) et sa
 
 ## B. Création ou récupération de son identifiant exposant
 
-LabEvents attribue un `exposantId` (voir `docs/OFFRES_EXPOSANTS.md`,
-section 5) — une seule fois par exposant, jamais réattribué. Le conserver
-dans un tableau de suivi LabEvents (le Google Sheet lui-même peut servir de
-registre).
+L'`exposantId` (format `EXP26-XXX`, voir `docs/OFFRES_EXPOSANTS.md` section
+5 et `docs/EXPOSANTS_IMPORT.md` section 3) provient de la fiche de
+l'exposant dans la collection `exposants` — attribuée une seule fois par
+`scripts/import-exposants.mjs`, jamais réattribuée, jamais inventée à la
+volée au moment de la collecte des offres. Si l'exposant n'a pas encore de
+fiche `exposants` (même `publie: non`), la créer d'abord (voir
+`docs/EXPOSANTS_IMPORT.md`) : c'est elle qui fait foi pour l'identifiant.
 
 ## C. Génération du lien Google Forms personnalisé
 
