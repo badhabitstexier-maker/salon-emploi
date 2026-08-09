@@ -46,13 +46,15 @@ function remplir(visuel: HTMLElement, choisie: VisibiliteResume): void {
   if (choisie.lien) {
     (lien as HTMLAnchorElement).href = choisie.lien;
   }
-  lien.className = 'block h-full w-full';
+  lien.className = 'block w-full';
 
   const img = document.createElement('img');
   img.src = choisie.visuel;
   img.alt = choisie.alt;
   img.loading = 'lazy';
-  img.className = 'h-full w-full object-cover';
+  // Ratio naturel du visuel, aucun crop : largeur fluide (100% du slot),
+  // hauteur automatique (voir docs/VISIBILITE.md §5bis).
+  img.className = 'block h-auto w-full';
   lien.appendChild(img);
 
   visuel.replaceChildren(lien);
