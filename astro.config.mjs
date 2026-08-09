@@ -65,14 +65,20 @@ export default defineConfig({
       ? []
       : [
           sitemap({
-            filter: (page) => !slugsOffresTest.some((slug) => page.includes(`/offres/${slug}`)),
+            filter: (page) =>
+              !slugsOffresTest.some((slug) => page.includes(`/offres/${slug}`)) && !page.includes('/admin'),
           }),
         ]),
     robotsTxt({
       sitemap: !noindex,
+      /*
+        /admin (Lot Admin-0, voir docs/ADMIN.md) : jamais indexé, quel que
+        soit l'environnement — la vraie protection reste l'authentification
+        serveur .htaccess (public/admin/.htaccess), pas cette directive.
+      */
       policy: noindex
         ? [{ userAgent: '*', disallow: '/' }]
-        : [{ userAgent: '*', allow: '/' }],
+        : [{ userAgent: '*', allow: '/', disallow: '/admin/' }],
     }),
   ],
 });

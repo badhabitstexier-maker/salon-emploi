@@ -1,0 +1,32 @@
+# Protection du répertoire /admin — Salon de l'Emploi & de la Formation 2026
+#
+# Ce fichier est commité (il ne contient aucun secret) et déployé tel quel
+# par le pipeline FTP existant (voir .github/workflows/deploy-preprod.yml et
+# deploy-production.yml) vers <FTP_REMOTE_DIR>/admin/.htaccess.
+#
+# Le fichier .htpasswd référencé ci-dessous N'EST JAMAIS commité dans ce
+# dépôt. Il est créé et maintenu directement sur l'hébergement OVH, en
+# dehors de l'arborescence synchronisée par le déploiement FTP (voir
+# docs/ADMIN.md, section « Créer ou modifier le .htpasswd »).
+#
+# Chemin confirmé pour la préproduction (hébergement OVH, compte
+# salonez) : le .htpasswd vit hors de la racine du site
+# (/home/salonez/salon-emploi-preprod), donc hors de portée du
+# déploiement FTP (voir docs/ADMIN.md, section 4.3).
+#
+# Cette directive AuthUserFile est propre à la préproduction. Le jour où
+# la production sera mise en place, vérifier si le compte d'hébergement
+# de production utilise le même chemin ou un chemin distinct (répertoire
+# racine, login FTP) avant de réutiliser cette valeur telle quelle.
+#
+# Portée de cette protection : ce fichier ne s'applique qu'au répertoire
+# où il se trouve (admin/ à la racine du site déployé) et à ses
+# sous-répertoires — c'est le comportement standard d'un .htaccess Apache
+# par répertoire. Il n'affecte ni le reste du site salon-emploi-preprod,
+# ni aucun autre site hébergé sur le compte OVH : aucune directive
+# <Directory>/<VirtualHost> globale n'est modifiée ici.
+
+AuthType Basic
+AuthName "Acces reserve LabEvents"
+AuthUserFile /home/salonez/.htpasswd-salonemploi-preprod
+Require valid-user
