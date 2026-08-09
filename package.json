@@ -19,7 +19,8 @@
     "programme:check": "node scripts/import-programme.mjs --check",
     "programme:test": "node --test scripts/import-programme.test.mjs",
     "content:check": "node scripts/check-public-content.mjs",
-    "content:test": "npm run offres:test && npm run exposants:test && npm run programme:test && npm run content:check",
+    "content:test": "npm run offres:test && npm run exposants:test && npm run programme:test && npm run visibilites:test && npm run content:check",
+    "visibilites:test": "node --test scripts/visibilites-lib.test.mjs",
     "qa:e2e": "playwright test",
     "qa": "npm run qa:e2e"
   },

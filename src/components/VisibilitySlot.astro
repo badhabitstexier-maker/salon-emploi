@@ -1,0 +1,51 @@
+---
+/*
+  Emplacement de visibilité publicitaire (Lot Admin-2, voir docs/VISIBILITE.md).
+
+  Centralise toute la logique de sélection : les pages appelantes ne font
+  que déclarer `page` + `emplacement`, jamais de règle publicitaire écrite
+  en dur dans la page (voir docs/VISIBILITE.md section « intégration »).
+
+  Si aucune visibilité n'est éligible, ce composant ne rend RIEN (pas de
+  section, pas de conteneur vide) — voir CLAUDE.md/cadrage Admin-2, § 6 :
+  « ne pas laisser d'espace vide disgracieux ». Le tirage pondéré lui-même
+  est fait côté client (voir src/lib/visibilite-ui.ts) : sur un site
+  statique, c'est le seul moyen d'obtenir un tirage « au chargement de la
+  page » plutôt qu'un choix figé pour tous les visiteurs jusqu'au prochain
+  build.
+*/
+import { getCollection } from 'astro:content';
+import { visibilitesEligibles, visibiliteResume, type PageVisibilite, type EmplacementVisibilite } from '../lib/visibilites';
+
+interface Props {
+  page: PageVisibilite;
+  emplacement?: EmplacementVisibilite;
+}
+
+const { page, emplacement = 'principal' } = Astro.props;
+
+const toutes = await getCollection('visibilites');
+const eligibles = visibilitesEligibles(toutes, { page, emplacement });
+const candidats = eligibles.map(visibiliteResume);
+
+const idDonnees = `visibilite-donnees-${page}-${emplacement}`;
+const idConteneur = `visibilite-slot-${page}-${emplacement}`;
+---
+
+{
+  candidats.length > 0 && (
+    <section class="border-t border-marine/10 bg-brume" aria-label="Espace partenaires">
+      <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        <div
+          id={idConteneur}
+          class="hidden aspect-[6/1] w-full overflow-hidden rounded-xl bg-marine/5 sm:aspect-[8/1]"
+        />
+      </div>
+      <script type="application/json" id={idDonnees} data-visibility-json data-conteneur={idConteneur} set:html={JSON.stringify(candidats)} />
+      <script>
+        import { initAllVisibilitySlots } from '../lib/visibilite-ui';
+        initAllVisibilitySlots();
+      </script>
+    </section>
+  )
+}

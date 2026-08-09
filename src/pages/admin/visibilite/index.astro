@@ -1,0 +1,237 @@
+---
+import { getCollection } from 'astro:content';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { exposantParId } from '../../../lib/admin';
+import {
+  typeAnnonceurLabels,
+  formatLabels,
+  pageLabels,
+  statutLabels,
+  statutVisibilite,
+} from '../../../lib/visibilites';
+
+/*
+  Vue Admin Visibilité (Lot Admin-2, voir docs/VISIBILITE.md) — strictement
+  en lecture seule : pas de formulaire d'édition, pas de suppression, pas de
+  création (voir CLAUDE.md, cadrage Admin-2 § 9). Une visibilité se
+  programme en éditant à la main un fichier dans src/content/visibilites/
+  (voir docs/VISIBILITE.md, procédure d'ajout).
+
+  Le statut (Actif / À venir / Expiré / Désactivé) est calculé au chargement
+  de cette page — jamais stocké — via `statutVisibilite` (voir
+  src/lib/visibilites.ts), la même fonction que celle utilisée par le
+  moteur de sélection public.
+*/
+
+const toutes = await getCollection('visibilites');
+const exposants = await getCollection('exposants');
+const maintenant = new Date();
+
+const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
+
+function periodeTexte(dateDebut?: Date, dateFin?: Date): string {
+  if (!dateDebut && !dateFin) return 'Permanente';
+  if (dateDebut && dateFin) return `Du ${formateurDate.format(dateDebut)} au ${formateurDate.format(dateFin)}`;
+  if (dateDebut) return `À partir du ${formateurDate.format(dateDebut)}`;
+  return `Jusqu'au ${formateurDate.format(dateFin!)}`;
+}
+
+const lignes = toutes
+  .map((visibilite) => {
+    const statut = statutVisibilite(visibilite, maintenant);
+    const exposant = exposantParId(visibilite.data.exposantId, exposants);
+    return {
+      visibilite,
+      statut,
+      exposant,
+      periode: periodeTexte(visibilite.data.dateDebut, visibilite.data.dateFin),
+    };
+  })
+  .sort((a, b) => a.visibilite.data.annonceur.localeCompare(b.visibilite.data.annonceur, 'fr'));
+
+const statutBadge: Record<(typeof lignes)[number]['statut'], string> = {
+  actif: 'bg-village text-marine',
+  'a-venir': 'bg-orange/20 text-orange-dark',
+  expire: 'bg-marine/10 text-marine/60',
+  desactive: 'bg-marine/10 text-marine/60',
+};
+---
+
+<AdminLayout title="Visibilité" section="visibilite">
+  <h1 class="text-2xl font-bold text-marine">Visibilité</h1>
+  <p class="mt-2 max-w-prose text-sm text-encre/80">
+    Campagnes de visibilité publicitaire (bandeaux) programmées sur le site public. Lecture seule —
+    pour ajouter ou modifier une campagne, voir <code class="rounded bg-marine/10 px-1.5 py-0.5">docs/VISIBILITE.md</code>.
+    Distinct de la formule commerciale exposant : voir la note en bas de page.
+  </p>
+
+  {
+    lignes.length > 0 ? (
+      <Fragment>
+        <form id="filtres-visibilite-admin" class="mt-6 rounded-2xl border border-marine/15 bg-blanc p-5 sm:p-6">
+          <div class="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label for="filtre-statut-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Statut
+              </label>
+              <select
+                id="filtre-statut-admin"
+                name="statut"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              >
+                <option value="">Tous</option>
+                <option value="actif">{statutLabels.actif}</option>
+                <option value="a-venir">{statutLabels['a-venir']}</option>
+                <option value="expire">{statutLabels.expire}</option>
+                <option value="desactive">{statutLabels.desactive}</option>
+              </select>
+            </div>
+            <div>
+              <label for="filtre-type-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Type d'annonceur
+              </label>
+              <select
+                id="filtre-type-admin"
+                name="type"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              >
+                <option value="">Tous</option>
+                {Object.entries(typeAnnonceurLabels).map(([valeur, label]) => (
+                  <option value={valeur}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label for="filtre-page-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Page
+              </label>
+              <select
+                id="filtre-page-admin"
+                name="page"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              >
+                <option value="">Toutes</option>
+                {Object.entries(pageLabels).map(([valeur, label]) => (
+                  <option value={valeur}>{label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <p id="resultats-compte-visibilite-admin" class="mt-4 text-sm font-semibold text-marine" aria-live="polite">
+            {lignes.length} {lignes.length > 1 ? 'résultats' : 'résultat'}
+          </p>
+        </form>
+
+        <div class="mt-6 overflow-x-auto rounded-2xl border border-marine/15 bg-blanc">
+          <table class="w-full min-w-[880px] text-left text-sm">
+            <thead class="border-b border-marine/15 bg-brume text-xs font-bold uppercase tracking-wide text-marine">
+              <tr>
+                <th scope="col" class="px-4 py-3">Aperçu</th>
+                <th scope="col" class="px-4 py-3">Annonceur</th>
+                <th scope="col" class="px-4 py-3">Type</th>
+                <th scope="col" class="px-4 py-3">Format</th>
+                <th scope="col" class="px-4 py-3">Page / emplacement</th>
+                <th scope="col" class="px-4 py-3">Période</th>
+                <th scope="col" class="px-4 py-3">Poids</th>
+                <th scope="col" class="px-4 py-3">Statut</th>
+              </tr>
+            </thead>
+            <tbody id="corps-visibilite-admin">
+              {
+                lignes.map(({ visibilite, statut, exposant, periode }) => (
+                  <tr
+                    data-visibilite-row
+                    data-statut={statut}
+                    data-type={visibilite.data.typeAnnonceur}
+                    data-pages={visibilite.data.pages.join(' ')}
+                    class="border-b border-marine/10 last:border-0 align-top hover:bg-brume/60"
+                  >
+                    <td class="px-4 py-3">
+                      <img
+                        src={visibilite.data.visuel}
+                        alt=""
+                        class="h-10 w-24 rounded object-cover"
+                        loading="lazy"
+                      />
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-marine">
+                      {visibilite.data.annonceur}
+                      <p class="mt-0.5 text-xs font-normal text-encre/60">{visibilite.data.nomInterne}</p>
+                      {exposant && (
+                        <a href={`/admin/exposants/${exposant.id}`} class="mt-1 inline-block text-xs text-marine underline">
+                          Voir la fiche exposant ({exposant.data.nom})
+                        </a>
+                      )}
+                    </td>
+                    <td class="px-4 py-3 text-encre">{typeAnnonceurLabels[visibilite.data.typeAnnonceur]}</td>
+                    <td class="px-4 py-3 text-encre">{formatLabels[visibilite.data.format]}</td>
+                    <td class="px-4 py-3 text-encre">
+                      {visibilite.data.pages.map((page) => pageLabels[page]).join(', ')}
+                      <span class="block text-xs text-encre/60">Emplacement : {visibilite.data.emplacement}</span>
+                    </td>
+                    <td class="px-4 py-3 text-encre">{periode}</td>
+                    <td class="px-4 py-3 font-titre font-bold text-marine">{visibilite.data.poids}</td>
+                    <td class="px-4 py-3">
+                      <span class:list={['rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide', statutBadge[statut]]}>
+                        {statutLabels[statut]}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <p id="aucun-resultat-visibilite-admin" class="mt-6 hidden rounded-2xl border border-marine/15 bg-blanc p-8 text-center text-sm text-encre">
+          Aucune campagne ne correspond à ces filtres.
+        </p>
+      </Fragment>
+    ) : (
+      <p class="mt-8 rounded-2xl border border-marine/15 bg-blanc p-8 text-center text-sm text-encre">
+        Aucune campagne de visibilité programmée à ce jour.
+      </p>
+    )
+  }
+
+  <p class="mt-10 max-w-prose text-xs text-encre/60">
+    Le poids de diffusion est saisi librement par LabEvents, indépendamment de la formule commerciale
+    (standard/silver/gold) de l'exposant éventuellement rattaché — voir docs/VISIBILITE.md, section 1.
+  </p>
+</AdminLayout>
+
+<script>
+  const form = document.getElementById('filtres-visibilite-admin') as HTMLFormElement | null;
+  const corps = document.getElementById('corps-visibilite-admin');
+  const compte = document.getElementById('resultats-compte-visibilite-admin');
+  const aucunResultat = document.getElementById('aucun-resultat-visibilite-admin');
+
+  if (form && corps && compte && aucunResultat) {
+    const lignes = Array.from(corps.querySelectorAll<HTMLTableRowElement>('[data-visibilite-row]'));
+
+    const appliquerFiltres = () => {
+      const donnees = new FormData(form);
+      const statut = String(donnees.get('statut') ?? '');
+      const type = String(donnees.get('type') ?? '');
+      const page = String(donnees.get('page') ?? '');
+
+      let visibles = 0;
+      for (const ligne of lignes) {
+        const pages = (ligne.dataset.pages ?? '').split(' ');
+        const visible =
+          (!statut || ligne.dataset.statut === statut) &&
+          (!type || ligne.dataset.type === type) &&
+          (!page || pages.includes(page));
+        ligne.classList.toggle('hidden', !visible);
+        if (visible) visibles += 1;
+      }
+
+      compte.textContent = `${visibles} ${visibles > 1 || visibles === 0 ? 'résultats' : 'résultat'}`;
+      aucunResultat.classList.toggle('hidden', visibles !== 0);
+    };
+
+    form.addEventListener('input', appliquerFiltres);
+    form.addEventListener('change', appliquerFiltres);
+    appliquerFiltres();
+  }
+</script>

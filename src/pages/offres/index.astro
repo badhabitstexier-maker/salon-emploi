@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import OffreCard from '../../components/OffreCard.astro';
 import OffreFilters from '../../components/OffreFilters.astro';
 import SelectionDrawer from '../../components/SelectionDrawer.astro';
+import VisibilitySlot from '../../components/VisibilitySlot.astro';
 import {
   getOffresPubliees,
   trierOffres,
@@ -132,4 +133,6 @@ const infosSalon = ['Hall Emploi', 'Hall Formation', '30 et 31 octobre 2026', 'N
       </div>
     </section>
   )}
+
+  <VisibilitySlot page="offres" />
 </BaseLayout>

@@ -48,6 +48,18 @@ export function formuleIncoherente(offre: Offre, exposants: Exposant[]): boolean
   return exposant !== undefined && exposant.data.formule !== offre.data.formule;
 }
 
+/*
+  Retrouve l'exposant correspondant à un `exposantId` (Lot Admin-2, voir
+  docs/VISIBILITE.md) — même rattachement par égalité stricte que
+  `offresRattachees`, réutilisé ici pour permettre à l'Admin Visibilité de
+  lier une campagne vers la fiche Admin de l'exposant concerné, sans
+  dupliquer les données de l'exposant dans la visibilité.
+*/
+export function exposantParId(exposantId: string | undefined, exposants: Exposant[]): Exposant | undefined {
+  if (!exposantId) return undefined;
+  return exposants.find((exposant) => exposant.data.exposantId === exposantId);
+}
+
 export interface Repartition {
   valeur: string;
   total: number;

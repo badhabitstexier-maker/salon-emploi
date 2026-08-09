@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ExposantCard from '../components/ExposantCard.astro';
+import VisibilitySlot from '../components/VisibilitySlot.astro';
 import {
   getExposantsPublies,
   trierExposants,
@@ -262,6 +263,8 @@ const infosSalon = [
       </section>
     )
   }
+
+  <VisibilitySlot page="exposants" />
 
   <!-- ======================= BLOC FINAL EXPOSANTS ======================= -->
   <section class="border-t border-marine/10 bg-marine text-blanc">

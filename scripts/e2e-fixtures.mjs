@@ -51,6 +51,26 @@ export const FIXTURE_ANOMALIE_FORMULE_REFERENCE = 'E2E-ANOMALIE-FORMULE';
 export const FIXTURE_ANOMALIE_FORMULE_INTITULE = 'Offre fixture — formule incohérente (Playwright)';
 export const FIXTURE_ANOMALIE_FORMULE_SLUG = 'e2e-fixture-offre-anomalie-formule';
 
+/*
+  Fixtures Visibilité (Lot Admin-2, voir docs/VISIBILITE.md). Une seule
+  visibilité éligible par page utilisée dans ces tests (accueil / offres) :
+  le tirage pondéré devient ainsi déterministe (un seul candidat = pas
+  d'aléatoire à gérer côté test) pour les assertions de contenu, tout en
+  laissant /exposants et /programme sans aucune campagne éligible (utile
+  pour tester l'absence d'espace vide).
+*/
+export const FIXTURE_VIS_ACCUEIL_SLUG = 'e2e-fixture-visibilite-accueil';
+export const FIXTURE_VIS_ACCUEIL_ANNONCEUR = 'Fixture E2E — annonceur externe';
+export const FIXTURE_VIS_ACCUEIL_ALT = "Bandeau fixture Playwright — visible sur l'accueil";
+
+export const FIXTURE_VIS_OFFRES_SLUG = 'e2e-fixture-visibilite-offres';
+export const FIXTURE_VIS_OFFRES_ANNONCEUR = 'Fixture E2E LabEvents'; // même raison sociale que l'exposant fixture
+export const FIXTURE_VIS_OFFRES_ALT = 'Bandeau fixture Playwright — visible sur le catalogue offres';
+
+export const FIXTURE_VIS_INACTIVE_SLUG = 'e2e-fixture-visibilite-inactive';
+export const FIXTURE_VIS_FUTURE_SLUG = 'e2e-fixture-visibilite-future';
+export const FIXTURE_VIS_EXPIREE_SLUG = 'e2e-fixture-visibilite-expiree';
+
 const cheminFixtureOffre = path.join(__dirname, '..', 'src', 'content', 'offres', `${FIXTURE_SLUG}.md`);
 const cheminFixtureExposant = path.join(__dirname, '..', 'src', 'content', 'exposants', `${FIXTURE_EXPOSANT_SLUG}.md`);
 const cheminFixtureAnomalieExposant = path.join(
@@ -69,6 +89,13 @@ const cheminFixtureAnomalieFormule = path.join(
   'offres',
   `${FIXTURE_ANOMALIE_FORMULE_SLUG}.md`,
 );
+
+const dossierVisibilites = path.join(__dirname, '..', 'src', 'content', 'visibilites');
+const cheminFixtureVisAccueil = path.join(dossierVisibilites, `${FIXTURE_VIS_ACCUEIL_SLUG}.md`);
+const cheminFixtureVisOffres = path.join(dossierVisibilites, `${FIXTURE_VIS_OFFRES_SLUG}.md`);
+const cheminFixtureVisInactive = path.join(dossierVisibilites, `${FIXTURE_VIS_INACTIVE_SLUG}.md`);
+const cheminFixtureVisFuture = path.join(dossierVisibilites, `${FIXTURE_VIS_FUTURE_SLUG}.md`);
+const cheminFixtureVisExpiree = path.join(dossierVisibilites, `${FIXTURE_VIS_EXPIREE_SLUG}.md`);
 
 const contenuFixtureOffre = `---
 reference: "${FIXTURE_REFERENCE}"
@@ -151,11 +178,98 @@ datePublication: 2026-08-08
 ---
 `;
 
+// Visuel réel existant dans public/ (voir docs/VISIBILITE.md) — évite une image cassée dans les tests.
+const FIXTURE_VIS_VISUEL = '/brand/logo-salon-emploi-formation-mark-512.png';
+
+const contenuFixtureVisAccueil = `---
+nomInterne: "Fixture E2E — accueil"
+annonceur: "${FIXTURE_VIS_ACCUEIL_ANNONCEUR}"
+typeAnnonceur: "annonceur_externe"
+format: "bandeau_horizontal"
+visuel: "${FIXTURE_VIS_VISUEL}"
+alt: "${FIXTURE_VIS_ACCUEIL_ALT}"
+pages:
+  - "accueil"
+emplacement: "principal"
+poids: 1
+actif: true
+---
+`;
+
+const contenuFixtureVisOffres = `---
+nomInterne: "Fixture E2E — offres, rattachée à l'exposant fixture"
+annonceur: "${FIXTURE_VIS_OFFRES_ANNONCEUR}"
+typeAnnonceur: "exposant"
+exposantId: "${FIXTURE_EXPOSANT_ID}"
+format: "bandeau_horizontal"
+visuel: "${FIXTURE_VIS_VISUEL}"
+alt: "${FIXTURE_VIS_OFFRES_ALT}"
+lien: "/exposants/${FIXTURE_EXPOSANT_SLUG}"
+pages:
+  - "offres"
+emplacement: "principal"
+poids: 3
+actif: true
+---
+`;
+
+const contenuFixtureVisInactive = `---
+nomInterne: "Fixture E2E — désactivée"
+annonceur: "Fixture E2E — ne doit jamais apparaître (désactivée)"
+typeAnnonceur: "sponsor"
+format: "bandeau_horizontal"
+visuel: "${FIXTURE_VIS_VISUEL}"
+alt: "Fixture E2E — désactivée"
+pages:
+  - "accueil"
+emplacement: "principal"
+poids: 1
+actif: false
+---
+`;
+
+const contenuFixtureVisFuture = `---
+nomInterne: "Fixture E2E — programmée dans le futur"
+annonceur: "Fixture E2E — ne doit jamais apparaître (à venir)"
+typeAnnonceur: "partenaire"
+format: "bandeau_horizontal"
+visuel: "${FIXTURE_VIS_VISUEL}"
+alt: "Fixture E2E — à venir"
+pages:
+  - "accueil"
+emplacement: "principal"
+dateDebut: 2099-01-01
+poids: 1
+actif: true
+---
+`;
+
+const contenuFixtureVisExpiree = `---
+nomInterne: "Fixture E2E — expirée"
+annonceur: "Fixture E2E — ne doit jamais apparaître (expirée)"
+typeAnnonceur: "institution"
+format: "bandeau_horizontal"
+visuel: "${FIXTURE_VIS_VISUEL}"
+alt: "Fixture E2E — expirée"
+pages:
+  - "accueil"
+emplacement: "principal"
+dateFin: 2020-01-01
+poids: 1
+actif: true
+---
+`;
+
 function creer() {
   writeFileSync(cheminFixtureOffre, contenuFixtureOffre, 'utf8');
   writeFileSync(cheminFixtureExposant, contenuFixtureExposant, 'utf8');
   writeFileSync(cheminFixtureAnomalieExposant, contenuFixtureAnomalieExposant, 'utf8');
   writeFileSync(cheminFixtureAnomalieFormule, contenuFixtureAnomalieFormule, 'utf8');
+  writeFileSync(cheminFixtureVisAccueil, contenuFixtureVisAccueil, 'utf8');
+  writeFileSync(cheminFixtureVisOffres, contenuFixtureVisOffres, 'utf8');
+  writeFileSync(cheminFixtureVisInactive, contenuFixtureVisInactive, 'utf8');
+  writeFileSync(cheminFixtureVisFuture, contenuFixtureVisFuture, 'utf8');
+  writeFileSync(cheminFixtureVisExpiree, contenuFixtureVisExpiree, 'utf8');
 }
 
 function supprimer() {
@@ -163,6 +277,11 @@ function supprimer() {
   if (existsSync(cheminFixtureExposant)) rmSync(cheminFixtureExposant);
   if (existsSync(cheminFixtureAnomalieExposant)) rmSync(cheminFixtureAnomalieExposant);
   if (existsSync(cheminFixtureAnomalieFormule)) rmSync(cheminFixtureAnomalieFormule);
+  if (existsSync(cheminFixtureVisAccueil)) rmSync(cheminFixtureVisAccueil);
+  if (existsSync(cheminFixtureVisOffres)) rmSync(cheminFixtureVisOffres);
+  if (existsSync(cheminFixtureVisInactive)) rmSync(cheminFixtureVisInactive);
+  if (existsSync(cheminFixtureVisFuture)) rmSync(cheminFixtureVisFuture);
+  if (existsSync(cheminFixtureVisExpiree)) rmSync(cheminFixtureVisExpiree);
 }
 
 /*
