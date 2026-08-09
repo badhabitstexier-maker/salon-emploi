@@ -4,6 +4,9 @@ import {
   FIXTURE_VIS_ACCUEIL_ANNONCEUR,
   FIXTURE_VIS_OFFRES_ALT,
   FIXTURE_VIS_OFFRES_ANNONCEUR,
+  FIXTURE_VIS_PROGRAMMEE_ALT,
+  FIXTURE_VIS_PROGRAMMEE_DATE_DEBUT,
+  FIXTURE_VIS_PROGRAMMEE_DATE_FIN,
   FIXTURE_EXPOSANT_NOM,
   FIXTURE_EXPOSANT_SLUG,
 } from '../scripts/e2e-fixtures.mjs';
@@ -13,8 +16,11 @@ import {
   scripts/e2e-fixtures.mjs : une visibilité active par page (accueil,
   offres) — un seul candidat éligible par emplacement, donc un tirage
   pondéré déterministe (pas d'aléatoire à gérer côté test) — plus une
-  désactivée, une programmée dans le futur et une expirée, toutes scoping
-  sur `accueil`, qui ne doivent jamais s'afficher.
+  désactivée, une programmée dans le futur et une expirée (toutes scoping
+  sur `accueil`, jamais affichées sous l'horloge réelle) et une « programmée »
+  ciblant `programme` avec une fenêtre de dates dans l'an 3000, utilisée
+  pour prouver la réévaluation côté client sans rebuild (voir tests dédiés
+  plus bas, avec `page.clock`).
 */
 
 test.describe('Visibilité — site public (Lot Admin-2)', () => {
@@ -41,17 +47,69 @@ test.describe('Visibilité — site public (Lot Admin-2)', () => {
     await expect(page.getByText('ne doit jamais apparaître', { exact: false })).toHaveCount(0);
   });
 
-  test('filtrage par page : le bandeau offres ne fuite pas sur exposants/programme, aucun espace vide laissé', async ({ page }) => {
-    for (const chemin of ['/exposants', '/programme']) {
-      await page.goto(chemin);
-      await expect(page.locator('[id^="visibilite-slot-"]')).toHaveCount(0);
-      // Alt du bandeau uniquement — l'annonceur "Fixture E2E LabEvents" est
-      // volontairement le même nom que l'exposant fixture, qui, lui, apparaît
-      // légitimement sur /exposants (sa fiche) : vérifier le texte de
-      // l'annonceur donnerait un faux positif.
-      await expect(page.getByAltText(FIXTURE_VIS_ACCUEIL_ALT)).toHaveCount(0);
-      await expect(page.getByAltText(FIXTURE_VIS_OFFRES_ALT)).toHaveCount(0);
-    }
+  test('filtrage par page : le bandeau offres ne fuite pas sur exposants, aucun espace vide laissé', async ({ page }) => {
+    // /exposants ne porte aucune fixture de visibilité : aucune section
+    // n'est même envoyée par le build (voir visibilitesEnvoyables).
+    await page.goto('/exposants');
+    await expect(page.locator('[id^="visibilite-slot-"]')).toHaveCount(0);
+    // Alt du bandeau uniquement — l'annonceur "Fixture E2E LabEvents" est
+    // volontairement le même nom que l'exposant fixture, qui, lui, apparaît
+    // légitimement sur /exposants (sa fiche) : vérifier le texte de
+    // l'annonceur donnerait un faux positif.
+    await expect(page.getByAltText(FIXTURE_VIS_ACCUEIL_ALT)).toHaveCount(0);
+    await expect(page.getByAltText(FIXTURE_VIS_OFFRES_ALT)).toHaveCount(0);
+  });
+
+  test('filtrage par page : /programme ne reçoit jamais le bandeau accueil/offres, et sa propre campagne programmée reste masquée sous l\'horloge réelle', async ({ page }) => {
+    await page.goto('/programme');
+    await expect(page.getByAltText(FIXTURE_VIS_ACCUEIL_ALT)).toHaveCount(0);
+    await expect(page.getByAltText(FIXTURE_VIS_OFFRES_ALT)).toHaveCount(0);
+
+    // La section peut exister dans le DOM (la campagne est bien "envoyable"
+    // — active et scopée sur `programme`) mais reste hors de sa fenêtre de
+    // dates (an 3000) sous l'horloge réelle du test : elle doit rester
+    // entièrement masquée, sans occuper d'espace visible.
+    const slot = page.locator('#visibilite-slot-programme-principal');
+    await expect(slot).toBeHidden();
+  });
+
+  test('une campagne démarre puis expire sans nouveau build, réévaluée à chaque chargement de page', async ({ page }) => {
+    const debut = new Date(FIXTURE_VIS_PROGRAMMEE_DATE_DEBUT);
+    const fin = new Date(FIXTURE_VIS_PROGRAMMEE_DATE_FIN);
+    const slot = page.locator('#visibilite-slot-programme-principal');
+
+    // Avant dateDebut : masquée.
+    await page.clock.install({ time: new Date(debut.getTime() - 60_000) });
+    await page.goto('/programme');
+    await expect(slot).toBeHidden();
+
+    // dateDebut atteinte, sans rebuild (même serveur, simple rechargement
+    // après avoir avancé l'horloge du navigateur) : visible.
+    await page.clock.setFixedTime(new Date(debut.getTime() + 1_000));
+    await page.reload();
+    await expect(slot).toBeVisible();
+    await expect(slot.locator('img')).toHaveAttribute('alt', FIXTURE_VIS_PROGRAMMEE_ALT);
+
+    // dateFin dépassée, toujours sans rebuild : masquée à nouveau.
+    await page.clock.setFixedTime(new Date(fin.getTime() + 60_000));
+    await page.reload();
+    await expect(slot).toBeHidden();
+  });
+
+  test("accueil : le bandeau se trouve juste après le hero et avant « Le salon en chiffres »", async ({ page }) => {
+    await page.goto('/');
+    const ordre = await page.evaluate(() => {
+      const enfants = Array.from(document.querySelector('main')?.children ?? []);
+      const heroIndex = enfants.findIndex((el) => el.querySelector('h1'));
+      const slotIndex = enfants.findIndex((el) => el.id?.startsWith('visibilite-slot-accueil-'));
+      const chiffresIndex = enfants.findIndex((el) => el.querySelector('#chiffres-titre'));
+      return { heroIndex, slotIndex, chiffresIndex };
+    });
+
+    expect(ordre.heroIndex).toBeGreaterThanOrEqual(0);
+    expect(ordre.chiffresIndex).toBeGreaterThan(ordre.heroIndex);
+    expect(ordre.slotIndex).toBe(ordre.heroIndex + 1);
+    expect(ordre.slotIndex).toBeLessThan(ordre.chiffresIndex);
   });
 
   test('un seul tirage au chargement : le contenu du bandeau ne change plus ensuite (pas de carrousel)', async ({ page }) => {
@@ -64,6 +122,23 @@ test.describe('Visibilité — site public (Lot Admin-2)', () => {
 
     const contenuApresAttente = await slot.innerHTML();
     expect(contenuApresAttente).toBe(contenuInitial);
+  });
+
+  test('le payload JSON envoyé au navigateur ne contient aucune donnée interne (nomInterne, typeAnnonceur, exposantId)', async ({ page }) => {
+    await page.goto('/');
+    const payload = await page.locator('script[data-visibility-json]').first().textContent();
+    const candidats = JSON.parse(payload ?? '[]');
+    expect(candidats.length).toBeGreaterThan(0);
+    for (const candidat of candidats) {
+      expect(Object.keys(candidat).sort()).toEqual(
+        ['alt', 'annonceur', 'dateDebut', 'dateFin', 'id', 'lien', 'poids', 'visuel'].filter(
+          (cle) => cle in candidat,
+        ).sort(),
+      );
+      expect(candidat).not.toHaveProperty('nomInterne');
+      expect(candidat).not.toHaveProperty('typeAnnonceur');
+      expect(candidat).not.toHaveProperty('exposantId');
+    }
   });
 });
 
@@ -88,13 +163,17 @@ test.describe('Visibilité — Admin (Lot Admin-2)', () => {
       `/admin/exposants/${FIXTURE_EXPOSANT_SLUG}`,
     );
 
-    const ligneInactive = page.locator('[data-visibilite-row]', { hasText: 'désactivée' });
+    // Textes complets des fixtures (voir scripts/e2e-fixtures.mjs), pas de
+    // simple sous-chaîne : depuis l'ajout de la fixture « programmée »
+    // (également « À venir »), un filtre trop court sur 'à venir' matche
+    // aussi bien la ligne visée que le badge de statut d'une autre ligne.
+    const ligneInactive = page.locator('[data-visibilite-row]', { hasText: 'ne doit jamais apparaître (désactivée)' });
     await expect(ligneInactive.getByText('Désactivé', { exact: true })).toBeVisible();
 
-    const ligneFuture = page.locator('[data-visibilite-row]', { hasText: 'à venir' });
+    const ligneFuture = page.locator('[data-visibilite-row]', { hasText: 'ne doit jamais apparaître (à venir)' });
     await expect(ligneFuture.getByText('À venir', { exact: true })).toBeVisible();
 
-    const ligneExpiree = page.locator('[data-visibilite-row]', { hasText: 'expirée' });
+    const ligneExpiree = page.locator('[data-visibilite-row]', { hasText: 'ne doit jamais apparaître (expirée)' });
     await expect(ligneExpiree.getByText('Expiré', { exact: true })).toBeVisible();
   });
 

@@ -51,18 +51,32 @@ export const statutLabels: Record<StatutVisibilite, string> = {
 };
 
 /*
-  Statut calculé au moment de l'appel — jamais stocké en frontmatter (un
-  seul état source : `actif` + `dateDebut`/`dateFin`, voir
-  docs/VISIBILITE.md). Sur un site statique, ce calcul se fait au moment du
-  build : une programmation par dates ne bascule donc qu'au prochain
-  build/déploiement, pas à la seconde près (limite V1, voir docs/VISIBILITE.md).
+  Fenêtre de dates — brique commune réutilisée à la fois par statutVisibilite
+  (Admin, calculé côté serveur) ET par le contrôleur client
+  (src/lib/visibilite-ui.ts), pour que les deux évaluent la même règle avec
+  la même définition de « maintenant ».
+
+  IMPORTANT (site statique, voir docs/VISIBILITE.md section 7) : sur
+  l'Admin, `maintenant` vaut l'heure du build — le statut affiché reflète
+  donc l'état au dernier déploiement. Côté site public en revanche, cette
+  même fonction est appelée par le navigateur à chaque chargement de page
+  (voir estDansPeriodeResume ci-dessous), avec l'heure réelle du visiteur :
+  une campagne démarre ou s'arrête donc bien à l'heure dite, sans dépendre
+  d'un nouveau build.
 */
+export function estDansPeriode(dateDebut: Date | undefined, dateFin: Date | undefined, maintenant: Date): boolean {
+  if (dateDebut && maintenant.getTime() < dateDebut.getTime()) return false;
+  if (dateFin && maintenant.getTime() > dateFin.getTime()) return false;
+  return true;
+}
+
+/** Statut calculé au moment de l'appel — jamais stocké en frontmatter (voir docs/VISIBILITE.md). */
 export function statutVisibilite(visibilite: Visibilite, maintenant: Date = new Date()): StatutVisibilite {
   if (!visibilite.data.actif) return 'desactive';
   const { dateDebut, dateFin } = visibilite.data;
+  if (estDansPeriode(dateDebut, dateFin, maintenant)) return 'actif';
   if (dateDebut && maintenant.getTime() < dateDebut.getTime()) return 'a-venir';
-  if (dateFin && maintenant.getTime() > dateFin.getTime()) return 'expire';
-  return 'actif';
+  return 'expire';
 }
 
 export interface CriteresEligibilite {
@@ -70,15 +84,28 @@ export interface CriteresEligibilite {
   emplacement: EmplacementVisibilite;
 }
 
-/** Éligible à un (page, emplacement) donné : statut 'actif' + page couverte + même emplacement. */
+/** Page + emplacement couverts par la visibilité, indépendamment de `actif` et des dates. */
+export function couvre(visibilite: Visibilite, criteres: CriteresEligibilite): boolean {
+  if (visibilite.data.emplacement !== criteres.emplacement) return false;
+  return visibilite.data.pages.includes(criteres.page);
+}
+
+/*
+  Éligible à un (page, emplacement) donné à un instant `maintenant` donné :
+  actif + page/emplacement couverts + dans la fenêtre de dates. Utile pour
+  un contrôle ponctuel (tests, futurs usages serveur) — le site public
+  n'utilise PAS cette fonction pour décider quoi envoyer au navigateur (voir
+  visibilitesEnvoyables plus bas : les dates doivent être réévaluées côté
+  client, pas figées au build).
+*/
 export function estEligible(
   visibilite: Visibilite,
   criteres: CriteresEligibilite,
   maintenant: Date = new Date(),
 ): boolean {
-  if (statutVisibilite(visibilite, maintenant) !== 'actif') return false;
-  if (visibilite.data.emplacement !== criteres.emplacement) return false;
-  return visibilite.data.pages.includes(criteres.page);
+  if (!visibilite.data.actif) return false;
+  if (!couvre(visibilite, criteres)) return false;
+  return estDansPeriode(visibilite.data.dateDebut, visibilite.data.dateFin, maintenant);
 }
 
 export function visibilitesEligibles(
@@ -87,6 +114,19 @@ export function visibilitesEligibles(
   maintenant: Date = new Date(),
 ): Visibilite[] {
   return liste.filter((visibilite) => estEligible(visibilite, criteres, maintenant));
+}
+
+/*
+  Ce que le build envoie au navigateur pour un (page, emplacement) donné :
+  actif + page/emplacement couverts, SANS filtrer sur les dates — les dates
+  sont volontairement réévaluées côté client à chaque chargement de page
+  (voir src/lib/visibilite-ui.ts, estDansPeriodeResume), pour qu'une
+  campagne démarre/s'arrête à l'heure dite sans nécessiter un nouveau build.
+  Une visibilité `actif: false` ou hors scope (page/emplacement) n'est en
+  revanche jamais envoyée : ce sont des leviers manuels, pas des dates.
+*/
+export function visibilitesEnvoyables(liste: Visibilite[], criteres: CriteresEligibilite): Visibilite[] {
+  return liste.filter((visibilite) => visibilite.data.actif && couvre(visibilite, criteres));
 }
 
 /*
@@ -115,7 +155,17 @@ export function selectionnerPonderee<T extends { poids: number }>(
   return candidats[candidats.length - 1];
 }
 
-/** Résumé public d'une visibilité — ce qui est réellement nécessaire côté client (voir VisibilitySlot.astro). */
+/*
+  Résumé public d'une visibilité — strictement ce qui est nécessaire pour
+  l'affichage et le tirage côté client (voir VisibilitySlot.astro). Ne
+  jamais y ajouter `nomInterne`, `typeAnnonceur` ou `exposantId` : ce sont
+  des données réservées à l'usage interne LabEvents (voir Admin), sans
+  utilité pour le rendu public. `dateDebut`/`dateFin` sont en ISO (pas des
+  `Date`, non sérialisables telles quelles dans le JSON embarqué) et ne
+  sont présentes que si la campagne les définit — indispensables pour que
+  le client puisse réévaluer la fenêtre de dates lui-même (voir
+  estDansPeriodeResume ci-dessous).
+*/
 export interface VisibiliteResume {
   id: string;
   annonceur: string;
@@ -123,6 +173,8 @@ export interface VisibiliteResume {
   alt: string;
   lien?: string;
   poids: number;
+  dateDebut?: string;
+  dateFin?: string;
 }
 
 export function visibiliteResume(visibilite: Visibilite): VisibiliteResume {
@@ -133,5 +185,14 @@ export function visibiliteResume(visibilite: Visibilite): VisibiliteResume {
     alt: visibilite.data.alt,
     lien: visibilite.data.lien,
     poids: visibilite.data.poids,
+    dateDebut: visibilite.data.dateDebut?.toISOString(),
+    dateFin: visibilite.data.dateFin?.toISOString(),
   };
+}
+
+/** Même règle que `estDansPeriode`, appliquée à un VisibiliteResume (dates en ISO côté client). */
+export function estDansPeriodeResume(resume: Pick<VisibiliteResume, 'dateDebut' | 'dateFin'>, maintenant: Date): boolean {
+  const dateDebut = resume.dateDebut ? new Date(resume.dateDebut) : undefined;
+  const dateFin = resume.dateFin ? new Date(resume.dateFin) : undefined;
+  return estDansPeriode(dateDebut, dateFin, maintenant);
 }

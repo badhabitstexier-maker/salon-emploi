@@ -109,7 +109,8 @@ page et reste fixe pendant la consultation (voir section 6).
 Un seul emplacement par page (`principal`), sur 4 pages, choisies après audit du site existant pour
 ne jamais interférer avec un formulaire, la navigation ou la lecture d'une fiche :
 
-- **Accueil** (`/`) — après le bloc « Pourquoi venir au salon ? », avant la suite du contenu.
+- **Accueil** (`/`) — juste après le hero (bloc d'ouverture plein écran), avant toute autre section
+  de contenu et bien avant « Le salon en chiffres ».
 - **Catalogue des offres** (`/offres`) — juste avant le bloc de fin de page.
 - **Catalogue des exposants** (`/exposants`) — juste avant le bloc de fin de page.
 - **Programme** (`/programme`) — juste avant le bloc de fin de page.
@@ -131,15 +132,23 @@ Une visibilité peut être :
 - **Jusqu'à une date** — `dateFin` seul.
 - **Entre deux dates** — les deux.
 
-Logique déterministe, sans aucun appel réseau ni service externe (`statutVisibilite()`,
+Logique déterministe, sans aucun appel réseau ni service externe (`estDansPeriode()`,
 `src/lib/visibilites.ts`).
 
-**Limite importante (site statique)** : ce calcul se fait au moment du **build**, pas en temps réel
-dans le navigateur du visiteur. Une campagne programmée pour démarrer ou s'arrêter à une date donnée
-ne bascule donc qu'au prochain build/déploiement du site (voir CLAUDE.md, section 4, sur le
-fonctionnement du déploiement continu vers la préproduction). En pratique, avec un déploiement
-automatique à chaque fusion sur `main`, l'écart est généralement de l'ordre de la minute à quelques
-heures, jamais instantané.
+**Évaluée en temps réel, sans rebuild.** Même si le site est statique, la fenêtre de dates d'une
+campagne bascule à l'heure exacte, sans attendre un nouveau build/déploiement :
+
+- Au **build**, le site envoie au navigateur toute campagne active et scopée sur la page/l'emplacement
+  consultés, **quelles que soient ses dates** (`visibilitesEnvoyables()`).
+- Au **chargement de chaque page**, le navigateur du visiteur réévalue lui-même la fenêtre de dates
+  avec l'heure réelle du moment (`estDansPeriodeResume()`, appelée par
+  `src/lib/visibilite-ui.ts::initAllVisibilitySlots()`), puis effectue le tirage pondéré (section 8)
+  uniquement parmi les campagnes actuellement dans leur fenêtre.
+
+Résultat : une campagne programmée pour démarrer à 9h ou s'arrêter à 18h le fait à l'heure dite pour
+tout visiteur qui charge (ou recharge) une page après cette heure — aucun déploiement à déclencher.
+Seul le levier manuel `actif` (section 4) nécessite une édition de fichier suivie d'un build/déploiement
+pour prendre effet : il n'est pas une date, donc pas réévalué en continu.
 
 ## 8. Rotation et sélection
 
@@ -150,17 +159,25 @@ heures, jamais instantané.
 - Le tirage est **pondéré et aléatoire**, mais effectué **une seule fois par chargement de page**,
   côté navigateur (`src/lib/visibilite-ui.ts`, fonction `initAllVisibilitySlots()`) — jamais de
   minuteur, jamais de second tirage pendant la consultation d'une page. C'est ce mécanisme qui donne
-  l'effet de « rotation » perçu par LabEvents : chaque nouvelle visite (et chaque nouveau build) peut
-  tirer un annonceur différent parmi les éligibles, sans jamais changer sous les yeux d'un même
-  visiteur.
-- Seules les campagnes dont le statut calculé est **Actif**, qui couvrent la page consultée et dont
-  l'`emplacement` correspond sont éligibles (`estEligible()` / `visibilitesEligibles()`,
-  `src/lib/visibilites.ts`).
+  l'effet de « rotation » perçu par LabEvents : chaque nouvelle visite (et chaque nouveau chargement
+  de page) peut tirer un annonceur différent parmi les éligibles du moment, sans jamais changer sous
+  les yeux d'un même visiteur.
+- Une campagne est éligible au tirage si elle est **active**, couvre la page/l'emplacement consultés
+  (filtré au build, voir section 7) et se trouve, **au moment du chargement**, dans sa fenêtre de
+  dates (filtré côté client, voir section 7).
 - **Une seule campagne éligible** → elle s'affiche systématiquement (pas de tirage à faire).
-- **Aucune campagne éligible** → le composant ne rend **rien** (pas de section, pas de conteneur
-  vide) : aucun espace disgracieux n'est laissé sur la page.
+- **Aucune campagne éligible** (y compris quand une campagne est envoyée par le build mais hors de sa
+  fenêtre de dates au moment du chargement) → rien ne s'affiche et **aucun espace vide** n'est
+  laissé : la section entière reste masquée (`hidden`) tant qu'aucun tirage n'a abouti — pas
+  seulement le visuel.
 
-La logique pure (calcul de statut, éligibilité, tirage pondéré) est testée par
+Le payload JSON envoyé au navigateur pour chaque emplacement (`VisibiliteResume`, voir
+`src/lib/visibilites.ts`) est volontairement réduit au strict nécessaire à l'affichage et au tirage :
+`id`, `annonceur`, `visuel`, `alt`, `lien`, `poids`, `dateDebut`/`dateFin`. Les champs réservés à
+l'usage interne LabEvents (`nomInterne`, `typeAnnonceur`, `exposantId`) ne sont **jamais** envoyés au
+public.
+
+La logique pure (fenêtre de dates, éligibilité, tirage pondéré) est testée par
 `scripts/visibilites-lib.test.mjs` (`npm run visibilites:test`), indépendamment de tout rendu HTML.
 
 ## 9. Priorité
@@ -186,6 +203,15 @@ existe — à ajouter si un second format est introduit.)
 
 Le tableau de bord (`/admin/dashboard`) affiche un résumé léger : nombre de campagnes actives et, si
 non nul, nombre à venir, avec un lien vers `/admin/visibilite`.
+
+**Nuance sur le moment de calcul** : `/admin/visibilite` et `/admin/dashboard` sont eux-mêmes des
+pages statiques — leur statut affiché (Actif / À venir / Expiré / Désactivé) est donc calculé avec
+l'heure du **dernier build**, avec exactement la même fonction (`statutVisibilite()`,
+`src/lib/visibilites.ts`) que celle qui définit la fenêtre de dates réévaluée en temps réel côté
+public (section 7). Le site public, lui, réévalue cette même fenêtre à chaque chargement de page
+côté navigateur : il est donc plus réactif que la vue Admin sur ce point précis. En pratique, avec
+le déploiement automatique à chaque fusion (voir CLAUDE.md, section 4), l'écart entre les deux reste
+généralement de l'ordre de la minute à quelques heures.
 
 `/admin/visibilite` hérite du `noindex, nofollow` et de l'exclusion sitemap/robots.txt de tout
 l'espace `/admin` (voir docs/ADMIN.md) — rien de spécifique à ajouter ici.
@@ -215,7 +241,11 @@ appel réseau ni écriture d'aucune sorte.
 
 ## 13. Limites V1 (assumées, pas des oublis)
 
-- Programmation par dates évaluée au **build**, pas en temps réel (voir section 7).
+- La fenêtre de dates (`dateDebut`/`dateFin`) est réévaluée en temps réel côté public (voir section
+  7) ; le statut affiché sur `/admin/visibilite` reflète, lui, l'heure du dernier build (voir section
+  10) — écart généralement de l'ordre de la minute à quelques heures avec le déploiement continu.
+- Le levier manuel `actif` (contrairement aux dates) nécessite bien une édition de fichier suivie
+  d'un build/déploiement pour prendre effet.
 - Un seul format (bandeau horizontal), un seul emplacement par page (`principal`).
 - Pas de champ `priorite` (voir section 9).
 - Aucune édition depuis l'Admin — uniquement en éditant les fichiers du dépôt.

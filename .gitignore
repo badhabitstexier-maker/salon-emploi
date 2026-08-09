@@ -35,6 +35,7 @@ src/content/visibilites/e2e-fixture-visibilite-offres.md
 src/content/visibilites/e2e-fixture-visibilite-inactive.md
 src/content/visibilites/e2e-fixture-visibilite-future.md
 src/content/visibilites/e2e-fixture-visibilite-expiree.md
+src/content/visibilites/e2e-fixture-visibilite-programmee.md
 
 # exports Google Forms/Sheets réels (données de contact exposants — voir
 # docs/WORKFLOW_OFFRES_2026.md) : ne jamais committer, seul le CSV normalisé

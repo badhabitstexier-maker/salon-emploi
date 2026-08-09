@@ -71,6 +71,20 @@ export const FIXTURE_VIS_INACTIVE_SLUG = 'e2e-fixture-visibilite-inactive';
 export const FIXTURE_VIS_FUTURE_SLUG = 'e2e-fixture-visibilite-future';
 export const FIXTURE_VIS_EXPIREE_SLUG = 'e2e-fixture-visibilite-expiree';
 
+/*
+  Fixture dédiée à la réévaluation des dates CÔTÉ CLIENT, sans rebuild (voir
+  docs/VISIBILITE.md §7) : seule campagne ciblant `programme`, avec une
+  fenêtre de dates suffisamment loin dans le futur (année 3000) pour ne
+  jamais être active sous l'horloge réelle d'une exécution Playwright — les
+  tests qui doivent la voir apparaître avancent l'horloge du navigateur via
+  `page.clock` puis rechargent la page (jamais de nouveau build entre les
+  deux), pour prouver que la fenêtre est bien réévaluée à chaque chargement.
+*/
+export const FIXTURE_VIS_PROGRAMMEE_SLUG = 'e2e-fixture-visibilite-programmee';
+export const FIXTURE_VIS_PROGRAMMEE_ALT = 'Bandeau fixture Playwright — programmé (réévaluation des dates côté client)';
+export const FIXTURE_VIS_PROGRAMMEE_DATE_DEBUT = '3000-01-01T00:00:00.000Z';
+export const FIXTURE_VIS_PROGRAMMEE_DATE_FIN = '3000-01-02T00:00:00.000Z';
+
 const cheminFixtureOffre = path.join(__dirname, '..', 'src', 'content', 'offres', `${FIXTURE_SLUG}.md`);
 const cheminFixtureExposant = path.join(__dirname, '..', 'src', 'content', 'exposants', `${FIXTURE_EXPOSANT_SLUG}.md`);
 const cheminFixtureAnomalieExposant = path.join(
@@ -96,6 +110,7 @@ const cheminFixtureVisOffres = path.join(dossierVisibilites, `${FIXTURE_VIS_OFFR
 const cheminFixtureVisInactive = path.join(dossierVisibilites, `${FIXTURE_VIS_INACTIVE_SLUG}.md`);
 const cheminFixtureVisFuture = path.join(dossierVisibilites, `${FIXTURE_VIS_FUTURE_SLUG}.md`);
 const cheminFixtureVisExpiree = path.join(dossierVisibilites, `${FIXTURE_VIS_EXPIREE_SLUG}.md`);
+const cheminFixtureVisProgrammee = path.join(dossierVisibilites, `${FIXTURE_VIS_PROGRAMMEE_SLUG}.md`);
 
 const contenuFixtureOffre = `---
 reference: "${FIXTURE_REFERENCE}"
@@ -260,6 +275,23 @@ actif: true
 ---
 `;
 
+const contenuFixtureVisProgrammee = `---
+nomInterne: "Fixture E2E — réévaluation des dates côté client"
+annonceur: "Fixture E2E — programmée (an 3000)"
+typeAnnonceur: "autre"
+format: "bandeau_horizontal"
+visuel: "${FIXTURE_VIS_VISUEL}"
+alt: "${FIXTURE_VIS_PROGRAMMEE_ALT}"
+pages:
+  - "programme"
+emplacement: "principal"
+dateDebut: ${FIXTURE_VIS_PROGRAMMEE_DATE_DEBUT}
+dateFin: ${FIXTURE_VIS_PROGRAMMEE_DATE_FIN}
+poids: 1
+actif: true
+---
+`;
+
 function creer() {
   writeFileSync(cheminFixtureOffre, contenuFixtureOffre, 'utf8');
   writeFileSync(cheminFixtureExposant, contenuFixtureExposant, 'utf8');
@@ -270,6 +302,7 @@ function creer() {
   writeFileSync(cheminFixtureVisInactive, contenuFixtureVisInactive, 'utf8');
   writeFileSync(cheminFixtureVisFuture, contenuFixtureVisFuture, 'utf8');
   writeFileSync(cheminFixtureVisExpiree, contenuFixtureVisExpiree, 'utf8');
+  writeFileSync(cheminFixtureVisProgrammee, contenuFixtureVisProgrammee, 'utf8');
 }
 
 function supprimer() {
@@ -282,6 +315,7 @@ function supprimer() {
   if (existsSync(cheminFixtureVisInactive)) rmSync(cheminFixtureVisInactive);
   if (existsSync(cheminFixtureVisFuture)) rmSync(cheminFixtureVisFuture);
   if (existsSync(cheminFixtureVisExpiree)) rmSync(cheminFixtureVisExpiree);
+  if (existsSync(cheminFixtureVisProgrammee)) rmSync(cheminFixtureVisProgrammee);
 }
 
 /*
