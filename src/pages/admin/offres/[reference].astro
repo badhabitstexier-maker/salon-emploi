@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { statutLabels, formuleLabels, offreSlug, type Offre } from '../../../lib/offres';
+import { statutLabels, formuleLabels, offreSlug, estOffreTest, type Offre } from '../../../lib/offres';
 
 /*
   Fiche interne offre, lecture seule (voir CLAUDE.md section 14). Route
@@ -45,6 +45,13 @@ const pageOffrePublique = data.status === 'publiee' ? `/offres/${offreSlug(offre
       <span class="w-fit rounded-full bg-orange/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-orange-dark">
         {data.reference}
       </span>
+      {
+        estOffreTest(offre) && (
+          <span class="ml-2 w-fit rounded-full bg-marine/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-marine/70">
+            TEST — exclue des indicateurs du tableau de bord
+          </span>
+        )
+      }
       <h1 class="mt-2 text-2xl font-bold text-marine">{data.intitule}</h1>
       <p class="mt-1 text-sm text-encre/80">{data.exposantNom} · {formuleLabels[data.formule]}</p>
     </div>

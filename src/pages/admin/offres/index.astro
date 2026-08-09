@@ -1,13 +1,18 @@
 ---
 import { getCollection } from 'astro:content';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { statutLabels, entreprisesDisponibles, typesContratDisponibles } from '../../../lib/offres';
+import { statutLabels, entreprisesDisponibles, typesContratDisponibles, estOffreTest } from '../../../lib/offres';
 
 /*
   Vue tableau Admin-1 des offres (voir CLAUDE.md section 14). Toutes les
   offres de la collection sont listées, quel que soit leur `status` — le
   circuit interne (reçue, à compléter, validée...) est justement ce que
   LabEvents doit pouvoir suivre ici, pas seulement les offres publiées.
+
+  Offres TEST (voir docs/OFFRES.md, src/lib/offres.ts::estOffreTest) :
+  restent visibles ici (contrairement au dashboard, qui les exclut des KPI)
+  mais portent un badge « TEST » et peuvent être filtrées — réutilise le
+  même mécanisme de détection que le reste du site, pas de nouvelle règle.
 */
 
 const offres = (await getCollection('offres')).sort(
@@ -70,18 +75,34 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
             </div>
           </div>
 
-          <div class="mt-4">
-            <label for="filtre-statut-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
-              Statut
-            </label>
-            <select
-              id="filtre-statut-admin"
-              name="statut"
-              class="mt-1.5 w-full max-w-xs rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
-            >
-              <option value="">Tous</option>
-              {statuts.map(([valeur, label]) => <option value={valeur}>{label}</option>)}
-            </select>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2 sm:max-w-md">
+            <div>
+              <label for="filtre-statut-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Statut
+              </label>
+              <select
+                id="filtre-statut-admin"
+                name="statut"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              >
+                <option value="">Tous</option>
+                {statuts.map(([valeur, label]) => <option value={valeur}>{label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label for="filtre-nature-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Nature
+              </label>
+              <select
+                id="filtre-nature-admin"
+                name="nature"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              >
+                <option value="">Toutes</option>
+                <option value="reelle">Réelles</option>
+                <option value="test">TEST</option>
+              </select>
+            </div>
           </div>
 
           <p id="resultats-compte-offres-admin" class="mt-4 text-sm font-semibold text-marine" aria-live="polite">
@@ -113,13 +134,23 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
                     data-entreprise={offre.data.exposantNom}
                     data-types-contrat={offre.data.typeContrat.join('|')}
                     data-statut={offre.data.status}
+                    data-nature={estOffreTest(offre) ? 'test' : 'reelle'}
                     data-date={offre.data.datePublication.getTime()}
                     class="border-b border-marine/10 last:border-0 hover:bg-brume/60"
                   >
                     <td class="px-4 py-3 font-semibold text-marine">
                       <a href={`/admin/offres/${offre.data.reference}`} class="hover:underline">{offre.data.reference}</a>
                     </td>
-                    <td class="px-4 py-3 text-encre">{offre.data.intitule}</td>
+                    <td class="px-4 py-3 text-encre">
+                      <span class="flex items-center gap-2">
+                        {offre.data.intitule}
+                        {estOffreTest(offre) && (
+                          <span class="w-fit rounded-full bg-marine/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-marine/70">
+                            TEST
+                          </span>
+                        )}
+                      </span>
+                    </td>
                     <td class="px-4 py-3 text-encre">{offre.data.exposantNom}</td>
                     <td class="px-4 py-3 text-encre">{offre.data.typeContrat.join(' · ')}</td>
                     <td class="px-4 py-3 text-encre">{offre.data.lieu}</td>
@@ -174,6 +205,7 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
       const entreprise = String(donnees.get('entreprise') ?? '');
       const typeContrat = String(donnees.get('typeContrat') ?? '');
       const statut = String(donnees.get('statut') ?? '');
+      const nature = String(donnees.get('nature') ?? '');
 
       let visibles = 0;
       for (const ligne of lignes) {
@@ -182,7 +214,8 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
           (!recherche || normaliser(ligne.dataset.search ?? '').includes(recherche)) &&
           (!entreprise || ligne.dataset.entreprise === entreprise) &&
           (!typeContrat || typesLigne.includes(typeContrat)) &&
-          (!statut || ligne.dataset.statut === statut);
+          (!statut || ligne.dataset.statut === statut) &&
+          (!nature || ligne.dataset.nature === nature);
         ligne.classList.toggle('hidden', !visible);
         if (visible) visibles += 1;
       }

@@ -25,6 +25,28 @@ test.describe('Admin — tableau de bord (Lot Admin-1)', () => {
     await expect(page.getByRole('link', { name: 'Voir les exposants' })).toHaveAttribute('href', '/admin/exposants');
     await expect(page.getByRole('link', { name: 'Voir les offres' })).toHaveAttribute('href', '/admin/offres');
   });
+
+  /*
+    En environnement E2E, la collection ne contient que des offres TEST
+    (SEF26-001 à 005) et la fixture offre réelle : « Offres réelles » doit
+    donc valoir 1 (la fixture), et l'indicateur secondaire doit signaler les
+    5 offres TEST sans les compter dans les KPI principaux.
+  */
+  test('exclut les offres TEST des KPI et les signale séparément', async ({ page }) => {
+    await page.goto('/admin/dashboard');
+
+    const carteTotal = page.locator('p', { hasText: 'Offres réelles — total' }).locator('..');
+    await expect(carteTotal.locator('p').nth(1)).toHaveText('1');
+
+    const cartePubliees = page.locator('p', { hasText: 'Offres réelles — publiées' }).locator('..');
+    await expect(cartePubliees.locator('p').nth(1)).toHaveText('1');
+
+    await expect(page.getByText('5 offres TEST')).toBeVisible();
+
+    const blocExposants = page.locator('h2', { hasText: 'Offres par exposant' }).locator('..');
+    await expect(blocExposants.getByText(FIXTURE_EXPOSANT_NOM)).toBeVisible();
+    await expect(blocExposants.getByText('Entreprise Test NC')).toHaveCount(0);
+  });
 });
 
 test.describe('Admin — exposants (Lot Admin-1)', () => {
@@ -79,6 +101,39 @@ test.describe('Admin — offres (Lot Admin-1)', () => {
     const lienPublic = page.getByRole('link', { name: 'Voir la fiche publique' });
     await expect(lienPublic).toBeVisible();
     await expect(lienPublic).toHaveAttribute('href', /\/offres\//);
+  });
+
+  /*
+    Réutilise le mécanisme de détection existant (préfixe `TEST —` sur
+    `intitule`, voir src/lib/offres.ts::estOffreTest) — SEF26-001 est une
+    des 5 offres TEST réelles du dépôt (voir docs/OFFRES.md).
+  */
+  const REFERENCE_OFFRE_TEST = 'SEF26-001';
+
+  test('une offre TEST reste consultable, porte un badge et le filtre « Nature » fonctionne', async ({ page }) => {
+    await page.goto('/admin/offres');
+
+    const ligneTest = page.locator('[data-offre-row]', { hasText: REFERENCE_OFFRE_TEST });
+    const ligneReelle = page.locator('[data-offre-row]', { hasText: FIXTURE_REFERENCE });
+
+    await expect(ligneTest).toBeVisible();
+    await expect(ligneTest.getByText('TEST', { exact: true })).toBeVisible();
+
+    await page.getByLabel('Nature').selectOption('reelle');
+    await expect(ligneReelle).toBeVisible();
+    await expect(ligneTest).toBeHidden();
+
+    await page.getByLabel('Nature').selectOption('test');
+    await expect(ligneTest).toBeVisible();
+    await expect(ligneReelle).toBeHidden();
+
+    await page.getByLabel('Nature').selectOption('');
+    await expect(ligneTest).toBeVisible();
+    await expect(ligneReelle).toBeVisible();
+
+    // Reste consultable en fiche détail, avec le même badge.
+    await page.goto(`/admin/offres/${REFERENCE_OFFRE_TEST}`);
+    await expect(page.getByText('TEST — exclue des indicateurs du tableau de bord')).toBeVisible();
   });
 });
 

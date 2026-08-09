@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import { estOffreTest } from '../../lib/offres';
 import { repartitionPar, repartitionParMultiple } from '../../lib/admin';
 
 /*
@@ -11,26 +12,36 @@ import { repartitionPar, repartitionParMultiple } from '../../lib/admin';
   le schéma `exposants` (uniquement sur `offres`), et il a été décidé de ne
   pas la déduire à partir des offres (voir docs/ADMIN.md pour le détail de
   cette décision).
+
+  Offres TEST (voir docs/OFFRES.md, src/lib/offres.ts::estOffreTest) :
+  exclues des KPI métier (total opérationnel, répartitions) — ce sont des
+  fiches de démonstration, pas de vraies offres exposant. Réutilise le seul
+  mécanisme de détection existant sur le site (préfixe `TEST —` sur
+  `intitule`), déjà utilisé par la fiche publique et OffreCard — pas de
+  seconde règle indépendante.
 */
 
 const exposants = await getCollection('exposants');
-const offres = await getCollection('offres');
+const toutesLesOffres = await getCollection('offres');
+
+const offresReelles = toutesLesOffres.filter((o) => !estOffreTest(o));
+const offresTest = toutesLesOffres.filter((o) => estOffreTest(o));
 
 const totalExposants = exposants.length;
 const exposantsPublies = exposants.filter((e) => e.data.publie).length;
 
-const totalOffres = offres.length;
-const offresPubliees = offres.filter((o) => o.data.status === 'publiee').length;
+const totalOffresReelles = offresReelles.length;
+const offresReellesPubliees = offresReelles.filter((o) => o.data.status === 'publiee').length;
 
 /*
   Répartition par exposant : basée sur `exposantNom`, un champ réellement
   présent et renseigné sur chaque offre (contrairement au rattachement par
   `exposantId`, qui suppose que la fiche exposant correspondante existe déjà
   dans la collection `exposants` — pas encore le cas en pratique, voir
-  docs/ADMIN.md).
+  docs/ADMIN.md). Calculée uniquement sur les offres réelles (hors TEST).
 */
-const repartitionExposants = repartitionPar(offres, (o) => o.data.exposantNom);
-const repartitionTypeContrat = repartitionParMultiple(offres, (o) => o.data.typeContrat);
+const repartitionExposants = repartitionPar(offresReelles, (o) => o.data.exposantNom);
+const repartitionTypeContrat = repartitionParMultiple(offresReelles, (o) => o.data.typeContrat);
 ---
 
 <AdminLayout title="Tableau de bord" section="dashboard">
@@ -50,14 +61,23 @@ const repartitionTypeContrat = repartitionParMultiple(offres, (o) => o.data.type
       <p class="mt-2 font-titre text-3xl font-bold text-marine">{exposantsPublies}</p>
     </div>
     <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
-      <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Offres — total collection</p>
-      <p class="mt-2 font-titre text-3xl font-bold text-marine">{totalOffres}</p>
+      <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Offres réelles — total</p>
+      <p class="mt-2 font-titre text-3xl font-bold text-marine">{totalOffresReelles}</p>
     </div>
     <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
-      <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Offres — publiées</p>
-      <p class="mt-2 font-titre text-3xl font-bold text-marine">{offresPubliees}</p>
+      <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Offres réelles — publiées</p>
+      <p class="mt-2 font-titre text-3xl font-bold text-marine">{offresReellesPubliees}</p>
     </div>
   </div>
+
+  {
+    offresTest.length > 0 && (
+      <p class="mt-4 w-fit rounded-full bg-marine/10 px-3 py-1.5 text-xs font-semibold text-marine/80">
+        + {offresTest.length} {offresTest.length > 1 ? 'offres TEST' : 'offre TEST'} de démonstration (exclues des
+        indicateurs ci-dessus)
+      </p>
+    )
+  }
 
   <div class="mt-10 grid gap-6 lg:grid-cols-2">
     <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
