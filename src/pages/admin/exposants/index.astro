@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { universLabels } from '../../../lib/exposants';
+import { universLabels, formuleLabels } from '../../../lib/exposants';
 import { offresRattachees } from '../../../lib/admin';
 
 /*
@@ -10,8 +10,8 @@ import { offresRattachees } from '../../../lib/admin';
   pouvoir suivre les fiches en cours de préparation, pas seulement celles
   déjà visibles publiquement.
 
-  Pas de colonne/filtre « formule » : ce champ n'existe pas dans le schéma
-  `exposants` (voir docs/ADMIN.md).
+  Colonne/filtre « formule » (Lot Admin-1B) : usage interne LabEvents
+  uniquement, jamais reproduit sur une page publique.
 */
 
 const exposants = await getCollection('exposants');
@@ -36,7 +36,7 @@ const lignes = exposants
     lignes.length > 0 ? (
       <Fragment>
         <form id="filtres-exposants-admin" class="mt-6 rounded-2xl border border-marine/15 bg-blanc p-5 sm:p-6">
-          <div class="grid gap-4 sm:grid-cols-2">
+          <div class="grid gap-4 sm:grid-cols-3">
             <div>
               <label for="recherche-exposant-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
                 Rechercher un nom
@@ -63,6 +63,21 @@ const lignes = exposants
                 <option value="formation">{universLabels.formation}</option>
               </select>
             </div>
+            <div>
+              <label for="filtre-formule-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Formule
+              </label>
+              <select
+                id="filtre-formule-admin"
+                name="formule"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              >
+                <option value="">Toutes</option>
+                <option value="standard">{formuleLabels.standard}</option>
+                <option value="silver">{formuleLabels.silver}</option>
+                <option value="gold">{formuleLabels.gold}</option>
+              </select>
+            </div>
           </div>
           <p id="resultats-compte-exposants-admin" class="mt-4 text-sm font-semibold text-marine" aria-live="polite">
             {lignes.length} {lignes.length > 1 ? 'résultats' : 'résultat'}
@@ -77,6 +92,7 @@ const lignes = exposants
                   <button type="button" data-sort-key="nom" class="flex items-center gap-1 hover:text-orange">Nom</button>
                 </th>
                 <th scope="col" class="px-4 py-3">Hall</th>
+                <th scope="col" class="px-4 py-3">Formule</th>
                 <th scope="col" class="px-4 py-3">Stand</th>
                 <th scope="col" class="px-4 py-3">Site web</th>
                 <th scope="col" class="px-4 py-3">
@@ -92,6 +108,7 @@ const lignes = exposants
                     data-exposant-row
                     data-search={`${exposant.data.nom} ${exposant.data.secteurs.join(' ')}`.toLowerCase()}
                     data-univers={exposant.data.univers}
+                    data-formule={exposant.data.formule}
                     data-nom={exposant.data.nom}
                     data-offres={nbOffres}
                     class="border-b border-marine/10 last:border-0 hover:bg-brume/60"
@@ -100,6 +117,11 @@ const lignes = exposants
                       <a href={href} class="hover:underline">{exposant.data.nom}</a>
                     </td>
                     <td class="px-4 py-3 text-encre">{universLabels[exposant.data.univers]}</td>
+                    <td class="px-4 py-3">
+                      <span class="w-fit rounded-full bg-marine/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-marine">
+                        {formuleLabels[exposant.data.formule]}
+                      </span>
+                    </td>
                     <td class="px-4 py-3 text-encre">{exposant.data.numero_stand ?? '—'}</td>
                     <td class="px-4 py-3 text-encre">
                       {exposant.data.site_web ? (
@@ -159,12 +181,14 @@ const lignes = exposants
       const donnees = new FormData(form);
       const recherche = normaliser(String(donnees.get('recherche') ?? '').trim());
       const univers = String(donnees.get('univers') ?? '');
+      const formule = String(donnees.get('formule') ?? '');
 
       let visibles = 0;
       for (const ligne of lignes) {
         const visible =
           (!recherche || normaliser(ligne.dataset.search ?? '').includes(recherche)) &&
-          (!univers || ligne.dataset.univers === univers);
+          (!univers || ligne.dataset.univers === univers) &&
+          (!formule || ligne.dataset.formule === formule);
         ligne.classList.toggle('hidden', !visible);
         if (visible) visibles += 1;
       }

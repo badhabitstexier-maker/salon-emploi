@@ -22,6 +22,7 @@ function ligneValide(overrides = {}) {
     exposantId: 'EXP26-001',
     slug: 'exemple-structure',
     nom: 'Exemple Structure',
+    formule: 'standard',
     univers: 'emploi',
     type_structure: 'entreprise',
     secteurs: 'Industrie|Maintenance',
@@ -217,4 +218,40 @@ test('génération Markdown : numero_stand absent n’apparaît pas dans le fron
   const r = validerLigne(ligneValide({ numero_stand: '' }), 2);
   const contenu = genererContenuExposant(r.exposant);
   assert.ok(!/^numero_stand:/m.test(contenu));
+});
+
+test('18. formule standard acceptée', () => {
+  const r = validerLigne(ligneValide({ formule: 'standard' }), 2);
+  assert.equal(r.ok, true);
+  assert.equal(r.exposant.formule, 'standard');
+});
+
+test('19. formule silver acceptée', () => {
+  const r = validerLigne(ligneValide({ formule: 'silver' }), 2);
+  assert.equal(r.ok, true);
+  assert.equal(r.exposant.formule, 'silver');
+});
+
+test('20. formule gold acceptée', () => {
+  const r = validerLigne(ligneValide({ formule: 'gold' }), 2);
+  assert.equal(r.ok, true);
+  assert.equal(r.exposant.formule, 'gold');
+});
+
+test('21. formule invalide refusée', () => {
+  const r = validerLigne(ligneValide({ formule: 'platine' }), 2);
+  assert.equal(r.ok, false);
+  assert.ok(r.erreurs.some((e) => /formule/.test(e)));
+});
+
+test('22. formule absente refusée (colonne obligatoire)', () => {
+  const r = validerLigne(ligneValide({ formule: '' }), 2);
+  assert.equal(r.ok, false);
+  assert.ok(r.erreurs.some((e) => /« formule » manquante ou vide/.test(e)));
+});
+
+test('23. génération Markdown : formule présente dans le frontmatter généré', () => {
+  const r = validerLigne(ligneValide({ formule: 'gold' }), 2);
+  const contenu = genererContenuExposant(r.exposant);
+  assert.ok(/^formule: "gold"$/m.test(contenu));
 });

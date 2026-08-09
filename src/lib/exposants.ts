@@ -7,6 +7,29 @@ export const universLabels: Record<Exposant['data']['univers'], string> = {
   formation: 'Hall Formation',
 };
 
+/*
+  Libellés internes (Admin uniquement) de la formule commerciale. Distincts
+  des libellés publics des offres (`formuleLabels` dans `src/lib/offres.ts`,
+  ex. « Exposant partenaire ») : ici on affiche la valeur brute, réservée à
+  un usage interne LabEvents — ne jamais reprendre ces libellés sur une page
+  publique (voir CLAUDE.md).
+*/
+export const formuleLabels: Record<Exposant['data']['formule'], string> = {
+  standard: 'Standard',
+  silver: 'Silver',
+  gold: 'Gold',
+};
+
+/*
+  Plafond indicatif d'offres actives par formule (voir docs/OFFRES.md,
+  quotas). `gold` n'a pas de plafond automatique — alerte interne uniquement
+  au-delà du seuil `silver`, jamais de blocage (voir CLAUDE.md, Lot Admin-1B).
+*/
+export const CAPACITE_OFFRES_PAR_FORMULE: Partial<Record<Exposant['data']['formule'], number>> = {
+  standard: 5,
+  silver: 10,
+};
+
 export const typeStructureLabels: Record<Exposant['data']['type_structure'], string> = {
   entreprise: 'Entreprise',
   'organisme-formation': 'Organisme de formation',

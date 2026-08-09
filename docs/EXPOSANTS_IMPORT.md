@@ -11,6 +11,13 @@ possible) sans le remplacer.
 > explicite de Philippe. `publie: non` dans le CSV garde la fiche invisible
 > sur le site — elle peut être préparée à l'avance sans risque.
 
+> Règle métier (Lot Admin-1B) : **la formule appartient à l'exposant et
+> n'est jamais déduite de ses offres.** Le champ `formule` (`standard` /
+> `silver` / `gold`) est renseigné une fois pour l'exposant dans ce CSV ; le
+> champ `formule` présent séparément sur chaque offre (`docs/OFFRES.md`)
+> reste une donnée distincte, à ne pas confondre ni resynchroniser
+> automatiquement avec celle de l'exposant dans ce lot.
+
 ## 1. Finalité
 
 LabEvents prépare un CSV (export Google Sheets, tableur de suivi
@@ -35,6 +42,7 @@ entièrement fictifs — aucune entreprise réelle).
 | `exposantId` | non | Identifiant métier stable (voir section 3). Laisser vide pour une attribution automatique. |
 | `slug` | oui | Détermine l'adresse de la fiche et le nom du fichier (`src/content/exposants/<slug>.md`). Minuscules, chiffres, tirets uniquement. |
 | `nom` | oui | Nom affiché. |
+| `formule` | oui | Formule commerciale de l'exposant : `standard`, `silver` ou `gold` (même convention que `formule` sur les offres, voir `docs/OFFRES.md`). **La formule appartient à l'exposant et n'est jamais déduite de ses offres.** |
 | `univers` | oui | Hall : `emploi` (Hall Emploi) ou `formation` (Hall Formation) — voir section 6. |
 | `type_structure` | oui | `entreprise`, `organisme-formation`, `institution`, `accompagnement`, `association`, `autre`. |
 | `secteurs` | oui (peut être vide) | Liste de secteurs, séparés par `\|`. |
@@ -92,6 +100,13 @@ public. Ne jamais y reporter :
   public) ;
 - des notes commerciales internes, des informations contractuelles, un
   identifiant de suivi LabEvents autre que `exposantId`.
+
+`formule` est une exception assumée à cette règle : c'est une information
+commerciale/interne (LabEvents, `/admin`), mais elle vit dans le même CSV et
+le même schéma que le reste de la fiche exposant, plutôt que dans un
+mécanisme séparé. Elle ne doit **jamais** être affichée telle quelle
+(`standard`/`silver`/`gold`) sur les pages publiques du site (voir CLAUDE.md,
+règle « ne jamais afficher automatiquement Standard/Silver/Gold au public »).
 
 ## 6. Halls et capacités confirmées (2026)
 

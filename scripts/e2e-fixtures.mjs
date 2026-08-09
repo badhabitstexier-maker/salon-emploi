@@ -67,6 +67,7 @@ datePublication: 2026-08-08
 const contenuFixtureExposant = `---
 exposantId: "${FIXTURE_EXPOSANT_ID}"
 nom: "${FIXTURE_EXPOSANT_NOM}"
+formule: "standard"
 univers: "emploi"
 type_structure: "entreprise"
 secteurs:

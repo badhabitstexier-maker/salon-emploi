@@ -27,6 +27,10 @@ const exposants = defineCollection({
     exposantId: z.string().regex(EXPOSANT_ID_REGEX, 'Format attendu : EXP26-XXX'),
     nom: z.string(),
     slug: z.string().optional(),
+    // Formule commerciale de l'exposant (Lot Admin-1B, docs/EXPOSANTS_IMPORT.md).
+    // Appartient à l'exposant, n'est jamais déduite de ses offres — voir
+    // docs/ADMIN.md. Convention identique à `offres.formule`.
+    formule: z.enum(['standard', 'silver', 'gold']),
     univers: z.enum(['emploi', 'formation']),
     type_structure: z.enum([
       'entreprise',

@@ -2,16 +2,18 @@
 import { getCollection } from 'astro:content';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { estOffreTest } from '../../lib/offres';
+import { formuleLabels } from '../../lib/exposants';
 import { repartitionPar, repartitionParMultiple } from '../../lib/admin';
 
 /*
   Tableau de bord Admin-1 (voir CLAUDE.md section 14). Tous les indicateurs
   sont calculés dynamiquement depuis les Content Collections `exposants` et
-  `offres` — aucun chiffre codé en dur. La répartition par « formule »
-  exposant n'apparaît volontairement pas ici : `formule` n'existe pas dans
-  le schéma `exposants` (uniquement sur `offres`), et il a été décidé de ne
-  pas la déduire à partir des offres (voir docs/ADMIN.md pour le détail de
-  cette décision).
+  `offres` — aucun chiffre codé en dur.
+
+  Répartition par « formule » exposant (Lot Admin-1B, docs/EXPOSANTS_IMPORT.md) :
+  calculée à partir de `exposant.data.formule` uniquement, jamais déduite des
+  offres. Seules les formules réellement représentées apparaissent
+  (`repartitionPar` ne fabrique pas de catégorie vide).
 
   Offres TEST (voir docs/OFFRES.md, src/lib/offres.ts::estOffreTest) :
   exclues des KPI métier (total opérationnel, répartitions) — ce sont des
@@ -29,6 +31,8 @@ const offresTest = toutesLesOffres.filter((o) => estOffreTest(o));
 
 const totalExposants = exposants.length;
 const exposantsPublies = exposants.filter((e) => e.data.publie).length;
+
+const repartitionFormule = repartitionPar(exposants, (e) => formuleLabels[e.data.formule]);
 
 const totalOffresReelles = offresReelles.length;
 const offresReellesPubliees = offresReelles.filter((o) => o.data.status === 'publiee').length;
@@ -80,6 +84,25 @@ const repartitionTypeContrat = repartitionParMultiple(offresReelles, (o) => o.da
   }
 
   <div class="mt-10 grid gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
+      <h2 class="font-titre text-lg font-bold uppercase text-marine">Exposants par formule</h2>
+      <p class="mt-1 text-xs text-encre/70">Formule commerciale déclarée sur la fiche exposant.</p>
+      {
+        repartitionFormule.length > 0 ? (
+          <ul class="mt-4 space-y-2 text-sm">
+            {repartitionFormule.map((ligne) => (
+              <li class="flex items-center justify-between gap-3 border-b border-marine/10 pb-2">
+                <span class="text-encre">{ligne.valeur}</span>
+                <span class="font-titre font-bold text-marine">{ligne.total}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="mt-4 text-sm text-encre/70">Aucun exposant à afficher.</p>
+        )
+      }
+    </div>
+
     <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
       <h2 class="font-titre text-lg font-bold uppercase text-marine">Offres par exposant</h2>
       <p class="mt-1 text-xs text-encre/70">Regroupement par nom d'exposant déclaré sur chaque offre.</p>
