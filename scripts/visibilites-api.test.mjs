@@ -20,9 +20,9 @@
   dans le PATH (voir .github/workflows/qa.yml pour l'installation en CI).
 */
 import assert from 'node:assert/strict';
-import { test, before, after } from 'node:test';
+import { test, describe, before, after } from 'node:test';
 import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,11 +37,11 @@ const base = `http://127.0.0.1:${port}`;
 let processusPhp;
 let dossierDonnees;
 
-function attendreServeurPret(tentativesRestantes = 40) {
+function attendreServeurPret(baseUrl, tentativesRestantes = 40) {
   return new Promise((resolve, reject) => {
     const essayer = async () => {
       try {
-        const reponse = await fetch(`${base}/api/visibilites.php?page=accueil&emplacement=principal`);
+        const reponse = await fetch(`${baseUrl}/api/visibilites.php?page=accueil&emplacement=principal`);
         if (reponse.ok) {
           resolve();
           return;
@@ -53,7 +53,7 @@ function attendreServeurPret(tentativesRestantes = 40) {
         reject(new Error('Le serveur PHP de test ne répond pas.'));
         return;
       }
-      setTimeout(() => attendreServeurPret(tentativesRestantes - 1).then(resolve, reject), 100);
+      setTimeout(() => attendreServeurPret(baseUrl, tentativesRestantes - 1).then(resolve, reject), 100);
     };
     void essayer();
   });
@@ -67,7 +67,7 @@ before(async () => {
     stdio: 'ignore',
   });
 
-  await attendreServeurPret();
+  await attendreServeurPret(base);
 });
 
 after(() => {
@@ -77,12 +77,41 @@ after(() => {
   }
 });
 
+/*
+  Démarre un serveur PHP DÉDIÉ, sur son propre dossier temporaire vide et son
+  propre port — totalement indépendant du serveur/dossier partagé ci-dessus.
+  Utilisé par les tests de « premier démarrage » (ci-dessous) : ils doivent
+  garantir un dossier réellement vierge, sans dépendre de l'ordre
+  d'exécution des autres tests de ce fichier (qui, eux, partagent
+  `dossierDonnees` et peuvent y avoir déjà écrit).
+*/
+async function demarrerServeurIsole() {
+  const dossier = mkdtempSync(path.join(tmpdir(), 'visibilites-api-test-isole-'));
+  const portIsole = 20000 + Math.floor(Math.random() * 10000);
+  const baseIsolee = `http://127.0.0.1:${portIsole}`;
+  const processus = spawn('php', ['-S', `127.0.0.1:${portIsole}`, '-t', dossierPublic], {
+    env: { ...process.env, VISIBILITES_DATA_DIR_TEST: dossier },
+    stdio: 'ignore',
+  });
+  await attendreServeurPret(baseIsolee);
+  return { dossier, base: baseIsolee, processus };
+}
+
+function arreterServeurIsole(serveur) {
+  serveur.processus?.kill();
+  if (serveur.dossier && existsSync(serveur.dossier)) {
+    rmSync(serveur.dossier, { recursive: true, force: true });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Aide : session Admin (cookie + jeton CSRF), obtenue via un premier GET —
-// exactement le flux décrit dans le cadrage Admin-2B §6.
+// exactement le flux décrit dans le cadrage Admin-2B §6. `baseUrl` est
+// paramétrable pour être réutilisable par les serveurs isolés ci-dessous ;
+// par défaut le serveur partagé de la suite (`base`).
 // ---------------------------------------------------------------------------
-async function ouvrirSessionAdmin() {
-  const reponse = await fetch(`${base}/admin-api/visibilites.php`);
+async function ouvrirSessionAdmin(baseUrl = base) {
+  const reponse = await fetch(`${baseUrl}/admin-api/visibilites.php`);
   const corps = await reponse.json();
   const setCookie = reponse.headers.get('set-cookie') ?? '';
   const cookie = setCookie.split(';')[0]; // "PHPSESSID=xxxx"
@@ -105,16 +134,31 @@ function corpsMinimalValide(overrides = {}) {
   };
 }
 
-async function creerViaAdmin(session, overrides = {}) {
-  const reponse = await fetch(`${base}/admin-api/visibilites.php`, {
+async function creerViaAdmin(session, overrides = {}, baseUrl = base) {
+  const reponse = await fetch(`${baseUrl}/admin-api/visibilites.php`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-CSRF-Token': session.csrfToken,
       Cookie: session.cookie,
-      Origin: base,
+      Origin: baseUrl,
     },
     body: JSON.stringify(corpsMinimalValide(overrides)),
+  });
+  const corps = await reponse.json();
+  return { statut: reponse.status, corps };
+}
+
+async function modifierViaAdmin(session, id, donnees, baseUrl = base) {
+  const reponse = await fetch(`${baseUrl}/admin-api/visibilites.php?id=${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': session.csrfToken,
+      Cookie: session.cookie,
+      Origin: baseUrl,
+    },
+    body: JSON.stringify(donnees),
   });
   const corps = await reponse.json();
   return { statut: reponse.status, corps };
@@ -467,4 +511,118 @@ test('Indépendance formule commerciale : `poids` et `pages` restent tels que sa
   assert.equal('formule' in corps.visibilite, false);
   assert.equal(corps.visibilite.poids, 7);
   await supprimerViaAdmin(session, corps.visibilite.id);
+});
+
+// ---------------------------------------------------------------------------
+// Premier démarrage — dossier de données vide, aucun visibilites.json.
+//
+// Ces deux blocs `describe` démarrent CHACUN leur propre serveur PHP sur
+// leur propre dossier temporaire vierge (demarrerServeurIsole()) : le
+// dossier n'a JAMAIS reçu la moindre écriture avant le premier test de
+// chaque bloc. Volontairement indépendants du serveur/dossier partagé par
+// le reste de ce fichier (`base/dossierDonnees`, qui a déjà été écrit par
+// d'autres tests au moment où ils s'exécutent) — le but est de verrouiller
+// durablement le comportement de premier démarrage sans dépendre de l'ordre
+// d'exécution des tests dans ce fichier (voir cadrage Admin-2B, échange du
+// 09/08/2026 : ce comportement avait été vérifié manuellement une fois,
+// mais pas verrouillé par une assertion dédiée — ces deux blocs comblent
+// exactement ce trou).
+// ---------------------------------------------------------------------------
+
+describe('Démarrage sans fichier de données (dossier vide, isolé)', () => {
+  let serveur;
+
+  before(async () => {
+    serveur = await demarrerServeurIsole();
+  });
+
+  after(() => {
+    arreterServeurIsole(serveur);
+  });
+
+  test('GET /api/visibilites.php sur un dossier sans visibilites.json -> 200, liste vide, aucune création de fichier par la simple lecture', async () => {
+    const cheminJson = path.join(serveur.dossier, 'visibilites.json');
+    assert.equal(existsSync(cheminJson), false, 'précondition : aucun fichier avant le test');
+
+    const reponse = await fetch(`${serveur.base}/api/visibilites.php?page=accueil&emplacement=principal`);
+    assert.equal(reponse.status, 200);
+    const corps = await reponse.json();
+    assert.deepEqual(corps.visibilites, []);
+
+    // Une lecture seule ne doit jamais créer le fichier de données.
+    assert.equal(existsSync(cheminJson), false);
+  });
+
+  test('GET /admin-api/visibilites.php sur un dossier sans visibilites.json -> 200, liste vide, jeton CSRF fourni', async () => {
+    const cheminJson = path.join(serveur.dossier, 'visibilites.json');
+    assert.equal(existsSync(cheminJson), false, 'précondition : aucun fichier avant le test');
+
+    const reponse = await fetch(`${serveur.base}/admin-api/visibilites.php`);
+    assert.equal(reponse.status, 200);
+    const corps = await reponse.json();
+    assert.deepEqual(corps.visibilites, []);
+    assert.equal(typeof corps.csrfToken, 'string');
+    assert.ok(corps.csrfToken.length >= 32, 'le mécanisme CSRF doit fonctionner même sans fichier de données');
+
+    assert.equal(existsSync(cheminJson), false);
+  });
+});
+
+describe('Première écriture vs écritures suivantes (dossier vide, isolé)', () => {
+  let serveur;
+
+  before(async () => {
+    serveur = await demarrerServeurIsole();
+  });
+
+  after(() => {
+    arreterServeurIsole(serveur);
+  });
+
+  /*
+    Volontairement UN SEUL test couvrant la séquence complète (première
+    création puis modification), plutôt que deux tests séparés qui se
+    passeraient un id en variable partagée : la deuxième écriture n'a de
+    sens qu'après une première, donc c'est une seule scène à vérifier de
+    bout en bout, pas deux tests qui dépendraient implicitement l'un de
+    l'autre. Ce test ne dépend d'aucun autre test de ce fichier — dossier et
+    serveur dédiés (voir before() ci-dessus).
+  */
+  test('première création : fichier absent avant, créé sans .bak ; deuxième écriture : .bak créé et identique à la version précédente', async () => {
+    const cheminJson = path.join(serveur.dossier, 'visibilites.json');
+    const cheminBak = path.join(serveur.dossier, 'visibilites.json.bak');
+
+    // --- Étape 1 : avant toute écriture ---
+    assert.equal(existsSync(cheminJson), false);
+    assert.equal(existsSync(cheminBak), false);
+
+    // --- Étape 2 : première création ---
+    const session = await ouvrirSessionAdmin(serveur.base);
+    const premiere = await creerViaAdmin(session, { annonceur: 'Première écriture — dossier vierge' }, serveur.base);
+    assert.equal(premiere.statut, 200);
+
+    assert.equal(existsSync(cheminJson), true, 'visibilites.json doit être créé automatiquement par la première écriture');
+    assert.equal(existsSync(cheminBak), false, 'pas de .bak au premier écrit : aucune version précédente à sauvegarder');
+
+    const contenuApresPremiereEcriture = readFileSync(cheminJson, 'utf8');
+
+    // --- Étape 3 : deuxième écriture (modification) ---
+    const id = premiere.corps.visibilite.id;
+    const deuxieme = await modifierViaAdmin(session, id, { poids: 9 }, serveur.base);
+    assert.equal(deuxieme.statut, 200);
+    assert.equal(deuxieme.corps.visibilite.poids, 9);
+
+    assert.equal(existsSync(cheminBak), true, 'le .bak doit apparaître dès la deuxième écriture');
+
+    // Le .bak correspond exactement au contenu du fichier AVANT cette
+    // deuxième écriture (donc à l'état issu de la première création).
+    const contenuBak = readFileSync(cheminBak, 'utf8');
+    assert.equal(contenuBak, contenuApresPremiereEcriture);
+
+    // Le fichier courant, lui, reflète bien la modification (poids: 9),
+    // donc diffère du .bak — confirme que le .bak est une VERSION PRÉCÉDENTE,
+    // pas une simple copie miroir tenue à jour en continu.
+    const contenuApresDeuxiemeEcriture = readFileSync(cheminJson, 'utf8');
+    assert.notEqual(contenuApresDeuxiemeEcriture, contenuBak);
+  });
 });
