@@ -1,0 +1,167 @@
+---
+import { getCollection } from 'astro:content';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { universLabels, typeStructureLabels, type Exposant } from '../../../lib/exposants';
+import { statutLabels } from '../../../lib/offres';
+import { offresRattachees } from '../../../lib/admin';
+
+/*
+  Fiche interne exposant, lecture seule (voir CLAUDE.md section 14). Généré
+  pour tous les exposants de la collection, publiés ou non — l'admin doit
+  pouvoir consulter une fiche en cours de préparation.
+
+  Pas de champ « formule » ici : n'existe pas dans le schéma `exposants`
+  (voir docs/ADMIN.md pour le détail de cette décision).
+*/
+
+export async function getStaticPaths() {
+  const exposants = await getCollection('exposants');
+  return exposants.map((exposant) => ({
+    params: { id: exposant.id },
+    props: { exposant },
+  }));
+}
+
+interface Props {
+  exposant: Exposant;
+}
+
+const { exposant } = Astro.props;
+const offres = await getCollection('offres');
+const offresLiees = offresRattachees(exposant, offres);
+
+const { data } = exposant;
+
+const listesComplementaires = [
+  { titre: 'Métiers présentés', valeurs: data.metiers },
+  { titre: 'Formations proposées', valeurs: data.formations },
+  { titre: 'Opportunités', valeurs: data.opportunites },
+].filter((bloc) => bloc.valeurs && bloc.valeurs.length > 0);
+
+const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
+---
+
+<AdminLayout title={data.nom} section="exposants">
+  <a href="/admin/exposants" class="text-sm font-semibold text-marine underline">
+    ← Retour à la liste des exposants
+  </a>
+
+  <div class="mt-4 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <span class="w-fit rounded-full bg-marine/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-marine">
+        {exposant.data.exposantId}
+      </span>
+      <h1 class="mt-2 text-2xl font-bold text-marine">{data.nom}</h1>
+      <p class="mt-1 text-sm text-encre/80">
+        {universLabels[data.univers]} · {typeStructureLabels[data.type_structure]}
+        {data.numero_stand && ` · Stand ${data.numero_stand}`}
+      </p>
+    </div>
+    <span
+      class:list={[
+        'w-fit rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide',
+        data.publie ? 'bg-village text-marine' : 'bg-marine/10 text-marine',
+      ]}
+    >
+      {data.publie ? 'Publié' : 'Non publié'}
+    </span>
+  </div>
+
+  {
+    data.mise_en_avant && (
+      <p class="mt-3 w-fit rounded-full bg-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-orange-dark">
+        Mis en avant éditorialement
+      </p>
+    )
+  }
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      {
+        data.logo && (
+          <div class="mb-6 flex h-24 w-24 items-center justify-center rounded-xl border border-marine/15 bg-blanc p-3">
+            <img src={data.logo} alt="" class="max-h-full max-w-full object-contain" />
+          </div>
+        )
+      }
+
+      <p class="text-base font-semibold text-marine">{data.accroche}</p>
+      <div class="mt-4 space-y-3 text-sm text-encre">
+        {data.description.split(/\n{2,}/).map((paragraphe) => <p>{paragraphe}</p>)}
+      </div>
+
+      {data.secteurs.length > 0 && (
+        <p class="mt-4 text-sm text-encre/80">
+          <span class="font-bold text-marine">Secteurs : </span>
+          {data.secteurs.join(' · ')}
+        </p>
+      )}
+
+      {
+        listesComplementaires.length > 0 && (
+          <div class="mt-8 grid gap-4 sm:grid-cols-2">
+            {listesComplementaires.map((bloc) => (
+              <div class="rounded-2xl border border-marine/15 bg-blanc p-4">
+                <h2 class="font-titre text-sm font-bold uppercase text-marine">{bloc.titre}</h2>
+                <ul class="mt-2 space-y-1 text-sm text-encre">
+                  {bloc.valeurs!.map((valeur) => <li>• {valeur}</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )
+      }
+
+      {
+        data.date_mise_a_jour && (
+          <p class="mt-6 text-xs text-encre/60">Fiche mise à jour le {formateurDate.format(data.date_mise_a_jour)}.</p>
+        )
+      }
+    </div>
+
+    <div class="space-y-6">
+      {
+        (data.site_web || data.email_public || data.telephone_public) && (
+          <div class="rounded-2xl border border-marine/15 bg-blanc p-4">
+            <h2 class="font-titre text-sm font-bold uppercase text-marine">Coordonnées</h2>
+            <ul class="mt-2 space-y-1.5 text-sm text-encre">
+              {data.site_web && (
+                <li>
+                  <a href={data.site_web} target="_blank" rel="noopener noreferrer" class="text-marine underline">
+                    {data.site_web}
+                  </a>
+                </li>
+              )}
+              {data.email_public && <li>{data.email_public}</li>}
+              {data.telephone_public && <li>{data.telephone_public}</li>}
+            </ul>
+          </div>
+        )
+      }
+
+      <div class="rounded-2xl border border-marine/15 bg-blanc p-4">
+        <h2 class="font-titre text-sm font-bold uppercase text-marine">
+          Offres rattachées ({offresLiees.length})
+        </h2>
+        {
+          offresLiees.length > 0 ? (
+            <ul class="mt-2 space-y-2 text-sm">
+              {offresLiees.map((offre) => (
+                <li>
+                  <a href={`/admin/offres/${offre.data.reference}`} class="font-semibold text-marine underline">
+                    {offre.data.intitule}
+                  </a>
+                  <span class="ml-1 text-xs text-encre/70">({statutLabels[offre.data.status]})</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="mt-2 text-sm text-encre/70">
+              Aucune offre rattachée trouvée pour l'identifiant {data.exposantId}.
+            </p>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</AdminLayout>

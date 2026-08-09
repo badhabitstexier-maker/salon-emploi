@@ -1,0 +1,158 @@
+---
+import { getCollection } from 'astro:content';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { statutLabels, formuleLabels, offreSlug, estOffreTest, type Offre } from '../../../lib/offres';
+
+/*
+  Fiche interne offre, lecture seule (voir CLAUDE.md section 14). Route
+  indexée par `reference` (identifiant métier SEF26-XXX), pas par le nom de
+  fichier — voir docs/OFFRES.md sur la distinction entre les deux.
+
+  Champs volontairement absents de cette fiche car ils n'existent pas dans
+  le schéma public `offres` (src/content.config.ts) : temps de travail,
+  rémunération, contact recrutement, lien externe — tous explicitement
+  exclus des Content Collections publiques par CLAUDE.md section 11
+  (données internes réservées au Google Sheet LabEvents). Les inventer ici
+  reviendrait à afficher une donnée qui n'existe pas dans le dépôt.
+*/
+
+export async function getStaticPaths() {
+  const offres = await getCollection('offres');
+  return offres.map((offre) => ({
+    params: { reference: offre.data.reference },
+    props: { offre },
+  }));
+}
+
+interface Props {
+  offre: Offre;
+}
+
+const { offre } = Astro.props;
+const { data } = offre;
+
+const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
+const pageOffrePublique = data.status === 'publiee' ? `/offres/${offreSlug(offre)}` : null;
+---
+
+<AdminLayout title={data.reference} section="offres">
+  <a href="/admin/offres" class="text-sm font-semibold text-marine underline">
+    ← Retour à la liste des offres
+  </a>
+
+  <div class="mt-4 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <span class="w-fit rounded-full bg-orange/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-orange-dark">
+        {data.reference}
+      </span>
+      {
+        estOffreTest(offre) && (
+          <span class="ml-2 w-fit rounded-full bg-marine/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-marine/70">
+            TEST — exclue des indicateurs du tableau de bord
+          </span>
+        )
+      }
+      <h1 class="mt-2 text-2xl font-bold text-marine">{data.intitule}</h1>
+      <p class="mt-1 text-sm text-encre/80">{data.exposantNom} · {formuleLabels[data.formule]}</p>
+    </div>
+    <span
+      class:list={[
+        'w-fit rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide',
+        data.status === 'publiee' ? 'bg-village text-marine' : 'bg-marine/10 text-marine',
+      ]}
+    >
+      {statutLabels[data.status]}
+    </span>
+  </div>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <p class="text-base font-semibold text-marine">{data.descriptionCourte}</p>
+
+      {data.missions.length > 0 && (
+        <div class="mt-6">
+          <h2 class="font-titre text-sm font-bold uppercase text-marine">Missions</h2>
+          <ul class="mt-2 space-y-1 text-sm text-encre">
+            {data.missions.map((mission) => <li>• {mission}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {data.competencesPrerequis.length > 0 && (
+        <div class="mt-6">
+          <h2 class="font-titre text-sm font-bold uppercase text-marine">Compétences et prérequis</h2>
+          <ul class="mt-2 space-y-1 text-sm text-encre">
+            {data.competencesPrerequis.map((competence) => <li>• {competence}</li>)}
+          </ul>
+        </div>
+      )}
+    </div>
+
+    <div class="space-y-6">
+      <div class="rounded-2xl border border-marine/15 bg-blanc p-4">
+        <h2 class="font-titre text-sm font-bold uppercase text-marine">Détails</h2>
+        <dl class="mt-3 space-y-2 text-sm text-encre">
+          <div class="flex justify-between gap-3">
+            <dt class="text-encre/70">Secteur</dt>
+            <dd class="text-right font-semibold">{data.secteur}</dd>
+          </div>
+          <div class="flex justify-between gap-3">
+            <dt class="text-encre/70">Type de contrat</dt>
+            <dd class="text-right font-semibold">{data.typeContrat.join(' · ')}</dd>
+          </div>
+          <div class="flex justify-between gap-3">
+            <dt class="text-encre/70">Localisation</dt>
+            <dd class="text-right font-semibold">{data.lieu}</dd>
+          </div>
+          <div class="flex justify-between gap-3">
+            <dt class="text-encre/70">Postes à pourvoir</dt>
+            <dd class="text-right font-semibold">{data.nombrePostes}</dd>
+          </div>
+          {data.datePrisePoste && (
+            <div class="flex justify-between gap-3">
+              <dt class="text-encre/70">Prise de poste</dt>
+              <dd class="text-right font-semibold">{data.datePrisePoste}</dd>
+            </div>
+          )}
+          <div class="flex justify-between gap-3">
+            <dt class="text-encre/70">Niveau d'expérience</dt>
+            <dd class="text-right font-semibold">{data.niveauExperience}</dd>
+          </div>
+          {data.niveauFormation.length > 0 && (
+            <div class="flex justify-between gap-3">
+              <dt class="text-encre/70">Niveau de formation</dt>
+              <dd class="text-right font-semibold">{data.niveauFormation.join(' · ')}</dd>
+            </div>
+          )}
+          <div class="flex justify-between gap-3">
+            <dt class="text-encre/70">Publiée le</dt>
+            <dd class="text-right font-semibold">{formateurDate.format(data.datePublication)}</dd>
+          </div>
+          {data.dateCloture && (
+            <div class="flex justify-between gap-3">
+              <dt class="text-encre/70">Clôture</dt>
+              <dd class="text-right font-semibold">{formateurDate.format(data.dateCloture)}</dd>
+            </div>
+          )}
+          <div class="flex justify-between gap-3">
+            <dt class="text-encre/70">Candidature en ligne</dt>
+            <dd class="text-right font-semibold">{data.accepteCandidaturesEnLigne ? 'Oui' : 'Non'}</dd>
+          </div>
+        </dl>
+      </div>
+
+      {
+        pageOffrePublique && (
+          <a
+            href={pageOffrePublique}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex w-full items-center justify-center rounded-md border-2 border-marine px-6 py-3 font-titre text-sm font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
+          >
+            Voir la fiche publique
+          </a>
+        )
+      }
+    </div>
+  </div>
+</AdminLayout>
