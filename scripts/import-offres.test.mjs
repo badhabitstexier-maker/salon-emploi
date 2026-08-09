@@ -263,10 +263,52 @@ test('aucun rattachement par nom : deux exposants différents portant le même e
   assert.equal(resultat.erreurs.length, 1);
 });
 
-test('référentiel exposants indisponible (null) : contrôle croisé ignoré', () => {
-  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-999' }];
+/*
+  Comportement fail-closed (correction demandée avant fusion de la PR
+  Admin-1C) : `exposants` est le référentiel maître, une offre réelle ne
+  peut jamais être importée si son exposant n'y figure pas — y compris
+  quand la collection `exposants` est entièrement vide.
+*/
+
+test('offre TEST avec référentiel exposants vide (null) : autorisée', () => {
+  const offres = [
+    { reference: 'SEF26-001', intitule: 'TEST — Offre de démonstration', exposantId: 'TEST-EXPOSANT-NC' },
+  ];
   assert.equal(verifierExposantsConnus(offres, null).erreurs.length, 0);
   assert.equal(verifierFormuleCoherente(offres, null).erreurs.length, 0);
+});
+
+test('offre réelle avec référentiel exposants vide (null) : refusée avec un message explicite', () => {
+  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-999' }];
+  const resultat = verifierExposantsConnus(offres, null);
+  assert.equal(resultat.erreurs.length, 1);
+  assert.match(resultat.erreurs[0], /Aucun référentiel exposant disponible/);
+});
+
+test('offre réelle avec exposant inconnu (référentiel non vide) : refusée', () => {
+  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-999' }];
+  const resultat = verifierExposantsConnus(offres, new Set(['EXP26-001']));
+  assert.equal(resultat.erreurs.length, 1);
+  assert.match(resultat.erreurs[0], /EXP26-999.*inconnu/);
+});
+
+test('offre réelle avec exposant connu et formule cohérente : autorisée', () => {
+  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-001', formule: 'standard' }];
+  assert.equal(verifierExposantsConnus(offres, new Set(['EXP26-001'])).erreurs.length, 0);
+  assert.equal(
+    verifierFormuleCoherente(offres, new Map([['EXP26-001', 'standard']])).erreurs.length,
+    0,
+  );
+});
+
+test('lot mixte TEST + réelle, référentiel vide : seule l\'offre réelle est refusée', () => {
+  const offres = [
+    { reference: 'SEF26-001', intitule: 'TEST — Offre de démonstration', exposantId: 'TEST-EXPOSANT-NC' },
+    { reference: 'SEF26-002', intitule: 'Technicien', exposantId: 'EXP26-001' },
+  ];
+  const resultat = verifierExposantsConnus(offres, null);
+  assert.equal(resultat.erreurs.length, 1);
+  assert.match(resultat.erreurs[0], /Aucun référentiel exposant disponible/);
 });
 
 test('offre TEST exclue du contrôle croisé exposant connu', () => {

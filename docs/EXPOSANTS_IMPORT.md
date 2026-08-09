@@ -105,11 +105,14 @@ par ce lot. Depuis :
   vérifient, pour chaque offre réelle, que son `exposantId` correspond
   effectivement à un exposant de la collection. Une erreur bloquante est
   levée sinon (« Exposant « EXP26-XXX » inconnu du référentiel exposants »).
-- Ce contrôle est **ignoré** (pas d'erreur) tant que la collection
-  `exposants` est vide ou absente — sinon aucun premier import réel d'offre
-  ne serait possible avant qu'un exposant n'existe déjà. Dès qu'au moins un
-  exposant est présent, le contrôle s'applique à toutes les offres réelles
-  du lot.
+- **Comportement fail-closed** : `exposants` est le référentiel maître.
+  Si la collection `exposants` est vide ou absente, **toute offre réelle du
+  lot est refusée** (« Aucun référentiel exposant disponible. Importez
+  d'abord les exposants avant d'importer des offres réelles. ») — il faut
+  importer au moins l'exposant concerné avant de pouvoir importer ses
+  offres. Les offres TEST restent toujours autorisées, quel que soit l'état
+  du référentiel exposants : leur identifiant dédié `TEST-EXPOSANT-NC` n'y
+  est jamais recherché.
 - Le rattachement lui-même (`src/lib/admin.ts`, `offresRattachees`, utilisé
   par le tableau de bord et les fiches Admin) n'a **jamais** utilisé le nom
   d'entreprise — uniquement l'égalité stricte `exposantId`. Une offre réelle

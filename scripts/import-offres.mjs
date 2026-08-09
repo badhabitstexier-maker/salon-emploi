@@ -68,9 +68,10 @@ async function listerOffresExistantes() {
   pas un import du module `exposants-import-core.mjs` (les deux pipelines
   restent indépendants, voir CLAUDE.md section 16 sur le couplage entre
   mécanismes). Retourne `null` si le référentiel n'est pas disponible ou pas
-  encore peuplé (aucun exposant), pour que le contrôle croisé
-  (verifierExposantsConnus / verifierFormuleCoherente) soit ignoré plutôt que
-  de bloquer tout import réel tant qu'aucun exposant n'existe encore.
+  encore peuplé (aucun exposant) : `exposants` est le référentiel maître,
+  donc `verifierExposantsConnus` traite ce `null` en **fail-closed** — toute
+  offre réelle du lot est alors refusée (les offres TEST restent autorisées,
+  voir `docs/OFFRES.md` section 3bis).
 */
 async function listerReferentielExposants() {
   if (!existsSync(DOSSIER_EXPOSANTS)) return null;
@@ -160,11 +161,6 @@ async function commandeImport(cheminCsv, dryRun) {
   const { erreurs: erreursQuotas, avertissements: avertissementsQuotas } = verifierQuotas(valides, existantes);
 
   const referentielExposants = await listerReferentielExposants();
-  if (referentielExposants === null) {
-    avertissementsGlobaux.push(
-      "Référentiel exposants indisponible ou vide (collection `exposants`) : contrôle croisé exposantId/formule ignoré pour cet import.",
-    );
-  }
   const { erreurs: erreursExposantsConnus } = verifierExposantsConnus(
     valides,
     referentielExposants?.ids ?? null,
@@ -268,12 +264,6 @@ async function commandeCheck() {
   const doublons = detecterDoublonsReferences(existantes);
 
   const referentielExposants = await listerReferentielExposants();
-  const avertissementsCoherence = [];
-  if (referentielExposants === null) {
-    avertissementsCoherence.push(
-      "Référentiel exposants indisponible ou vide (collection `exposants`) : contrôle croisé exposantId/formule ignoré.",
-    );
-  }
   const { erreurs: erreursExposantsConnus } = verifierExposantsConnus(
     existantes,
     referentielExposants?.ids ?? null,
@@ -293,16 +283,16 @@ async function commandeCheck() {
     for (const e of erreurs) console.log(`  - ${e}`);
   }
   if (erreursExposantsConnus.length > 0) {
-    console.log('\nExposant inconnu :');
+    console.log('\nExposant inconnu ou référentiel indisponible :');
     for (const e of erreursExposantsConnus) console.log(`  - ${e}`);
   }
   if (erreursFormuleCoherente.length > 0) {
     console.log('\nFormule incohérente avec l\'exposant :');
     for (const e of erreursFormuleCoherente) console.log(`  - ${e}`);
   }
-  if (avertissements.length > 0 || avertissementsCoherence.length > 0) {
+  if (avertissements.length > 0) {
     console.log('\nAvertissements :');
-    for (const a of [...avertissements, ...avertissementsCoherence]) console.log(`  - ${a}`);
+    for (const a of avertissements) console.log(`  - ${a}`);
   }
   const enErreur =
     doublons.length > 0 || erreurs.length > 0 || erreursExposantsConnus.length > 0 || erreursFormuleCoherente.length > 0;

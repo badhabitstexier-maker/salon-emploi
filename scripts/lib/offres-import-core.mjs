@@ -455,27 +455,43 @@ export function rapprocherReferencesExistantes(offres, existantes) {
 }
 
 /**
- * Contrôle croisé exposantId (Lot Admin-1C) : pour chaque offre réelle
- * (hors TEST), vérifie que son `exposantId` correspond à un exposant
- * effectivement présent dans le référentiel `exposants`.
+ * Message d'erreur commun aux deux contrôles ci-dessous quand le
+ * référentiel exposants est indisponible ou vide (collection `exposants`
+ * pas encore peuplée) — voir verifierExposantsConnus.
+ */
+export const MESSAGE_REFERENTIEL_EXPOSANTS_INDISPONIBLE =
+  "Aucun référentiel exposant disponible. Importez d'abord les exposants avant d'importer des offres réelles.";
+
+/**
+ * Contrôle croisé exposantId (Lot Admin-1C) : la collection `exposants` est
+ * le référentiel maître — une offre réelle ne peut jamais être importée si
+ * son exposant n'y figure pas. Comportement **fail-closed** :
  *
- * `exposantsConnus` vaut `null` quand le référentiel n'est pas disponible ou
- * pas encore peuplé (collection `exposants` vide) : dans ce cas le contrôle
- * est délibérément ignoré (retourne aucune erreur) plutôt que de bloquer
- * tout import réel tant qu'aucun exposant n'a encore été importé — voir
- * docs/EXPOSANTS_IMPORT.md et CLAUDE.md section 14 sur l'état de la
- * collection. Quand il est disponible (au moins un exposant connu), toute
- * offre réelle dont l'`exposantId` n'y figure pas est une erreur bloquante.
+ * - `exposantsConnus === null` (référentiel indisponible ou collection
+ *   `exposants` vide) : toute offre réelle (hors TEST) du lot est refusée
+ *   avec un message explicite. S'il n'y a que des offres TEST dans le lot,
+ *   aucune erreur n'est levée (voir ci-dessous).
+ * - `exposantsConnus` renseigné : toute offre réelle dont l'`exposantId` n'y
+ *   figure pas est une erreur bloquante.
  *
- * @param offres offres réelles du lot (hors TEST, exposantId déjà assigné)
+ * Les offres TEST (préfixe `TEST —`, identifiant dédié `TEST-EXPOSANT-NC`)
+ * ne représentent aucun exposant réel : elles restent toujours autorisées,
+ * indépendamment de l'état du référentiel exposants, et ne sont jamais
+ * recherchées dedans.
+ *
+ * @param offres offres du lot (TEST et réelles, exposantId déjà assigné)
  * @param exposantsConnus `Set<string>` des exposantId connus, ou `null`
  */
 export function verifierExposantsConnus(offres, exposantsConnus) {
-  if (exposantsConnus === null) return { erreurs: [], avertissements: [] };
+  const offresReelles = offres.filter((offre) => !estIntituleOffreTest(offre.intitule));
+
+  if (exposantsConnus === null) {
+    if (offresReelles.length === 0) return { erreurs: [] };
+    return { erreurs: [MESSAGE_REFERENTIEL_EXPOSANTS_INDISPONIBLE] };
+  }
 
   const erreurs = [];
-  for (const offre of offres) {
-    if (estIntituleOffreTest(offre.intitule)) continue;
+  for (const offre of offresReelles) {
     if (!exposantsConnus.has(offre.exposantId)) {
       erreurs.push(
         `Exposant « ${offre.exposantId} » inconnu du référentiel exposants (offre « ${offre.reference ?? offre.intitule} »).`,
@@ -493,9 +509,12 @@ export function verifierExposantsConnus(offres, exposantsConnus) {
  *
  * `formuleParExposant` vaut `null` dans les mêmes conditions que
  * `verifierExposantsConnus` (référentiel exposants indisponible ou vide) :
- * le contrôle est alors ignoré. Une offre dont l'exposant est inconnu du
- * référentiel est déjà signalée par `verifierExposantsConnus` — ce n'est pas
- * ré-signalé ici, pour ne pas dupliquer l'erreur.
+ * ce contrôle-ci ne relève alors aucune erreur, car le comportement
+ * fail-closed (import refusé tant qu'aucun exposant réel n'existe) est déjà
+ * appliqué par `verifierExposantsConnus` — pas de double message pour la
+ * même cause. De même, une offre dont l'exposant est inconnu du référentiel
+ * est déjà signalée par `verifierExposantsConnus` — ce n'est pas ré-signalé
+ * ici.
  *
  * @param offres offres réelles du lot (hors TEST)
  * @param formuleParExposant `Map<string, string>` exposantId -> formule, ou `null`
