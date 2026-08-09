@@ -33,6 +33,14 @@ jobs:
       - name: Installer les dépendances
         run: npm ci
 
+      - name: Installer PHP (Admin-2B, voir docs/VISIBILITE.md)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+
+      - name: Tests fonctionnels de l'API PHP Visibilité (contre le vrai code PHP, serveur intégré)
+        run: npm run visibilites:api-test
+
       - name: Installer Chromium (Playwright)
         run: npx playwright install --with-deps chromium
 

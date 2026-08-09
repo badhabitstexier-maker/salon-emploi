@@ -6,9 +6,15 @@
 > ce document pour le détail des arbitrages (source de données, lecture
 > seule, distinction avec le dispositif de visibilité publicitaire, etc.).
 >
-> Ce document couvre uniquement le **Lot Admin-0 — socle technique et
-> protection d'accès**. Aucune fonction métier (tableau de bord, exposants,
-> offres, visibilité) n'est encore développée.
+> Ce document couvre le **Lot Admin-0 — socle technique et protection
+> d'accès** (`/admin`, Basic Auth Apache). Les lots métier suivants
+> (tableau de bord Admin-1, visibilité Admin-2/Admin-2B) sont documentés
+> séparément — voir en particulier **docs/VISIBILITE.md section 15** pour
+> `/admin-api`, un second point d'entrée protégé introduit par Admin-2B
+> (CRUD Visibilité), avec sa propre protection Basic Auth explicite
+> (`public/admin-api/.htaccess`) car `/admin-api` est un dossier frère de
+> `/admin`, pas un sous-dossier — il n'hérite donc pas de la protection
+> décrite ci-dessous en section 4.
 
 ---
 

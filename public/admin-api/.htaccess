@@ -1,0 +1,15 @@
+# Protection Admin-2B (voir docs/VISIBILITE.md et docs/ADMIN.md §4).
+#
+# /admin-api est un dossier FRÈRE de /admin (pas un sous-dossier) : il ne
+# hérite donc PAS de public/admin/.htaccess. Cette protection est répétée
+# explicitement ici, avec le même AuthUserFile — même principe, deux
+# fichiers .htaccess distincts, volontairement, pour ne rien changer au
+# niveau racine de l'hébergement (qui affecterait d'autres sites du compte
+# OVH).
+#
+# Ne contient aucun secret : le fichier .htpasswd réel vit hors du dépôt,
+# exclusivement sur le serveur OVH (voir docs/ADMIN.md §4.2).
+AuthType Basic
+AuthName "Acces reserve LabEvents"
+AuthUserFile /home/salonez/.htpasswd-salonemploi-preprod
+Require valid-user

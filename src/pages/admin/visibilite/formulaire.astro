@@ -1,0 +1,263 @@
+---
+import { getCollection } from 'astro:content';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import {
+  typeAnnonceurLabels,
+  formatLabels,
+  pageLabels,
+  PAGES_VISIBILITE,
+  EMPLACEMENTS_VISIBILITE,
+  TYPES_ANNONCEUR,
+  FORMATS_VISIBILITE,
+} from '../../../lib/visibilites';
+
+/*
+  Formulaire unique de création/modification (Admin-2B, voir docs/VISIBILITE.md
+  et cadrage §15 « UX » — une seule page, pas de route dynamique par id : les
+  identifiants sont créés à l'exécution par l'API PHP, donc inconnus au build,
+  ce qui rend une route Astro statique par id impossible ici — contrairement
+  à /admin/exposants/[id], dont les id existent au build via une Content
+  Collection). Mode déterminé au chargement, côté client, par la présence
+  d'un paramètre ?id= dans l'URL :
+    - absent  -> création (POST)
+    - présent -> modification (PUT), après avoir rechargé la fiche existante
+      depuis l'API Admin pour préremplir le formulaire.
+*/
+
+const exposants = await getCollection('exposants');
+const exposantsIds = exposants.map((exposant) => exposant.data.exposantId);
+---
+
+<AdminLayout title="Visibilité — formulaire" section="visibilite">
+  <a href="/admin/visibilite" class="text-sm font-semibold text-marine underline">&larr; Retour à la liste</a>
+
+  <h1 id="formulaire-titre" class="mt-3 text-2xl font-bold text-marine">Nouvelle visibilité</h1>
+
+  <p id="formulaire-erreur-chargement" class="mt-4 hidden rounded-2xl border border-orange/40 bg-orange/10 p-5 text-sm text-marine" role="alert">
+    Impossible de charger cette campagne (API indisponible ou identifiant introuvable).
+  </p>
+
+  <form id="formulaire-visibilite" class="mt-6 max-w-2xl space-y-6">
+    <div id="formulaire-erreurs" class="hidden rounded-2xl border border-orange/50 bg-orange/10 p-4 text-sm text-marine" role="alert">
+      <p class="font-semibold">Corrigez les points suivants :</p>
+      <ul id="formulaire-erreurs-liste" class="mt-2 list-disc space-y-1 pl-5"></ul>
+    </div>
+
+    <div>
+      <label for="champ-nomInterne" class="block text-sm font-bold text-marine">Nom interne *</label>
+      <p class="text-xs text-encre/60">Repère pour LabEvents — jamais affiché publiquement.</p>
+      <input id="champ-nomInterne" name="nomInterne" type="text" required class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+    </div>
+
+    <div>
+      <label for="champ-annonceur" class="block text-sm font-bold text-marine">Annonceur *</label>
+      <input id="champ-annonceur" name="annonceur" type="text" required class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+    </div>
+
+    <div>
+      <label for="champ-typeAnnonceur" class="block text-sm font-bold text-marine">Type d'annonceur *</label>
+      <select id="champ-typeAnnonceur" name="typeAnnonceur" required class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30">
+        {TYPES_ANNONCEUR.map((valeur) => <option value={valeur}>{typeAnnonceurLabels[valeur]}</option>)}
+      </select>
+    </div>
+
+    <div>
+      <label for="champ-exposantId" class="block text-sm font-bold text-marine">Exposant lié (optionnel)</label>
+      <p class="text-xs text-encre/60">Format EXP26-XXX. Laisser vide si l'annonceur n'est pas exposant.</p>
+      <input id="champ-exposantId" name="exposantId" type="text" list="liste-exposants" placeholder="EXP26-001" class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+      <datalist id="liste-exposants">
+        {exposantsIds.map((id) => <option value={id} />)}
+      </datalist>
+    </div>
+
+    <div>
+      <label for="champ-format" class="block text-sm font-bold text-marine">Format *</label>
+      <select id="champ-format" name="format" required class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30">
+        {FORMATS_VISIBILITE.map((valeur) => <option value={valeur}>{formatLabels[valeur]}</option>)}
+      </select>
+    </div>
+
+    <div>
+      <label for="champ-visuel" class="block text-sm font-bold text-marine">Visuel *</label>
+      <p class="text-xs text-encre/60">
+        Chemin ou URL d'une image déjà présente sur le serveur (ex. <code class="rounded bg-marine/10 px-1">/visibilites/mon-annonceur.png</code>).
+        Pas d'upload dans cette version — voir docs/VISIBILITE.md, procédure de dépôt d'un visuel.
+      </p>
+      <input id="champ-visuel" name="visuel" type="text" required class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+    </div>
+
+    <div>
+      <label for="champ-alt" class="block text-sm font-bold text-marine">Texte alternatif *</label>
+      <p class="text-xs text-encre/60">Obligatoire — accessibilité.</p>
+      <input id="champ-alt" name="alt" type="text" required class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+    </div>
+
+    <div>
+      <label for="champ-lien" class="block text-sm font-bold text-marine">Lien (optionnel)</label>
+      <p class="text-xs text-encre/60">Si absent, le bandeau ne sera pas cliquable.</p>
+      <input id="champ-lien" name="lien" type="text" class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+    </div>
+
+    <fieldset>
+      <legend class="block text-sm font-bold text-marine">Pages *</legend>
+      <div class="mt-1.5 flex flex-wrap gap-4">
+        {PAGES_VISIBILITE.map((valeur) => (
+          <label class="flex items-center gap-2 text-sm text-encre">
+            <input type="checkbox" name="pages" value={valeur} class="h-4 w-4 rounded border-marine/40" />
+            {pageLabels[valeur]}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+    <div>
+      <label for="champ-emplacement" class="block text-sm font-bold text-marine">Emplacement</label>
+      <select id="champ-emplacement" name="emplacement" class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30">
+        {EMPLACEMENTS_VISIBILITE.map((valeur) => <option value={valeur}>{valeur}</option>)}
+      </select>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="champ-dateDebut" class="block text-sm font-bold text-marine">Date début (optionnel)</label>
+        <input id="champ-dateDebut" name="dateDebut" type="date" class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+      </div>
+      <div>
+        <label for="champ-dateFin" class="block text-sm font-bold text-marine">Date fin (optionnel)</label>
+        <input id="champ-dateFin" name="dateFin" type="date" class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+      </div>
+    </div>
+
+    <div>
+      <label for="champ-poids" class="block text-sm font-bold text-marine">Poids de diffusion *</label>
+      <p class="text-xs text-encre/60">Entier positif — intensité relative face aux autres campagnes éligibles simultanément.</p>
+      <input id="champ-poids" name="poids" type="number" min="1" step="1" required value="1" class="mt-1.5 w-32 rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+    </div>
+
+    <div>
+      <label class="flex items-center gap-2 text-sm font-bold text-marine">
+        <input id="champ-actif" name="actif" type="checkbox" checked class="h-4 w-4 rounded border-marine/40" />
+        Actif
+      </label>
+      <p class="text-xs text-encre/60">Coupe-circuit manuel, indépendant des dates.</p>
+    </div>
+
+    <div class="flex flex-wrap gap-3 pt-2">
+      <button id="formulaire-bouton-enregistrer" type="submit" class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90 disabled:opacity-50">
+        Enregistrer
+      </button>
+      <a href="/admin/visibilite" class="inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc">
+        Annuler
+      </a>
+    </div>
+  </form>
+</AdminLayout>
+
+<script>
+  import { chargerUneVisibilite, creerVisibilite, modifierVisibilite, type SessionAdmin } from '../../../lib/admin-visibilite-ui';
+  import type { Visibilite } from '../../../lib/visibilites';
+
+  const form = document.getElementById('formulaire-visibilite') as HTMLFormElement;
+  const titre = document.getElementById('formulaire-titre');
+  const boutonEnregistrer = document.getElementById('formulaire-bouton-enregistrer') as HTMLButtonElement;
+  const blocErreurs = document.getElementById('formulaire-erreurs');
+  const listeErreurs = document.getElementById('formulaire-erreurs-liste');
+  const blocErreurChargement = document.getElementById('formulaire-erreur-chargement');
+
+  const idParametre = new URLSearchParams(window.location.search).get('id');
+  let session: SessionAdmin | null = null;
+
+  function remplirFormulaire(v: Visibilite): void {
+    (form.elements.namedItem('nomInterne') as HTMLInputElement).value = v.nomInterne;
+    (form.elements.namedItem('annonceur') as HTMLInputElement).value = v.annonceur;
+    (form.elements.namedItem('typeAnnonceur') as HTMLSelectElement).value = v.typeAnnonceur;
+    (form.elements.namedItem('exposantId') as HTMLInputElement).value = v.exposantId ?? '';
+    (form.elements.namedItem('format') as HTMLSelectElement).value = v.format;
+    (form.elements.namedItem('visuel') as HTMLInputElement).value = v.visuel;
+    (form.elements.namedItem('alt') as HTMLInputElement).value = v.alt;
+    (form.elements.namedItem('lien') as HTMLInputElement).value = v.lien ?? '';
+    (form.elements.namedItem('emplacement') as HTMLSelectElement).value = v.emplacement;
+    (form.elements.namedItem('dateDebut') as HTMLInputElement).value = v.dateDebut ? v.dateDebut.slice(0, 10) : '';
+    (form.elements.namedItem('dateFin') as HTMLInputElement).value = v.dateFin ? v.dateFin.slice(0, 10) : '';
+    (form.elements.namedItem('poids') as HTMLInputElement).value = String(v.poids);
+    (form.elements.namedItem('actif') as HTMLInputElement).checked = v.actif;
+
+    for (const checkbox of form.querySelectorAll<HTMLInputElement>('input[name="pages"]')) {
+      checkbox.checked = v.pages.includes(checkbox.value as any);
+    }
+  }
+
+  async function initialiser(): Promise<void> {
+    if (!idParametre) {
+      const resultat = await (await import('../../../lib/admin-visibilite-ui')).chargerListeEtSession();
+      if (!resultat) {
+        blocErreurChargement?.classList.remove('hidden');
+        form.classList.add('hidden');
+        return;
+      }
+      session = resultat.session;
+      return;
+    }
+
+    if (titre) titre.textContent = 'Modifier la visibilité';
+    const resultat = await chargerUneVisibilite(idParametre);
+    if (!resultat || !resultat.visibilite) {
+      blocErreurChargement?.classList.remove('hidden');
+      form.classList.add('hidden');
+      return;
+    }
+    session = resultat.session;
+    remplirFormulaire(resultat.visibilite);
+  }
+
+  function afficherErreurs(messages: string[]): void {
+    if (!blocErreurs || !listeErreurs) return;
+    listeErreurs.replaceChildren();
+    for (const message of messages) {
+      const li = document.createElement('li');
+      li.textContent = message;
+      listeErreurs.appendChild(li);
+    }
+    blocErreurs.classList.remove('hidden');
+    blocErreurs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  form.addEventListener('submit', async (evenement) => {
+    evenement.preventDefault();
+    if (!session) return;
+    blocErreurs?.classList.add('hidden');
+    boutonEnregistrer.disabled = true;
+
+    const donnees = new FormData(form);
+    const corps = {
+      nomInterne: String(donnees.get('nomInterne') ?? ''),
+      annonceur: String(donnees.get('annonceur') ?? ''),
+      typeAnnonceur: String(donnees.get('typeAnnonceur') ?? ''),
+      exposantId: String(donnees.get('exposantId') ?? '').trim() || undefined,
+      format: String(donnees.get('format') ?? ''),
+      visuel: String(donnees.get('visuel') ?? ''),
+      alt: String(donnees.get('alt') ?? ''),
+      lien: String(donnees.get('lien') ?? '').trim() || undefined,
+      pages: donnees.getAll('pages').map(String),
+      emplacement: String(donnees.get('emplacement') ?? 'principal'),
+      dateDebut: String(donnees.get('dateDebut') ?? '').trim() || undefined,
+      dateFin: String(donnees.get('dateFin') ?? '').trim() || undefined,
+      poids: Number(donnees.get('poids') ?? 1),
+      actif: donnees.get('actif') === 'on',
+    };
+
+    const resultat = idParametre
+      ? await modifierVisibilite(session, idParametre, corps)
+      : await creerVisibilite(session, corps);
+
+    if (!resultat.ok) {
+      afficherErreurs(resultat.erreurs ?? [resultat.messageErreur ?? 'Erreur inattendue.']);
+      boutonEnregistrer.disabled = false;
+      return;
+    }
+
+    window.location.href = '/admin/visibilite';
+  });
+
+  void initialiser();
+</script>

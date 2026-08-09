@@ -1,32 +1,42 @@
 /*
   Contrôleur client des VisibilitySlot présents sur une page — le seul
-  module qui touche au DOM. La logique pure (fenêtre de dates, tirage
-  pondéré) vit dans ./visibilites.ts (même séparation que
+  module qui touche au DOM et au réseau. La logique pure (fenêtre de dates,
+  tirage pondéré) vit dans ./visibilites.ts (même séparation que
   candidature-selection.ts / selection-ui.ts pour la sélection d'offres).
+
+  CHANGEMENT Admin-2B (voir docs/VISIBILITE.md) : jusqu'ici, les candidats
+  d'un emplacement étaient embarqués au build dans un <script
+  type="application/json"> par page. Depuis Admin-2B, il n'y a plus de
+  build qui connaisse ces données (elles vivent uniquement dans
+  visibilites.json, sur le serveur, gérées par l'API PHP) : ce module va les
+  chercher lui-même, à chaque chargement de page, via
+  `GET /api/visibilites.php?page=...&emplacement=...`.
 
   Deux évaluations sont faites ici, une seule fois par emplacement, au
   chargement de la page — jamais de minuteur, jamais de second tirage
   ensuite (voir docs/VISIBILITE.md, section « rotation ») :
-    1. la fenêtre de dates (dateDebut/dateFin) de chaque candidat envoyé
-       par le build, avec l'heure réelle du visiteur — voir
-       docs/VISIBILITE.md section 7 : c'est ce qui permet à une campagne de
-       démarrer ou s'arrêter à l'heure dite sans nouveau déploiement ;
+    1. la fenêtre de dates (dateDebut/dateFin) de chaque candidat reçu de
+       l'API, avec l'heure réelle du visiteur ;
     2. le tirage pondéré parmi les candidats qui passent cette fenêtre.
 
-  Découverte par balayage du DOM (pas d'id fixe unique) : chaque
-  VisibilitySlot.astro pose son propre <script type="application/json"
-  data-visibility-json data-section="..."> ; ce module les traite tous, ce
-  qui reste correct même si une page venait à porter plusieurs emplacements
-  (Admin-2B).
+  Fallback réseau strict (cadrage Admin-2B §12) : si l'appel réseau échoue,
+  renvoie un statut d'erreur, ou un JSON inattendu, l'emplacement reste
+  simplement masqué (`hidden`) — jamais d'erreur visible, jamais de blocage
+  du reste de la page. C'est exactement le même comportement que « aucune
+  campagne éligible », qui existait déjà avant Admin-2B.
 */
-import { selectionnerPonderee, estDansPeriodeResume, type VisibiliteResume } from './visibilites';
+import { selectionnerPonderee, estDansPeriodeResume, type VisibiliteResume, type PageVisibilite, type EmplacementVisibilite } from './visibilites';
 
-function lireCandidats(script: HTMLScriptElement): VisibiliteResume[] {
-  if (!script.textContent) return [];
+async function chargerCandidats(page: string, emplacement: string): Promise<VisibiliteResume[]> {
   try {
-    const donnees = JSON.parse(script.textContent);
-    return Array.isArray(donnees) ? donnees : [];
+    const url = `/api/visibilites.php?page=${encodeURIComponent(page)}&emplacement=${encodeURIComponent(emplacement)}`;
+    const reponse = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!reponse.ok) return [];
+    const donnees = await reponse.json();
+    return Array.isArray(donnees?.visibilites) ? donnees.visibilites : [];
   } catch {
+    // Réseau indisponible, API en panne, JSON invalide… : jamais d'erreur
+    // visible, la section appelante reste masquée (voir remplir()/appelant).
     return [];
   }
 }
@@ -48,28 +58,34 @@ function remplir(visuel: HTMLElement, choisie: VisibiliteResume): void {
   visuel.replaceChildren(lien);
 }
 
+/** Traite un seul emplacement (une <section data-visibility-page>). Idempotent. */
+async function initVisibilitySlot(section: HTMLElement): Promise<void> {
+  if (section.dataset.rempli) return;
+  const page = section.dataset.visibilityPage as PageVisibilite | undefined;
+  const emplacement = (section.dataset.visibilityEmplacement as EmplacementVisibilite | undefined) ?? 'principal';
+  if (!page) return;
+
+  section.dataset.rempli = '1'; // marqué avant l'attente réseau : jamais deux appels concurrents sur le même slot
+
+  const maintenant = new Date();
+  const candidats = await chargerCandidats(page, emplacement);
+  const dansLaPeriode = candidats.filter((candidat) => estDansPeriodeResume(candidat, maintenant));
+  const choisie = selectionnerPonderee(dansLaPeriode);
+
+  if (!choisie) return; // reste entièrement masqué — aucun espace vide (voir VisibilitySlot.astro)
+
+  const visuel = section.querySelector<HTMLElement>('[data-visibility-visual]');
+  if (!visuel) return;
+
+  remplir(visuel, choisie);
+  section.classList.remove('hidden');
+  section.dataset.annonceur = choisie.annonceur;
+}
+
 /** Traite tous les VisibilitySlot présents sur la page courante. */
 export function initAllVisibilitySlots(): void {
-  const maintenant = new Date();
-  const scripts = document.querySelectorAll<HTMLScriptElement>('script[data-visibility-json]');
-
-  for (const script of scripts) {
-    const sectionId = script.dataset.section;
-    if (!sectionId) continue;
-    const section = document.getElementById(sectionId);
-    if (!section || section.dataset.rempli) continue; // déjà traité — idempotent
-
-    const dansLaPeriode = lireCandidats(script).filter((candidat) => estDansPeriodeResume(candidat, maintenant));
-    const choisie = selectionnerPonderee(dansLaPeriode);
-
-    section.dataset.rempli = '1';
-    if (!choisie) continue; // reste entièrement masqué — aucun espace vide (voir VisibilitySlot.astro)
-
-    const visuel = section.querySelector<HTMLElement>('[data-visibility-visual]');
-    if (!visuel) continue;
-
-    remplir(visuel, choisie);
-    section.classList.remove('hidden');
-    section.dataset.annonceur = choisie.annonceur;
+  const sections = document.querySelectorAll<HTMLElement>('[data-visibility-page]');
+  for (const section of sections) {
+    void initVisibilitySlot(section);
   }
 }
