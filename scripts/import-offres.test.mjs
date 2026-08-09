@@ -16,6 +16,8 @@ import {
   assignerReferencesManquantes,
   detecterDoublonsReferences,
   verifierQuotas,
+  verifierExposantsConnus,
+  verifierFormuleCoherente,
   genererContenuOffre,
 } from './lib/offres-import-core.mjs';
 
@@ -24,7 +26,7 @@ function ligneValide(overrides = {}) {
     reference: 'SEF26-001',
     status: 'publiee',
     intitule: 'Technicien de maintenance',
-    exposantId: 'exemple-structure',
+    exposantId: 'EXP26-001',
     exposantNom: 'Exemple Structure',
     formule: 'standard',
     secteur: 'Maintenance',
@@ -207,4 +209,94 @@ test('génération Markdown avec dateCloture : le champ est présent dans le fro
   const r = validerLigne(ligneValide({ dateCloture: '2026-10-20' }), 2);
   const contenu = genererContenuOffre(r.offre);
   assert.ok(/^dateCloture: 2026-10-20$/m.test(contenu));
+});
+
+/*
+  Lot Admin-1C — exposantId canonique EXP26-XXX pour les offres réelles,
+  identifiant TEST séparé pour les offres de démonstration, contrôle croisé
+  avec le référentiel exposants, cohérence de `formule`.
+*/
+
+test('exposantId réel valide (EXP26-XXX) est accepté', () => {
+  const r = validerLigne(ligneValide({ exposantId: 'EXP26-042' }), 2);
+  assert.equal(r.ok, true);
+  assert.equal(r.offre.exposantId, 'EXP26-042');
+});
+
+test('exposantId réel absent est une erreur', () => {
+  const r = validerLigne(ligneValide({ exposantId: '' }), 2);
+  assert.equal(r.ok, false);
+  assert.ok(r.erreurs.some((e) => /exposantId/.test(e)));
+});
+
+test('exposantId réel mal formé (texte libre) est une erreur', () => {
+  const r = validerLigne(ligneValide({ exposantId: 'pacific-industrie' }), 2);
+  assert.equal(r.ok, false);
+  assert.ok(r.erreurs.some((e) => /exposantId.*EXP26-XXX/.test(e)));
+});
+
+test('offre TEST : exposantId n\'est pas soumis au format EXP26-XXX', () => {
+  const r = validerLigne(
+    ligneValide({ intitule: 'TEST — Offre de démonstration', exposantId: 'TEST-EXPOSANT-NC' }),
+    2,
+  );
+  assert.equal(r.ok, true);
+});
+
+test('rattachement exposant/offres sur EXP26-XXX : exposant connu, pas d\'erreur', () => {
+  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-001' }];
+  const resultat = verifierExposantsConnus(offres, new Set(['EXP26-001']));
+  assert.equal(resultat.erreurs.length, 0);
+});
+
+test('rattachement exposant/offres : exposantId inconnu du référentiel est une erreur', () => {
+  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-999' }];
+  const resultat = verifierExposantsConnus(offres, new Set(['EXP26-001']));
+  assert.equal(resultat.erreurs.length, 1);
+  assert.match(resultat.erreurs[0], /EXP26-999.*inconnu/);
+});
+
+test('aucun rattachement par nom : deux exposants différents portant le même exposantNom ne sont jamais confondus par exposantId', () => {
+  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-777', exposantNom: 'Pacific Industrie' }];
+  // Le référentiel connaît un exposant EXP26-001 avec le même nom affiché, mais un exposantId différent.
+  const resultat = verifierExposantsConnus(offres, new Set(['EXP26-001']));
+  assert.equal(resultat.erreurs.length, 1);
+});
+
+test('référentiel exposants indisponible (null) : contrôle croisé ignoré', () => {
+  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-999' }];
+  assert.equal(verifierExposantsConnus(offres, null).erreurs.length, 0);
+  assert.equal(verifierFormuleCoherente(offres, null).erreurs.length, 0);
+});
+
+test('offre TEST exclue du contrôle croisé exposant connu', () => {
+  const offres = [
+    { reference: 'SEF26-001', intitule: 'TEST — Offre de démonstration', exposantId: 'TEST-EXPOSANT-NC' },
+  ];
+  const resultat = verifierExposantsConnus(offres, new Set(['EXP26-001']));
+  assert.equal(resultat.erreurs.length, 0);
+});
+
+test('formule de l\'offre incohérente avec la formule de l\'exposant est une erreur', () => {
+  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-001', formule: 'gold' }];
+  const formuleParExposant = new Map([['EXP26-001', 'standard']]);
+  const resultat = verifierFormuleCoherente(offres, formuleParExposant);
+  assert.equal(resultat.erreurs.length, 1);
+  assert.match(resultat.erreurs[0], /incohérente/);
+});
+
+test('formule de l\'offre cohérente avec la formule de l\'exposant : pas d\'erreur', () => {
+  const offres = [{ reference: 'SEF26-001', intitule: 'Technicien', exposantId: 'EXP26-001', formule: 'standard' }];
+  const formuleParExposant = new Map([['EXP26-001', 'standard']]);
+  const resultat = verifierFormuleCoherente(offres, formuleParExposant);
+  assert.equal(resultat.erreurs.length, 0);
+});
+
+test('offre TEST exclue du contrôle de cohérence formule', () => {
+  const offres = [
+    { reference: 'SEF26-001', intitule: 'TEST — Offre de démonstration', exposantId: 'TEST-EXPOSANT-NC', formule: 'gold' },
+  ];
+  const formuleParExposant = new Map([['TEST-EXPOSANT-NC', 'standard']]);
+  const resultat = verifierFormuleCoherente(offres, formuleParExposant);
+  assert.equal(resultat.erreurs.length, 0);
 });

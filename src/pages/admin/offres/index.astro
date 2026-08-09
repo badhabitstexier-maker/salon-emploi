@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { statutLabels, entreprisesDisponibles, typesContratDisponibles, estOffreTest } from '../../../lib/offres';
+import { exposantIntrouvable, formuleIncoherente } from '../../../lib/admin';
 
 /*
   Vue tableau Admin-1 des offres (voir CLAUDE.md section 14). Toutes les
@@ -13,11 +14,17 @@ import { statutLabels, entreprisesDisponibles, typesContratDisponibles, estOffre
   restent visibles ici (contrairement au dashboard, qui les exclut des KPI)
   mais portent un badge « TEST » et peuvent être filtrées — réutilise le
   même mécanisme de détection que le reste du site, pas de nouvelle règle.
+
+  Anomalies (Lot Admin-1C, voir src/lib/admin.ts) : un badge interne signale
+  une offre réelle dont l'`exposantId` est inconnu de la collection
+  `exposants`, ou dont la `formule` dupliquée diverge de celle de l'exposant
+  rattaché. Purement informatif, ne bloque jamais le build ni l'affichage.
 */
 
 const offres = (await getCollection('offres')).sort(
   (a, b) => b.data.datePublication.getTime() - a.data.datePublication.getTime(),
 );
+const exposants = await getCollection('exposants');
 
 const nbOffresTest = offres.filter(estOffreTest).length;
 
@@ -147,11 +154,21 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
                       <a href={`/admin/offres/${offre.data.reference}`} class="hover:underline">{offre.data.reference}</a>
                     </td>
                     <td class="px-4 py-3 text-encre">
-                      <span class="flex items-center gap-2">
+                      <span class="flex flex-wrap items-center gap-2">
                         {offre.data.intitule}
                         {estOffreTest(offre) && (
                           <span class="w-fit rounded-full bg-marine/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-marine/70">
                             TEST
+                          </span>
+                        )}
+                        {exposantIntrouvable(offre, exposants) && (
+                          <span class="w-fit rounded-full bg-orange/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-orange-dark">
+                            Exposant introuvable
+                          </span>
+                        )}
+                        {formuleIncoherente(offre, exposants) && (
+                          <span class="w-fit rounded-full bg-orange/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-orange-dark">
+                            Formule incohérente
                           </span>
                         )}
                       </span>

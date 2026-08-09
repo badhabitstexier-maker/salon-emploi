@@ -22,6 +22,26 @@ export const QUOTAS = { standard: 5, silver: 10, gold: null };
 export const REFERENCE_REGEX = /^SEF26-\d{3,}$/;
 
 /*
+  Identifiant exposant canonique (Lot Admin-1C, voir docs/EXPOSANTS_IMPORT.md
+  section 3 et docs/OFFRES_EXPOSANTS.md section 5) : même format que
+  `EXPOSANT_ID_REGEX` de src/content.config.ts, dupliqué ici volontairement
+  (ce module ne peut pas importer un fichier .ts Astro) — toute évolution du
+  format doit être répercutée dans les deux fichiers.
+*/
+export const EXPOSANT_ID_REGEX = /^EXP26-\d{3,}$/;
+
+/*
+  Une offre TEST (préfixe `TEST —` sur l'intitulé, voir estOffreTest() dans
+  src/lib/offres.ts) n'est rattachée à aucun exposant réel : son exposantId
+  n'est pas soumis au format EXP26-XXX ni au contrôle croisé avec la
+  collection exposants (voir verifierExposantsConnus ci-dessous). Même
+  logique que le schéma Astro (src/content.config.ts).
+*/
+export function estIntituleOffreTest(intitule) {
+  return (intitule ?? '').startsWith('TEST —');
+}
+
+/*
   Colonnes du CSV normalisé (une offre par ligne) — voir
   data/templates/offres-import.csv. Elles correspondent 1:1 aux champs du
   schéma `offres` de src/content.config.ts. Les listes (typeContrat,
@@ -124,6 +144,11 @@ export function validerLigne(ligne, numeroLigne) {
   const intitule = champTexte('intitule');
   const exposantId = champTexte('exposantId');
   const exposantNom = champTexte('exposantNom');
+  if (exposantId && !estIntituleOffreTest(intitule) && !EXPOSANT_ID_REGEX.test(exposantId)) {
+    erreurs.push(
+      `exposantId « ${exposantId} » mal formé (attendu : EXP26-XXX, identifiant de l'exposant réel — voir docs/EXPOSANTS_IMPORT.md).`,
+    );
+  }
 
   const formule = champTexte('formule');
   if (formule && !FORMULES.includes(formule)) {
@@ -427,4 +452,67 @@ export function rapprocherReferencesExistantes(offres, existantes) {
     }
   }
   return journal;
+}
+
+/**
+ * Contrôle croisé exposantId (Lot Admin-1C) : pour chaque offre réelle
+ * (hors TEST), vérifie que son `exposantId` correspond à un exposant
+ * effectivement présent dans le référentiel `exposants`.
+ *
+ * `exposantsConnus` vaut `null` quand le référentiel n'est pas disponible ou
+ * pas encore peuplé (collection `exposants` vide) : dans ce cas le contrôle
+ * est délibérément ignoré (retourne aucune erreur) plutôt que de bloquer
+ * tout import réel tant qu'aucun exposant n'a encore été importé — voir
+ * docs/EXPOSANTS_IMPORT.md et CLAUDE.md section 14 sur l'état de la
+ * collection. Quand il est disponible (au moins un exposant connu), toute
+ * offre réelle dont l'`exposantId` n'y figure pas est une erreur bloquante.
+ *
+ * @param offres offres réelles du lot (hors TEST, exposantId déjà assigné)
+ * @param exposantsConnus `Set<string>` des exposantId connus, ou `null`
+ */
+export function verifierExposantsConnus(offres, exposantsConnus) {
+  if (exposantsConnus === null) return { erreurs: [], avertissements: [] };
+
+  const erreurs = [];
+  for (const offre of offres) {
+    if (estIntituleOffreTest(offre.intitule)) continue;
+    if (!exposantsConnus.has(offre.exposantId)) {
+      erreurs.push(
+        `Exposant « ${offre.exposantId} » inconnu du référentiel exposants (offre « ${offre.reference ?? offre.intitule} »).`,
+      );
+    }
+  }
+  return { erreurs };
+}
+
+/**
+ * Contrôle de cohérence `formule` (Lot Admin-1C, architecture retenue :
+ * duplication contrôlée — voir docs/EXPOSANTS_IMPORT.md et docs/OFFRES.md).
+ * La formule appartient à l'exposant ; celle dupliquée sur chaque offre doit
+ * toujours lui correspondre exactement.
+ *
+ * `formuleParExposant` vaut `null` dans les mêmes conditions que
+ * `verifierExposantsConnus` (référentiel exposants indisponible ou vide) :
+ * le contrôle est alors ignoré. Une offre dont l'exposant est inconnu du
+ * référentiel est déjà signalée par `verifierExposantsConnus` — ce n'est pas
+ * ré-signalé ici, pour ne pas dupliquer l'erreur.
+ *
+ * @param offres offres réelles du lot (hors TEST)
+ * @param formuleParExposant `Map<string, string>` exposantId -> formule, ou `null`
+ */
+export function verifierFormuleCoherente(offres, formuleParExposant) {
+  if (formuleParExposant === null) return { erreurs: [] };
+
+  const erreurs = [];
+  for (const offre of offres) {
+    if (estIntituleOffreTest(offre.intitule)) continue;
+    const formuleExposant = formuleParExposant.get(offre.exposantId);
+    if (formuleExposant === undefined) continue; // exposant inconnu, déjà signalé ailleurs
+    if (formuleExposant !== offre.formule) {
+      erreurs.push(
+        `Offre « ${offre.reference ?? offre.intitule} » : formule « ${offre.formule} » incohérente avec la formule de l'exposant « ${offre.exposantId} » (${formuleExposant}).`,
+      );
+    }
+  }
+  return { erreurs };
 }

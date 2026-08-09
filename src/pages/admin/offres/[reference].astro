@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { statutLabels, formuleLabels, offreSlug, estOffreTest, type Offre } from '../../../lib/offres';
+import { exposantIntrouvable, formuleIncoherente } from '../../../lib/admin';
 
 /*
   Fiche interne offre, lecture seule (voir CLAUDE.md section 14). Route
@@ -18,17 +19,19 @@ import { statutLabels, formuleLabels, offreSlug, estOffreTest, type Offre } from
 
 export async function getStaticPaths() {
   const offres = await getCollection('offres');
+  const exposants = await getCollection('exposants');
   return offres.map((offre) => ({
     params: { reference: offre.data.reference },
-    props: { offre },
+    props: { offre, exposants },
   }));
 }
 
 interface Props {
   offre: Offre;
+  exposants: Awaited<ReturnType<typeof getCollection<'exposants'>>>;
 }
 
-const { offre } = Astro.props;
+const { offre, exposants } = Astro.props;
 const { data } = offre;
 
 const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
@@ -49,6 +52,20 @@ const pageOffrePublique = data.status === 'publiee' ? `/offres/${offreSlug(offre
         estOffreTest(offre) && (
           <span class="ml-2 w-fit rounded-full bg-marine/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-marine/70">
             TEST — exclue des indicateurs du tableau de bord
+          </span>
+        )
+      }
+      {
+        exposantIntrouvable(offre, exposants) && (
+          <span class="ml-2 w-fit rounded-full bg-orange/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-orange-dark">
+            Anomalie — exposant « {data.exposantId} » introuvable dans la collection exposants
+          </span>
+        )
+      }
+      {
+        formuleIncoherente(offre, exposants) && (
+          <span class="ml-2 w-fit rounded-full bg-orange/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-orange-dark">
+            Anomalie — formule incohérente avec l'exposant rattaché
           </span>
         )
       }

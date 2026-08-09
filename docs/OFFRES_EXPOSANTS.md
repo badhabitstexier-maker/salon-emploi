@@ -191,20 +191,45 @@ pour cet identifiant, formule commerciale introuvable — la ligne concernée
 reste au statut interne **« à compléter »** dans le Sheet (jamais publiée
 automatiquement) jusqu'à vérification manuelle par LabEvents.
 
+Depuis le Lot Admin-1C (voir section 5 ci-dessous et `docs/OFFRES.md`
+section 3bis), ce contrôle n'est plus seulement une consigne humaine côté
+Sheet : `npm run offres:import` / `npm run offres:check` le vérifient
+automatiquement contre le référentiel `exposants` réellement présent dans
+le dépôt, et bloquent l'import en cas d'identifiant inconnu ou de formule
+divergente.
+
 ---
 
 ## 5. Identifiant exposant (`exposantId`)
 
-- Format : minuscules, sans accent, mots séparés par des tirets (ex.
-  `pacific-industrie`, `adecal-technopole`) — la même convention que les
-  noms de fichiers de `src/content/exposants/` (voir `docs/EXPOSANTS.md`).
-- Attribué **une seule fois** par LabEvents, au moment de la confirmation
-  de participation de l'exposant, puis réutilisé pour toutes ses offres et
-  toutes ses mises à jour. Ne jamais réattribuer un identifiant existant à
-  un autre exposant.
+> **Corrigé au Lot Admin-1C.** La version précédente de cette section
+> décrivait un format libre (« minuscules, sans accent, tirets ») distinct
+> du format réellement en vigueur côté collection `exposants`
+> (`EXP26-XXX`, voir `docs/EXPOSANTS_IMPORT.md` section 3) — c'était la
+> cause de l'incohérence corrigée par ce lot (les offres TEST utilisaient
+> par exemple `entreprise-test-nc`, un identifiant qui n'existait dans
+> aucun référentiel). Le format ci-dessous est désormais le seul valide.
+
+- **Format canonique : `EXP26-XXX`** (ex. `EXP26-001`, `EXP26-025`) —
+  exactement le même `exposantId` que celui attribué à l'exposant dans la
+  collection `exposants` (voir `docs/EXPOSANTS_IMPORT.md` section 3).
+  Aucun autre format n'est accepté pour une offre réelle ; le schéma Astro
+  (`src/content.config.ts`) et le pipeline d'import le rejettent sinon.
+- **LabEvents ne l'invente pas** : l'identifiant à communiquer à l'exposant
+  dans le Google Form est celui déjà attribué à sa fiche dans la collection
+  `exposants` (import via `scripts/import-exposants.mjs`, voir
+  `docs/EXPOSANTS_IMPORT.md`) — jamais un identifiant recréé au moment de la
+  collecte des offres. Si l'exposant n'a pas encore de fiche `exposants`,
+  celle-ci doit être créée (même `publie: non`) avant de collecter ses
+  offres, pour que l'identifiant existe déjà côté référentiel.
+- Réutilisé tel quel pour toutes les offres et toutes les mises à jour de
+  cet exposant. Ne jamais réattribuer un identifiant existant à un autre
+  exposant.
 - Sert à regrouper les offres d'un même exposant pour le contrôle des
-  quotas (section 8) — c'est la clé technique la plus importante de tout le
-  pipeline.
+  quotas (section 8) et à les rattacher à leur fiche exposant dans l'Admin
+  (`src/lib/admin.ts`, `offresRattachees`) — c'est la clé technique la plus
+  importante de tout le pipeline. **Jamais** par nom d'entreprise ni par
+  correspondance approximative.
 
 ---
 

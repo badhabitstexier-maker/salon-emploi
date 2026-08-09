@@ -11,12 +11,17 @@ possible) sans le remplacer.
 > explicite de Philippe. `publie: non` dans le CSV garde la fiche invisible
 > sur le site — elle peut être préparée à l'avance sans risque.
 
-> Règle métier (Lot Admin-1B) : **la formule appartient à l'exposant et
-> n'est jamais déduite de ses offres.** Le champ `formule` (`standard` /
-> `silver` / `gold`) est renseigné une fois pour l'exposant dans ce CSV ; le
-> champ `formule` présent séparément sur chaque offre (`docs/OFFRES.md`)
-> reste une donnée distincte, à ne pas confondre ni resynchroniser
-> automatiquement avec celle de l'exposant dans ce lot.
+> Règle métier (Lot Admin-1B, précisée par le Lot Admin-1C) : **la formule
+> appartient à l'exposant et n'est jamais déduite de ses offres.** Le champ
+> `formule` (`standard` / `silver` / `gold`) est renseigné une fois pour
+> l'exposant dans ce CSV. Le champ `formule` présent séparément sur chaque
+> offre (`docs/OFFRES.md`) reste une **duplication contrôlée**, conservée
+> pour ne pas rompre l'affichage public des badges — voir `docs/OFFRES.md`
+> section 5 pour l'architecture retenue. `npm run offres:import` et `npm run
+> offres:check` vérifient désormais automatiquement que la `formule` de
+> chaque offre réelle correspond à celle de son exposant, quand le
+> référentiel `exposants` est disponible (voir section 3bis ci-dessous) —
+> une divergence est une erreur bloquante à l'import.
 
 ## 1. Finalité
 
@@ -77,10 +82,40 @@ Convention : `EXP26-001`, `EXP26-002`, etc.
   pipeline traite ce cas comme un **renommage** : l'ancien fichier est
   supprimé, le nouveau écrit sous le nouveau nom — voir section 10).
 
-Cet identifiant est conçu pour pouvoir être réutilisé plus tard afin de
-rapprocher un exposant de ses offres (`exposantId` dans la collection
-`offres`, voir `docs/OFFRES.md`) — ce rapprochement n'est **pas** automatisé
-dans ce lot.
+Cet identifiant est la **clé pivot** entre un exposant et ses offres
+(`exposantId` dans la collection `offres`, voir `docs/OFFRES.md`) — c'est le
+**seul** champ utilisé pour ce rattachement, à l'exclusion de tout autre
+(nom d'entreprise, slug, correspondance approximative). Voir section 3bis
+pour le contrôle automatisé mis en place au Lot Admin-1C.
+
+## 3bis. Rattachement offres ↔ exposant (Lot Admin-1C)
+
+Avant le Lot Admin-1C, `exposantId` sur une offre était un texte libre saisi
+manuellement par l'exposant dans le Google Form (voir
+`docs/OFFRES_EXPOSANTS.md` section 5, historique), sans validation contre la
+collection `exposants` — c'était la cause des deux incohérences corrigées
+par ce lot. Depuis :
+
+- Le schéma Astro (`src/content.config.ts`, collection `offres`) impose le
+  format `EXP26-XXX` à l'`exposantId` de toute offre réelle (une offre TEST,
+  préfixe `TEST —` sur l'intitulé, en est exemptée — voir `docs/OFFRES.md`
+  section 3bis).
+- `npm run offres:import` et `npm run offres:check`
+  (`scripts/import-offres.mjs`) lisent le référentiel `exposants` et
+  vérifient, pour chaque offre réelle, que son `exposantId` correspond
+  effectivement à un exposant de la collection. Une erreur bloquante est
+  levée sinon (« Exposant « EXP26-XXX » inconnu du référentiel exposants »).
+- Ce contrôle est **ignoré** (pas d'erreur) tant que la collection
+  `exposants` est vide ou absente — sinon aucun premier import réel d'offre
+  ne serait possible avant qu'un exposant n'existe déjà. Dès qu'au moins un
+  exposant est présent, le contrôle s'applique à toutes les offres réelles
+  du lot.
+- Le rattachement lui-même (`src/lib/admin.ts`, `offresRattachees`, utilisé
+  par le tableau de bord et les fiches Admin) n'a **jamais** utilisé le nom
+  d'entreprise — uniquement l'égalité stricte `exposantId`. Une offre réelle
+  dont l'`exposantId` ne correspond à aucun exposant porte un badge
+  « Exposant introuvable » dans l'Admin (liste et fiche offre), sans jamais
+  bloquer le build.
 
 ## 4. Champ `hall` et `stand` — correspondance avec le schéma existant
 

@@ -28,6 +28,8 @@ import {
   rapprocherReferencesExistantes,
   detecterDoublonsReferences,
   verifierQuotas,
+  verifierExposantsConnus,
+  verifierFormuleCoherente,
   slugDepuisReference,
   genererContenuOffre,
   lireResumeFrontmatter,
@@ -36,6 +38,7 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RACINE = path.resolve(__dirname, '..');
 const DOSSIER_OFFRES = path.join(RACINE, 'src/content/offres');
+const DOSSIER_EXPOSANTS = path.join(RACINE, 'src/content/exposants');
 
 function parseArgs(argv) {
   const args = { dryRun: false, check: false, fichier: null };
@@ -57,6 +60,33 @@ async function listerOffresExistantes() {
     if (resume.reference) resultats.push({ ...resume, fichier, contenu });
   }
   return resultats;
+}
+
+/*
+  Référentiel exposants (Lot Admin-1C) : lecture directe du dossier
+  `src/content/exposants/` — volontairement une simple lecture de fichiers,
+  pas un import du module `exposants-import-core.mjs` (les deux pipelines
+  restent indépendants, voir CLAUDE.md section 16 sur le couplage entre
+  mécanismes). Retourne `null` si le référentiel n'est pas disponible ou pas
+  encore peuplé (aucun exposant), pour que le contrôle croisé
+  (verifierExposantsConnus / verifierFormuleCoherente) soit ignoré plutôt que
+  de bloquer tout import réel tant qu'aucun exposant n'existe encore.
+*/
+async function listerReferentielExposants() {
+  if (!existsSync(DOSSIER_EXPOSANTS)) return null;
+  const fichiers = (await readdir(DOSSIER_EXPOSANTS)).filter((f) => f.endsWith('.md'));
+  const ids = new Set();
+  const formulePar = new Map();
+  for (const fichier of fichiers) {
+    const contenu = await readFile(path.join(DOSSIER_EXPOSANTS, fichier), 'utf8');
+    const exposantId = /^exposantId:\s*(.+)$/m.exec(contenu)?.[1]?.trim().replace(/^["']|["']$/g, '');
+    const formule = /^formule:\s*(.+)$/m.exec(contenu)?.[1]?.trim().replace(/^["']|["']$/g, '');
+    if (!exposantId) continue;
+    ids.add(exposantId);
+    if (formule) formulePar.set(exposantId, formule);
+  }
+  if (ids.size === 0) return null;
+  return { ids, formulePar };
 }
 
 function verifierColonnes(entetes) {
@@ -129,9 +159,26 @@ async function commandeImport(cheminCsv, dryRun) {
 
   const { erreurs: erreursQuotas, avertissements: avertissementsQuotas } = verifierQuotas(valides, existantes);
 
+  const referentielExposants = await listerReferentielExposants();
+  if (referentielExposants === null) {
+    avertissementsGlobaux.push(
+      "Référentiel exposants indisponible ou vide (collection `exposants`) : contrôle croisé exposantId/formule ignoré pour cet import.",
+    );
+  }
+  const { erreurs: erreursExposantsConnus } = verifierExposantsConnus(
+    valides,
+    referentielExposants?.ids ?? null,
+  );
+  const { erreurs: erreursFormuleCoherente } = verifierFormuleCoherente(
+    valides,
+    referentielExposants?.formulePar ?? null,
+  );
+
   const erreursBloquantes = [
     ...enErreur.map((e) => `Ligne ${e.numeroLigne} : ${e.erreurs.join(' ')}`),
     ...doublons.map((d) => `Référence dupliquée dans le CSV : ${d.reference} (${d.occurrences} occurrences).`),
+    ...erreursExposantsConnus,
+    ...erreursFormuleCoherente,
     ...doublonsAvecExistantesDifferentExposant.map(
       (d) =>
         `Référence ${d.reference} déjà attribuée à l'exposant « ${d.exposantExistant} » — ne peut pas être réattribuée à « ${d.exposantLot} ».`,
@@ -220,6 +267,22 @@ async function commandeCheck() {
   );
   const doublons = detecterDoublonsReferences(existantes);
 
+  const referentielExposants = await listerReferentielExposants();
+  const avertissementsCoherence = [];
+  if (referentielExposants === null) {
+    avertissementsCoherence.push(
+      "Référentiel exposants indisponible ou vide (collection `exposants`) : contrôle croisé exposantId/formule ignoré.",
+    );
+  }
+  const { erreurs: erreursExposantsConnus } = verifierExposantsConnus(
+    existantes,
+    referentielExposants?.ids ?? null,
+  );
+  const { erreurs: erreursFormuleCoherente } = verifierFormuleCoherente(
+    existantes,
+    referentielExposants?.formulePar ?? null,
+  );
+
   console.log(`Collection actuelle : ${existantes.length} offre(s).`);
   if (doublons.length > 0) {
     console.log('\nRéférences dupliquées :');
@@ -229,11 +292,20 @@ async function commandeCheck() {
     console.log('\nQuotas dépassés :');
     for (const e of erreurs) console.log(`  - ${e}`);
   }
-  if (avertissements.length > 0) {
-    console.log('\nAvertissements :');
-    for (const a of avertissements) console.log(`  - ${a}`);
+  if (erreursExposantsConnus.length > 0) {
+    console.log('\nExposant inconnu :');
+    for (const e of erreursExposantsConnus) console.log(`  - ${e}`);
   }
-  const enErreur = doublons.length > 0 || erreurs.length > 0;
+  if (erreursFormuleCoherente.length > 0) {
+    console.log('\nFormule incohérente avec l\'exposant :');
+    for (const e of erreursFormuleCoherente) console.log(`  - ${e}`);
+  }
+  if (avertissements.length > 0 || avertissementsCoherence.length > 0) {
+    console.log('\nAvertissements :');
+    for (const a of [...avertissements, ...avertissementsCoherence]) console.log(`  - ${a}`);
+  }
+  const enErreur =
+    doublons.length > 0 || erreurs.length > 0 || erreursExposantsConnus.length > 0 || erreursFormuleCoherente.length > 0;
   console.log(enErreur ? '\nContrôle en échec.' : '\nContrôle OK.');
   return enErreur ? 1 : 0;
 }
