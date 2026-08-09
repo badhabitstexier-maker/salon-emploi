@@ -4,12 +4,26 @@ import '../styles/global.css';
 
 interface Props {
   title: string;
+  /** Section active dans la navigation — omis sur les pages hors des 3 sections (ex. /admin racine). */
+  section?: 'dashboard' | 'exposants' | 'offres';
 }
 
 // Espace interne LabEvents : toujours noindex, quel que soit PUBLIC_NOINDEX
 // (voir docs/ADMIN.md — la vraie barrière reste l'authentification serveur
 // .htaccess, pas cette balise, qui n'empêche que l'indexation).
-const { title } = Astro.props;
+const { title, section } = Astro.props;
+
+/*
+  Navigation Admin-1 (voir CLAUDE.md section 14) : uniquement les 3 sections
+  livrées dans ce lot. Programme, Visibilité, Candidatures, Paramètres,
+  utilisateurs et statistiques avancées viendront dans des lots ultérieurs —
+  ne pas les ajouter par anticipation.
+*/
+const liensNav = [
+  { id: 'dashboard', label: 'Tableau de bord', href: '/admin/dashboard' },
+  { id: 'exposants', label: 'Exposants', href: '/admin/exposants' },
+  { id: 'offres', label: 'Offres', href: '/admin/offres' },
+] as const;
 ---
 
 <!doctype html>
@@ -23,8 +37,30 @@ const { title } = Astro.props;
   </head>
   <body class="min-h-screen bg-brume text-encre">
     <header class="border-b border-marine/20 bg-marine text-blanc">
-      <div class="mx-auto flex h-14 max-w-6xl items-center px-4 sm:px-6">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
         <p class="text-sm font-bold uppercase tracking-wide">Admin LabEvents — Salon Emploi &amp; Formation 2026</p>
+        <nav aria-label="Navigation admin" class="flex flex-wrap items-center gap-x-5 gap-y-1">
+          {
+            liensNav.map((lien) => (
+              <a
+                href={lien.href}
+                aria-current={section === lien.id ? 'page' : undefined}
+                class:list={[
+                  'text-sm font-semibold uppercase tracking-wide transition-colors hover:text-orange',
+                  section === lien.id ? 'text-orange' : 'text-brume',
+                ]}
+              >
+                {lien.label}
+              </a>
+            ))
+          }
+          <a
+            href="/"
+            class="text-sm font-semibold text-brume/70 underline decoration-brume/40 underline-offset-4 transition-colors hover:text-blanc"
+          >
+            Voir le site public
+          </a>
+        </nav>
       </div>
     </header>
     <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">

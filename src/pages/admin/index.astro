@@ -2,16 +2,21 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 
 /*
-  Lot Admin-0 : socle technique uniquement (voir docs/ADMIN.md). Aucune
-  fonction métier ici — le tableau de bord, les listes exposants/offres et
-  le module « visibilité » sont hors périmètre de ce lot.
+  Lot Admin-0 : socle technique (voir docs/ADMIN.md). Le Lot Admin-1 ajoute
+  le tableau de bord et les listes exposants/offres — cette page reste un
+  point d'entrée minimal, sans logique propre.
 */
 ---
 
 <AdminLayout title="Accueil">
   <h1 class="text-2xl font-bold text-marine">Espace Admin LabEvents</h1>
   <p class="mt-4 max-w-prose text-encre">
-    Socle technique de l'espace d'administration interne. Aucune fonctionnalité métier n'est encore disponible à ce
-    stade (voir <code>docs/ADMIN.md</code> pour l'état d'avancement et les prochains lots).
+    Espace interne de pilotage, en lecture seule, à partir des données publiées sur le site.
   </p>
+  <a
+    href="/admin/dashboard"
+    class="mt-6 inline-flex items-center justify-center rounded-md bg-marine px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+  >
+    Accéder au tableau de bord
+  </a>
 </AdminLayout>

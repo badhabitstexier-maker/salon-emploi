@@ -1,0 +1,115 @@
+---
+import { getCollection } from 'astro:content';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { repartitionPar, repartitionParMultiple } from '../../lib/admin';
+
+/*
+  Tableau de bord Admin-1 (voir CLAUDE.md section 14). Tous les indicateurs
+  sont calculés dynamiquement depuis les Content Collections `exposants` et
+  `offres` — aucun chiffre codé en dur. La répartition par « formule »
+  exposant n'apparaît volontairement pas ici : `formule` n'existe pas dans
+  le schéma `exposants` (uniquement sur `offres`), et il a été décidé de ne
+  pas la déduire à partir des offres (voir docs/ADMIN.md pour le détail de
+  cette décision).
+*/
+
+const exposants = await getCollection('exposants');
+const offres = await getCollection('offres');
+
+const totalExposants = exposants.length;
+const exposantsPublies = exposants.filter((e) => e.data.publie).length;
+
+const totalOffres = offres.length;
+const offresPubliees = offres.filter((o) => o.data.status === 'publiee').length;
+
+/*
+  Répartition par exposant : basée sur `exposantNom`, un champ réellement
+  présent et renseigné sur chaque offre (contrairement au rattachement par
+  `exposantId`, qui suppose que la fiche exposant correspondante existe déjà
+  dans la collection `exposants` — pas encore le cas en pratique, voir
+  docs/ADMIN.md).
+*/
+const repartitionExposants = repartitionPar(offres, (o) => o.data.exposantNom);
+const repartitionTypeContrat = repartitionParMultiple(offres, (o) => o.data.typeContrat);
+---
+
+<AdminLayout title="Tableau de bord" section="dashboard">
+  <h1 class="text-2xl font-bold text-marine">Tableau de bord</h1>
+  <p class="mt-2 max-w-prose text-sm text-encre/80">
+    Indicateurs calculés à partir des Content Collections du site. Lecture seule — aucune donnée n'est modifiable
+    depuis cet espace.
+  </p>
+
+  <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
+      <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Exposants — total collection</p>
+      <p class="mt-2 font-titre text-3xl font-bold text-marine">{totalExposants}</p>
+    </div>
+    <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
+      <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Exposants — publiés</p>
+      <p class="mt-2 font-titre text-3xl font-bold text-marine">{exposantsPublies}</p>
+    </div>
+    <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
+      <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Offres — total collection</p>
+      <p class="mt-2 font-titre text-3xl font-bold text-marine">{totalOffres}</p>
+    </div>
+    <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
+      <p class="text-xs font-bold uppercase tracking-wide text-marine/70">Offres — publiées</p>
+      <p class="mt-2 font-titre text-3xl font-bold text-marine">{offresPubliees}</p>
+    </div>
+  </div>
+
+  <div class="mt-10 grid gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
+      <h2 class="font-titre text-lg font-bold uppercase text-marine">Offres par exposant</h2>
+      <p class="mt-1 text-xs text-encre/70">Regroupement par nom d'exposant déclaré sur chaque offre.</p>
+      {
+        repartitionExposants.length > 0 ? (
+          <ul class="mt-4 space-y-2 text-sm">
+            {repartitionExposants.map((ligne) => (
+              <li class="flex items-center justify-between gap-3 border-b border-marine/10 pb-2">
+                <span class="text-encre">{ligne.valeur}</span>
+                <span class="font-titre font-bold text-marine">{ligne.total}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="mt-4 text-sm text-encre/70">Aucune offre dans la collection.</p>
+        )
+      }
+    </div>
+
+    <div class="rounded-2xl border border-marine/15 bg-blanc p-5">
+      <h2 class="font-titre text-lg font-bold uppercase text-marine">Offres par type de contrat</h2>
+      {
+        repartitionTypeContrat.length > 0 ? (
+          <ul class="mt-4 space-y-2 text-sm">
+            {repartitionTypeContrat.map((ligne) => (
+              <li class="flex items-center justify-between gap-3 border-b border-marine/10 pb-2">
+                <span class="text-encre">{ligne.valeur}</span>
+                <span class="font-titre font-bold text-marine">{ligne.total}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="mt-4 text-sm text-encre/70">Aucune offre dans la collection.</p>
+        )
+      }
+    </div>
+  </div>
+
+  <div class="mt-10 flex flex-col gap-3 sm:flex-row">
+    <a
+      href="/admin/exposants"
+      class="inline-flex items-center justify-center rounded-md bg-marine px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-blanc transition-opacity hover:opacity-90"
+    >
+      Voir les exposants
+    </a>
+    <a
+      href="/admin/offres"
+      class="inline-flex items-center justify-center rounded-md border-2 border-marine px-6 py-3 font-titre text-base font-bold uppercase tracking-wide text-marine transition-colors hover:bg-marine hover:text-blanc"
+    >
+      Voir les offres
+    </a>
+  </div>
+</AdminLayout>

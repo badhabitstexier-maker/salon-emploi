@@ -27,6 +27,7 @@ npm-debug.log*
 # le build Playwright, supprimée par e2e/global-teardown.ts ; filet de
 # sécurité si le teardown est interrompu.
 src/content/offres/e2e-fixture-offre.md
+src/content/exposants/e2e-fixture-exposant.md
 
 # exports Google Forms/Sheets réels (données de contact exposants — voir
 # docs/WORKFLOW_OFFRES_2026.md) : ne jamais committer, seul le CSV normalisé

@@ -1,0 +1,200 @@
+---
+import { getCollection } from 'astro:content';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { universLabels } from '../../../lib/exposants';
+import { offresRattachees } from '../../../lib/admin';
+
+/*
+  Vue tableau Admin-1 des exposants (voir CLAUDE.md section 14). Tous les
+  exposants de la collection sont listés, publiés ou non — l'admin doit
+  pouvoir suivre les fiches en cours de préparation, pas seulement celles
+  déjà visibles publiquement.
+
+  Pas de colonne/filtre « formule » : ce champ n'existe pas dans le schéma
+  `exposants` (voir docs/ADMIN.md).
+*/
+
+const exposants = await getCollection('exposants');
+const offres = await getCollection('offres');
+
+const lignes = exposants
+  .map((exposant) => ({
+    exposant,
+    href: `/admin/exposants/${exposant.id}`,
+    nbOffres: offresRattachees(exposant, offres).length,
+  }))
+  .sort((a, b) => a.exposant.data.nom.localeCompare(b.exposant.data.nom, 'fr'));
+---
+
+<AdminLayout title="Exposants" section="exposants">
+  <h1 class="text-2xl font-bold text-marine">Exposants</h1>
+  <p class="mt-2 text-sm text-encre/80">{exposants.length} {exposants.length > 1 ? 'exposants' : 'exposant'} dans la collection.</p>
+
+  {
+    lignes.length > 0 ? (
+      <Fragment>
+        <form id="filtres-exposants-admin" class="mt-6 rounded-2xl border border-marine/15 bg-blanc p-5 sm:p-6">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="recherche-exposant-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Rechercher un nom
+              </label>
+              <input
+                id="recherche-exposant-admin"
+                name="recherche"
+                type="search"
+                placeholder="Nom de l'exposant…"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              />
+            </div>
+            <div>
+              <label for="filtre-univers-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Univers
+              </label>
+              <select
+                id="filtre-univers-admin"
+                name="univers"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              >
+                <option value="">Tous</option>
+                <option value="emploi">{universLabels.emploi}</option>
+                <option value="formation">{universLabels.formation}</option>
+              </select>
+            </div>
+          </div>
+          <p id="resultats-compte-exposants-admin" class="mt-4 text-sm font-semibold text-marine" aria-live="polite">
+            {lignes.length} {lignes.length > 1 ? 'résultats' : 'résultat'}
+          </p>
+        </form>
+
+        <div class="mt-6 overflow-x-auto rounded-2xl border border-marine/15 bg-blanc">
+          <table class="w-full min-w-[720px] text-left text-sm">
+            <thead class="border-b border-marine/15 bg-brume text-xs font-bold uppercase tracking-wide text-marine">
+              <tr>
+                <th scope="col" class="px-4 py-3">
+                  <button type="button" data-sort-key="nom" class="flex items-center gap-1 hover:text-orange">Nom</button>
+                </th>
+                <th scope="col" class="px-4 py-3">Hall</th>
+                <th scope="col" class="px-4 py-3">Stand</th>
+                <th scope="col" class="px-4 py-3">Site web</th>
+                <th scope="col" class="px-4 py-3">
+                  <button type="button" data-sort-key="offres" class="flex items-center gap-1 hover:text-orange">Offres rattachées</button>
+                </th>
+                <th scope="col" class="px-4 py-3">Statut</th>
+              </tr>
+            </thead>
+            <tbody id="corps-exposants-admin">
+              {
+                lignes.map(({ exposant, href, nbOffres }) => (
+                  <tr
+                    data-exposant-row
+                    data-search={`${exposant.data.nom} ${exposant.data.secteurs.join(' ')}`.toLowerCase()}
+                    data-univers={exposant.data.univers}
+                    data-nom={exposant.data.nom}
+                    data-offres={nbOffres}
+                    class="border-b border-marine/10 last:border-0 hover:bg-brume/60"
+                  >
+                    <td class="px-4 py-3 font-semibold text-marine">
+                      <a href={href} class="hover:underline">{exposant.data.nom}</a>
+                    </td>
+                    <td class="px-4 py-3 text-encre">{universLabels[exposant.data.univers]}</td>
+                    <td class="px-4 py-3 text-encre">{exposant.data.numero_stand ?? '—'}</td>
+                    <td class="px-4 py-3 text-encre">
+                      {exposant.data.site_web ? (
+                        <a href={exposant.data.site_web} target="_blank" rel="noopener noreferrer" class="text-marine underline">
+                          Lien
+                        </a>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td class="px-4 py-3 text-encre">{nbOffres}</td>
+                    <td class="px-4 py-3">
+                      <span
+                        class:list={[
+                          'rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide',
+                          exposant.data.publie ? 'bg-village text-marine' : 'bg-marine/10 text-marine',
+                        ]}
+                      >
+                        {exposant.data.publie ? 'Publié' : 'Non publié'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <p id="aucun-resultat-exposants-admin" class="mt-6 hidden rounded-2xl border border-marine/15 bg-blanc p-8 text-center text-sm text-encre">
+          Aucun exposant ne correspond à votre recherche.
+        </p>
+      </Fragment>
+    ) : (
+      <p class="mt-8 rounded-2xl border border-marine/15 bg-blanc p-8 text-center text-sm text-encre">
+        La collection « exposants » est vide — aucune fiche importée à ce jour.
+      </p>
+    )
+  }
+</AdminLayout>
+
+<script>
+  const form = document.getElementById('filtres-exposants-admin') as HTMLFormElement | null;
+  const corps = document.getElementById('corps-exposants-admin');
+  const compte = document.getElementById('resultats-compte-exposants-admin');
+  const aucunResultat = document.getElementById('aucun-resultat-exposants-admin');
+
+  const normaliser = (valeur: string) =>
+    valeur
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+  if (form && corps && compte && aucunResultat) {
+    const lignes = Array.from(corps.querySelectorAll<HTMLTableRowElement>('[data-exposant-row]'));
+
+    const appliquerFiltres = () => {
+      const donnees = new FormData(form);
+      const recherche = normaliser(String(donnees.get('recherche') ?? '').trim());
+      const univers = String(donnees.get('univers') ?? '');
+
+      let visibles = 0;
+      for (const ligne of lignes) {
+        const visible =
+          (!recherche || normaliser(ligne.dataset.search ?? '').includes(recherche)) &&
+          (!univers || ligne.dataset.univers === univers);
+        ligne.classList.toggle('hidden', !visible);
+        if (visible) visibles += 1;
+      }
+
+      compte.textContent = `${visibles} ${visibles > 1 || visibles === 0 ? 'résultats' : 'résultat'}`;
+      aucunResultat.classList.toggle('hidden', visibles !== 0);
+    };
+
+    form.addEventListener('input', appliquerFiltres);
+    form.addEventListener('change', appliquerFiltres);
+    appliquerFiltres();
+  }
+
+  // Tri simple par en-tête cliquable (texte ou numérique selon la colonne).
+  const boutonsTri = document.querySelectorAll<HTMLButtonElement>('[data-sort-key]');
+  let triActuel: { cle: string; sens: 1 | -1 } | null = null;
+
+  for (const bouton of boutonsTri) {
+    bouton.addEventListener('click', () => {
+      if (!corps) return;
+      const cle = bouton.dataset.sortKey!;
+      const sens: 1 | -1 = triActuel && triActuel.cle === cle && triActuel.sens === 1 ? -1 : 1;
+      triActuel = { cle, sens };
+
+      const lignes = Array.from(corps.querySelectorAll<HTMLTableRowElement>('[data-exposant-row]'));
+      lignes.sort((a, b) => {
+        if (cle === 'offres') {
+          return (Number(a.dataset.offres) - Number(b.dataset.offres)) * sens;
+        }
+        return a.dataset.nom!.localeCompare(b.dataset.nom!, 'fr') * sens;
+      });
+      for (const ligne of lignes) corps.appendChild(ligne);
+    });
+  }
+</script>

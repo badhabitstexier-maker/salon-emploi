@@ -1,15 +1,21 @@
 /*
-  Fixture E2E pour le Lot 4B-2 (parcours Offres) : crée/supprime une offre
-  factice, publiée et acceptant les candidatures en ligne, uniquement pour la
-  durée d'une exécution Playwright.
+  Fixtures E2E pour la suite Playwright : crée/supprime une offre et un
+  exposant factices, uniquement pour la durée d'une exécution Playwright.
 
-  Nécessaire car les 5 offres TEST du catalogue public (voir docs/OFFRES.md,
-  src/lib/offres.ts::estOffreTest) masquent volontairement le bouton de
-  sélection — impossible de tester l'ajout/retrait/limite de sélection sans
-  une offre « réelle ». Cette fixture n'est *jamais* committée : elle est
-  écrite juste avant `npm run build` (voir playwright.config.ts, webServer.command)
-  et supprimée par le globalTeardown Playwright (voir e2e/global-teardown.ts),
-  qu'importe l'issue des tests. `.gitignore` l'exclut aussi par sécurité.
+  Offre (Lot 4B-2, parcours Offres) : nécessaire car les 5 offres TEST du
+  catalogue public (voir docs/OFFRES.md, src/lib/offres.ts::estOffreTest)
+  masquent volontairement le bouton de sélection — impossible de tester
+  l'ajout/retrait/limite de sélection sans une offre « réelle ».
+
+  Exposant (Lot Admin-1, voir docs/ADMIN.md) : la collection `exposants` est
+  vide en conditions réelles (aucun import réel à ce jour) — nécessaire pour
+  tester la table/fiche exposant de l'admin. Son `exposantId` correspond à
+  celui de l'offre fixture, pour tester le rattachement offres <-> exposant.
+
+  Ces fixtures ne sont *jamais* committées : elles sont écrites juste avant
+  `npm run build` (voir playwright.config.ts, webServer.command) et
+  supprimées par le globalTeardown Playwright (voir e2e/global-teardown.ts),
+  qu'importe l'issue des tests. `.gitignore` les exclut aussi par sécurité.
 
   Usage : node scripts/e2e-fixtures.mjs create|remove
 */
@@ -25,15 +31,19 @@ export const FIXTURE_SLUG = 'e2e-fixture-offre';
 export const FIXTURE_SECTEUR = 'Logistique et transport (fixture E2E)';
 export const FIXTURE_LIEU = 'Fixture E2E';
 export const FIXTURE_TYPE_CONTRAT = 'CDI';
+export const FIXTURE_EXPOSANT_ID = 'EXP26-999';
+export const FIXTURE_EXPOSANT_NOM = 'Fixture E2E LabEvents';
+export const FIXTURE_EXPOSANT_SLUG = 'e2e-fixture-exposant';
 
-const cheminFixture = path.join(__dirname, '..', 'src', 'content', 'offres', `${FIXTURE_SLUG}.md`);
+const cheminFixtureOffre = path.join(__dirname, '..', 'src', 'content', 'offres', `${FIXTURE_SLUG}.md`);
+const cheminFixtureExposant = path.join(__dirname, '..', 'src', 'content', 'exposants', `${FIXTURE_EXPOSANT_SLUG}.md`);
 
-const contenuFixture = `---
+const contenuFixtureOffre = `---
 reference: "${FIXTURE_REFERENCE}"
 status: "publiee"
 intitule: "${FIXTURE_INTITULE}"
-exposantId: "e2e-fixture"
-exposantNom: "Fixture E2E LabEvents"
+exposantId: "${FIXTURE_EXPOSANT_ID}"
+exposantNom: "${FIXTURE_EXPOSANT_NOM}"
 formule: "standard"
 secteur: "${FIXTURE_SECTEUR}"
 typeContrat:
@@ -54,12 +64,28 @@ datePublication: 2026-08-08
 ---
 `;
 
+const contenuFixtureExposant = `---
+exposantId: "${FIXTURE_EXPOSANT_ID}"
+nom: "${FIXTURE_EXPOSANT_NOM}"
+univers: "emploi"
+type_structure: "entreprise"
+secteurs:
+  - "${FIXTURE_SECTEUR}"
+accroche: "Fiche générée automatiquement par scripts/e2e-fixtures.mjs pour les tests Playwright du Lot Admin-1."
+description: "Fiche fixture E2E — ne doit jamais apparaître en dehors d'une exécution de tests."
+numero_stand: "E2E-01"
+publie: true
+---
+`;
+
 function creer() {
-  writeFileSync(cheminFixture, contenuFixture, 'utf8');
+  writeFileSync(cheminFixtureOffre, contenuFixtureOffre, 'utf8');
+  writeFileSync(cheminFixtureExposant, contenuFixtureExposant, 'utf8');
 }
 
 function supprimer() {
-  if (existsSync(cheminFixture)) rmSync(cheminFixture);
+  if (existsSync(cheminFixtureOffre)) rmSync(cheminFixtureOffre);
+  if (existsSync(cheminFixtureExposant)) rmSync(cheminFixtureExposant);
 }
 
 /*

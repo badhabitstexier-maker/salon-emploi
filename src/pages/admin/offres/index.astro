@@ -1,0 +1,210 @@
+---
+import { getCollection } from 'astro:content';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { statutLabels, entreprisesDisponibles, typesContratDisponibles } from '../../../lib/offres';
+
+/*
+  Vue tableau Admin-1 des offres (voir CLAUDE.md section 14). Toutes les
+  offres de la collection sont listées, quel que soit leur `status` — le
+  circuit interne (reçue, à compléter, validée...) est justement ce que
+  LabEvents doit pouvoir suivre ici, pas seulement les offres publiées.
+*/
+
+const offres = (await getCollection('offres')).sort(
+  (a, b) => b.data.datePublication.getTime() - a.data.datePublication.getTime(),
+);
+
+const entreprises = entreprisesDisponibles(offres);
+const typesContrat = typesContratDisponibles(offres);
+const statuts = Object.entries(statutLabels);
+
+const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
+---
+
+<AdminLayout title="Offres" section="offres">
+  <h1 class="text-2xl font-bold text-marine">Offres</h1>
+  <p class="mt-2 text-sm text-encre/80">{offres.length} {offres.length > 1 ? 'offres' : 'offre'} dans la collection.</p>
+
+  {
+    offres.length > 0 ? (
+      <Fragment>
+        <form id="filtres-offres-admin" class="mt-6 rounded-2xl border border-marine/15 bg-blanc p-5 sm:p-6">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="lg:col-span-2">
+              <label for="recherche-offre-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Rechercher
+              </label>
+              <input
+                id="recherche-offre-admin"
+                name="recherche"
+                type="search"
+                placeholder="Référence, intitulé, entreprise…"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              />
+            </div>
+            <div>
+              <label for="filtre-entreprise-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Entreprise
+              </label>
+              <select
+                id="filtre-entreprise-admin"
+                name="entreprise"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              >
+                <option value="">Toutes</option>
+                {entreprises.map((entreprise) => <option value={entreprise}>{entreprise}</option>)}
+              </select>
+            </div>
+            <div>
+              <label for="filtre-type-contrat-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+                Type de contrat
+              </label>
+              <select
+                id="filtre-type-contrat-admin"
+                name="typeContrat"
+                class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+              >
+                <option value="">Tous</option>
+                {typesContrat.map((type) => <option value={type}>{type}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label for="filtre-statut-admin" class="block text-xs font-bold uppercase tracking-wide text-marine">
+              Statut
+            </label>
+            <select
+              id="filtre-statut-admin"
+              name="statut"
+              class="mt-1.5 w-full max-w-xs rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30"
+            >
+              <option value="">Tous</option>
+              {statuts.map(([valeur, label]) => <option value={valeur}>{label}</option>)}
+            </select>
+          </div>
+
+          <p id="resultats-compte-offres-admin" class="mt-4 text-sm font-semibold text-marine" aria-live="polite">
+            {offres.length} {offres.length > 1 ? 'résultats' : 'résultat'}
+          </p>
+        </form>
+
+        <div class="mt-6 overflow-x-auto rounded-2xl border border-marine/15 bg-blanc">
+          <table class="w-full min-w-[860px] text-left text-sm">
+            <thead class="border-b border-marine/15 bg-brume text-xs font-bold uppercase tracking-wide text-marine">
+              <tr>
+                <th scope="col" class="px-4 py-3">Référence</th>
+                <th scope="col" class="px-4 py-3">Titre</th>
+                <th scope="col" class="px-4 py-3">Entreprise</th>
+                <th scope="col" class="px-4 py-3">Contrat</th>
+                <th scope="col" class="px-4 py-3">Localisation</th>
+                <th scope="col" class="px-4 py-3">
+                  <button type="button" data-sort-key="date" class="flex items-center gap-1 hover:text-orange">Publication</button>
+                </th>
+                <th scope="col" class="px-4 py-3">Statut</th>
+              </tr>
+            </thead>
+            <tbody id="corps-offres-admin">
+              {
+                offres.map((offre) => (
+                  <tr
+                    data-offre-row
+                    data-search={`${offre.data.reference} ${offre.data.intitule} ${offre.data.exposantNom}`.toLowerCase()}
+                    data-entreprise={offre.data.exposantNom}
+                    data-types-contrat={offre.data.typeContrat.join('|')}
+                    data-statut={offre.data.status}
+                    data-date={offre.data.datePublication.getTime()}
+                    class="border-b border-marine/10 last:border-0 hover:bg-brume/60"
+                  >
+                    <td class="px-4 py-3 font-semibold text-marine">
+                      <a href={`/admin/offres/${offre.data.reference}`} class="hover:underline">{offre.data.reference}</a>
+                    </td>
+                    <td class="px-4 py-3 text-encre">{offre.data.intitule}</td>
+                    <td class="px-4 py-3 text-encre">{offre.data.exposantNom}</td>
+                    <td class="px-4 py-3 text-encre">{offre.data.typeContrat.join(' · ')}</td>
+                    <td class="px-4 py-3 text-encre">{offre.data.lieu}</td>
+                    <td class="px-4 py-3 text-encre">{formateurDate.format(offre.data.datePublication)}</td>
+                    <td class="px-4 py-3">
+                      <span
+                        class:list={[
+                          'rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide',
+                          offre.data.status === 'publiee' ? 'bg-village text-marine' : 'bg-marine/10 text-marine',
+                        ]}
+                      >
+                        {statutLabels[offre.data.status]}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <p id="aucun-resultat-offres-admin" class="mt-6 hidden rounded-2xl border border-marine/15 bg-blanc p-8 text-center text-sm text-encre">
+          Aucune offre ne correspond à votre recherche.
+        </p>
+      </Fragment>
+    ) : (
+      <p class="mt-8 rounded-2xl border border-marine/15 bg-blanc p-8 text-center text-sm text-encre">
+        La collection « offres » est vide.
+      </p>
+    )
+  }
+</AdminLayout>
+
+<script>
+  const form = document.getElementById('filtres-offres-admin') as HTMLFormElement | null;
+  const corps = document.getElementById('corps-offres-admin');
+  const compte = document.getElementById('resultats-compte-offres-admin');
+  const aucunResultat = document.getElementById('aucun-resultat-offres-admin');
+
+  const normaliser = (valeur: string) =>
+    valeur
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+  if (form && corps && compte && aucunResultat) {
+    const lignes = Array.from(corps.querySelectorAll<HTMLTableRowElement>('[data-offre-row]'));
+
+    const appliquerFiltres = () => {
+      const donnees = new FormData(form);
+      const recherche = normaliser(String(donnees.get('recherche') ?? '').trim());
+      const entreprise = String(donnees.get('entreprise') ?? '');
+      const typeContrat = String(donnees.get('typeContrat') ?? '');
+      const statut = String(donnees.get('statut') ?? '');
+
+      let visibles = 0;
+      for (const ligne of lignes) {
+        const typesLigne = (ligne.dataset.typesContrat ?? '').split('|');
+        const visible =
+          (!recherche || normaliser(ligne.dataset.search ?? '').includes(recherche)) &&
+          (!entreprise || ligne.dataset.entreprise === entreprise) &&
+          (!typeContrat || typesLigne.includes(typeContrat)) &&
+          (!statut || ligne.dataset.statut === statut);
+        ligne.classList.toggle('hidden', !visible);
+        if (visible) visibles += 1;
+      }
+
+      compte.textContent = `${visibles} ${visibles > 1 || visibles === 0 ? 'résultats' : 'résultat'}`;
+      aucunResultat.classList.toggle('hidden', visibles !== 0);
+    };
+
+    form.addEventListener('input', appliquerFiltres);
+    form.addEventListener('change', appliquerFiltres);
+    appliquerFiltres();
+  }
+
+  // Tri par date de publication (bascule croissant/décroissant).
+  const boutonTriDate = document.querySelector<HTMLButtonElement>('[data-sort-key="date"]');
+  let sensTriDate: 1 | -1 = -1;
+
+  boutonTriDate?.addEventListener('click', () => {
+    if (!corps) return;
+    sensTriDate = sensTriDate === -1 ? 1 : -1;
+    const lignes = Array.from(corps.querySelectorAll<HTMLTableRowElement>('[data-offre-row]'));
+    lignes.sort((a, b) => (Number(a.dataset.date) - Number(b.dataset.date)) * sensTriDate);
+    for (const ligne of lignes) corps.appendChild(ligne);
+  });
+</script>
