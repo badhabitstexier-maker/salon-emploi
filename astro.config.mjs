@@ -32,6 +32,31 @@ try {
 }
 
 /*
+  Fiches exposants de démonstration (`demo: true`, voir src/content.config.ts
+  et docs/EXPOSANTS.md) : exclues du sitemap pour ne jamais présenter ces
+  entreprises fictives à Google comme de vrais exposants. La distinction
+  TEST/RÉEL est portée par le champ `demo` du modèle de données, pas par une
+  liste de slugs codée en dur — ce bloc ne fait que lire ce champ sur
+  disque, au même titre que slugsOffresTest ci-dessus.
+*/
+const dossierExposants = path.join(__dirname, 'src/content/exposants');
+let slugsExposantsDemo = [];
+try {
+  slugsExposantsDemo = readdirSync(dossierExposants)
+    .filter((fichier) => fichier.endsWith('.md'))
+    .filter((fichier) => /^demo:\s*true\s*$/m.test(readFileSync(path.join(dossierExposants, fichier), 'utf8')))
+    .map((fichier) => {
+      // Le champ `slug` en frontmatter force l'adresse de la fiche (voir
+      // src/lib/exposants.ts::exposantSlug) — sinon c'est le nom de fichier.
+      const contenu = readFileSync(path.join(dossierExposants, fichier), 'utf8');
+      const slugForce = /^slug:\s*"?([^"\n]+?)"?\s*$/m.exec(contenu);
+      return slugForce ? slugForce[1] : fichier.replace(/\.md$/, '');
+    });
+} catch {
+  // Dossier absent ou vide (collection non encore alimentée) : rien à exclure.
+}
+
+/*
   `astro.config.mjs` s'exécute avant que Vite ne charge `.env` : il faut donc
   lire les variables manuellement ici (cf. doc Astro sur les variables
   d'environnement dans le fichier de config). Préfixe vide = on charge toutes
@@ -68,12 +93,14 @@ export default defineConfig({
             /*
               Exclusions du sitemap :
               - fiches offres TEST (slugsOffresTest ci-dessus) ;
+              - fiches exposants de démonstration (slugsExposantsDemo ci-dessus) ;
               - /admin (jamais indexé, voir robotsTxt ci-dessous) ;
               - /merci (page de confirmation post-formulaire, marquée noindex
                 dans src/pages/merci.astro : aucune valeur en indexation).
             */
             filter: (page) =>
               !slugsOffresTest.some((slug) => page.includes(`/offres/${slug}`)) &&
+              !slugsExposantsDemo.some((slug) => page.includes(`/exposants/${slug}`)) &&
               !page.includes('/admin') &&
               !page.includes('/merci'),
           }),

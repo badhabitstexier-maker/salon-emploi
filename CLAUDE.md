@@ -21,6 +21,16 @@
 > distincte de la préprod, Admin production fonctionnel, redirection 301 `www` → apex assurée en
 > dépôt par `public/.htaccess`. Correctifs SEO du même audit : page `/merci` passée en `noindex` et
 > exclue du sitemap.
+>
+> **Amendements du 10 août 2026 (Lot « exposants-statuts », sections 7/15)** : fiches exposants
+> publiques différenciées par statut commercial (`formule`, déjà existant, réutilisé comme statut
+> public — voir `docs/EXPOSANTS.md` section 12). Annuaire `/exposants` désormais en trois
+> catégories (Partenaires premium → Exposants partenaires → Exposants, alphabétique dans chaque
+> catégorie). Nouveaux champs facultatifs et réservés par statut sur la collection `exposants`
+> (`lien_recrutement`, `reseaux_sociaux`, `image_couverture`, `galerie`, `presentation longue` via
+> `description` désormais optionnel) et champ `demo` (fiche de démonstration : noindex, exclue du
+> sitemap). Six fiches de démonstration ajoutées (`src/content/exposants/demo-*.md`, entièrement
+> fictives) avec 13 offres TEST associées (`SEF26-006` à `SEF26-018`) — voir section 15.
 
 ---
 
@@ -318,8 +328,8 @@ Le dashboard et les vues exposants/offres exposent des indicateurs utiles (badge
 
 ## 15. Contenus réels présents (état factuel)
 
-- **Offres** : 5 fiches, **toutes TEST** (`SEF26-001` à `SEF26-005`, exposant fictif `Entreprise Test NC`). **0 offre réelle.**
-- **Exposants** : **0** fiche. Pipeline d'import prêt (`docs/EXPOSANTS_IMPORT.md`), jamais alimenté avec de vraies données.
+- **Offres** : 18 fiches, **toutes TEST** (`SEF26-001` à `SEF26-018`). Les 5 premières (`SEF26-001` à `SEF26-005`) sont rattachées à l'exposant fictif historique `Entreprise Test NC` (non présent dans la collection `exposants`, anomalie Admin attendue). Les 13 suivantes (`SEF26-006` à `SEF26-018`) sont rattachées aux 6 exposants de démonstration ci-dessous. **0 offre réelle.**
+- **Exposants** : **6** fiches, **toutes de démonstration** (`demo: true`, préfixe de fichier `demo-*.md` — voir `docs/EXPOSANTS.md` section 13) : 1 Partenaire premium, 2 Exposants partenaires, 3 Exposants. Entièrement fictives (noms, logos, coordonnées), à retirer sans changement de code une fois les exposants réels intégrés. Pipeline d'import prêt (`docs/EXPOSANTS_IMPORT.md`), jamais alimenté avec de vraies données. **0 exposant réel.**
 - **Programme** : **0** entrée. Pipeline d'import prêt (`docs/PROGRAMME_IMPORT.md`), jamais alimenté.
 - **Campagnes Visibilité** : contenu réel du `visibilites.json` serveur **non déterminable depuis Git** (par construction — voir section 12). Ne jamais affirmer un nombre de campagnes actives sans avoir consulté `/admin/visibilite` en direct.
 

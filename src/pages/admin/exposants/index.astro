@@ -142,6 +142,13 @@ const lignes = exposants
                       >
                         {exposant.data.publie ? 'Publié' : 'Non publié'}
                       </span>
+                      {
+                        exposant.data.demo && (
+                          <span class="ml-1.5 w-fit rounded-full bg-orange/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-orange-dark">
+                            Démo
+                          </span>
+                        )
+                      }
                     </td>
                   </tr>
                 ))

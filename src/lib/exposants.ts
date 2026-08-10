@@ -1,6 +1,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 
 export type Exposant = CollectionEntry<'exposants'>;
+export type Offre = CollectionEntry<'offres'>;
 
 export const universLabels: Record<Exposant['data']['univers'], string> = {
   emploi: 'Hall Emploi',
@@ -29,6 +30,28 @@ export const CAPACITE_OFFRES_PAR_FORMULE: Partial<Record<Exposant['data']['formu
   standard: 5,
   silver: 10,
 };
+
+/*
+  Libellés PUBLICS du statut commercial (Lot « exposants-statuts », voir
+  CLAUDE.md section « Statuts commerciaux »). À l'inverse de `formuleLabels`
+  ci-dessus (réservé à l'Admin), ce sont les seuls libellés à utiliser sur
+  une page publique (annuaire, fiche détail, badges).
+*/
+export const formulePubliqueLabels: Record<Exposant['data']['formule'], string> = {
+  standard: 'Exposant',
+  silver: 'Exposant partenaire',
+  gold: 'Partenaire premium',
+};
+
+/* Titres de catégorie de l'annuaire (accord pluriel, voir exposants.astro). */
+export const categorieAnnuaireLabels: Record<Exposant['data']['formule'], string> = {
+  standard: 'Exposants',
+  silver: 'Exposants partenaires',
+  gold: 'Partenaires premium',
+};
+
+/* Ordre d'affichage des catégories de l'annuaire public (section 4 du Lot) : Premium → Partenaire → Standard. */
+export const ORDRE_CATEGORIES_ANNUAIRE: Exposant['data']['formule'][] = ['gold', 'silver', 'standard'];
 
 export const typeStructureLabels: Record<Exposant['data']['type_structure'], string> = {
   entreprise: 'Entreprise',
@@ -70,4 +93,40 @@ export function secteursDisponibles(liste: Exposant[]): string[] {
     for (const secteur of exposant.data.secteurs) secteurs.add(secteur);
   }
   return [...secteurs].sort((a, b) => a.localeCompare(b, 'fr'));
+}
+
+export interface CategorieAnnuaire {
+  formule: Exposant['data']['formule'];
+  libelle: string;
+  exposants: Exposant[];
+}
+
+/*
+  Annuaire public (section 4 du Lot « exposants-statuts ») : trois catégories
+  distinctes, dans l'ordre Premium → Partenaire → Standard, chacune triée
+  strictement par ordre alphabétique — aucune autre priorité commerciale
+  (pas de `mise_en_avant`, pas de `ordre`) à l'intérieur d'une catégorie.
+  Catégories vides omises.
+*/
+export function regrouperParFormule(liste: Exposant[]): CategorieAnnuaire[] {
+  return ORDRE_CATEGORIES_ANNUAIRE.map((formule) => ({
+    formule,
+    libelle: categorieAnnuaireLabels[formule],
+    exposants: liste
+      .filter((exposant) => exposant.data.formule === formule)
+      .sort((a, b) => a.data.nom.localeCompare(b.data.nom, 'fr')),
+  })).filter((categorie) => categorie.exposants.length > 0);
+}
+
+/*
+  Offres publiées associées à un exposant, pour affichage sur sa fiche
+  publique (section 8 du Lot). Volontairement distinct de
+  `offresRattachees` (src/lib/admin.ts) : celui-ci exclut les offres TEST
+  car il alimente un KPI Admin « offres RÉELLES » ; ici, à l'inverse, les
+  offres TEST doivent continuer à s'afficher normalement sur une fiche
+  exposant (y compris les fiches de démonstration, qui n'ont que des offres
+  TEST) — voir docs/EXPOSANTS.md.
+*/
+export function offresPublieesDeExposant(exposant: Exposant, offresPubliees: Offre[]): Offre[] {
+  return offresPubliees.filter((offre) => offre.data.exposantId === exposant.data.exposantId);
 }

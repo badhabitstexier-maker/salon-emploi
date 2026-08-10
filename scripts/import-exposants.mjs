@@ -100,15 +100,20 @@ async function commandeImport(cheminCsv, dryRun) {
     }
   });
 
-  // Vérification disque des logos déclarés (impure, hors module core).
+  // Vérification disque des images déclarées (logo, couverture, galerie — impure, hors module core).
   for (const exposant of valides) {
-    if (exposant.logo) {
-      const cheminLogo = path.join(DOSSIER_PUBLIC, exposant.logo.replace(/^\//, ''));
-      if (!existsSync(cheminLogo)) {
+    const imagesDeclarees = [
+      ...(exposant.logo ? [{ champ: 'Logo', chemin: exposant.logo }] : []),
+      ...(exposant.image_couverture ? [{ champ: 'Image de couverture', chemin: exposant.image_couverture }] : []),
+      ...(exposant.galerie ?? []).map((image) => ({ champ: 'Image de galerie', chemin: image.src })),
+    ];
+    for (const { champ, chemin } of imagesDeclarees) {
+      const cheminAbsolu = path.join(DOSSIER_PUBLIC, chemin.replace(/^\//, ''));
+      if (!existsSync(cheminAbsolu)) {
         enErreur.push({
           numeroLigne: exposant.__numeroLigne,
           slug: exposant.slug,
-          erreurs: [`Logo déclaré introuvable : ${exposant.logo} (attendu dans public${exposant.logo}).`],
+          erreurs: [`${champ} déclaré introuvable : ${chemin} (attendu dans public${chemin}).`],
           avertissements: [],
         });
       }

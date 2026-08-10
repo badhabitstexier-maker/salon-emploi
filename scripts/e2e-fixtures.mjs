@@ -113,8 +113,7 @@ univers: "emploi"
 type_structure: "entreprise"
 secteurs:
   - "${FIXTURE_SECTEUR}"
-accroche: "Fiche générée automatiquement par scripts/e2e-fixtures.mjs pour les tests Playwright du Lot Admin-1."
-description: "Fiche fixture E2E — ne doit jamais apparaître en dehors d'une exécution de tests."
+accroche: "Fiche générée automatiquement par scripts/e2e-fixtures.mjs pour les tests Playwright du Lot Admin-1. Ne doit jamais apparaître en dehors d'une exécution de tests."
 numero_stand: "E2E-01"
 publie: true
 ---

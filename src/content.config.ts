@@ -21,43 +21,143 @@ import { glob } from 'astro/loaders';
 */
 const EXPOSANT_ID_REGEX = /^EXP26-\d{3,}$/;
 
+/*
+  Fiches exposants différenciées par statut (Lot « exposants-statuts »,
+  voir CLAUDE.md et docs/EXPOSANTS.md). Le champ `formule` (déjà existant,
+  partagé avec `offres.formule`) EST le statut commercial : standard =
+  Exposant, silver = Exposant partenaire, gold = Partenaire premium — voir
+  `formulePubliqueLabels` dans src/lib/exposants.ts pour les libellés
+  publics. Aucun nouveau champ « statut » n'a été introduit : le champ
+  existant est réutilisé tel quel, avec ses quotas déjà en place
+  (`CAPACITE_OFFRES_PAR_FORMULE`, src/lib/exposants.ts).
+
+  Nouveaux champs, tous facultatifs et réservés à certains statuts. La
+  réservation est appliquée par la validation ci-dessous (superRefine),
+  pas seulement par un choix d'affichage — une fiche Standard ne peut pas
+  déclarer un contenu réservé aux statuts supérieurs.
+*/
+const reseauSocial = z.object({
+  plateforme: z.enum(['facebook', 'instagram', 'linkedin', 'tiktok', 'youtube', 'autre']),
+  url: z.string(),
+});
+
+const imageGalerie = z.object({
+  src: z.string(),
+  // Alt text obligatoire (section 6 du Lot) — jamais une image sans description.
+  alt: z.string().min(1, "Le texte alternatif de l'image de galerie est obligatoire."),
+});
+
+const PRESENTATION_COURTE_MAX = { standard: 300, silver: 500, gold: 500 };
+
 const exposants = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/exposants' }),
-  schema: z.object({
-    exposantId: z.string().regex(EXPOSANT_ID_REGEX, 'Format attendu : EXP26-XXX'),
-    nom: z.string(),
-    slug: z.string().optional(),
-    // Formule commerciale de l'exposant (Lot Admin-1B, docs/EXPOSANTS_IMPORT.md).
-    // Appartient à l'exposant, n'est jamais déduite de ses offres — voir
-    // docs/ADMIN.md. Convention identique à `offres.formule`.
-    formule: z.enum(['standard', 'silver', 'gold']),
-    univers: z.enum(['emploi', 'formation']),
-    type_structure: z.enum([
-      'entreprise',
-      'organisme-formation',
-      'institution',
-      'accompagnement',
-      'association',
-      'autre',
-    ]),
-    secteurs: z.array(z.string()).default([]),
-    accroche: z.string(),
-    description: z.string(),
-    logo: z.string().optional(),
-    site_web: z.string().optional(),
-    numero_stand: z.string().optional(),
-    email_public: z.string().optional(),
-    telephone_public: z.string().optional(),
-    mise_en_avant: z.boolean().default(false),
-    publie: z.boolean().default(false),
-    ordre: z.number().optional(),
-    date_mise_a_jour: z.coerce.date().optional(),
-    // Facultatifs — à n'afficher que s'ils sont renseignés (section 6 du Lot 4).
-    metiers: z.array(z.string()).optional(),
-    formations: z.array(z.string()).optional(),
-    opportunites: z.array(z.string()).optional(),
-    mots_cles: z.array(z.string()).optional(),
-  }),
+  schema: z
+    .object({
+      exposantId: z.string().regex(EXPOSANT_ID_REGEX, 'Format attendu : EXP26-XXX'),
+      nom: z.string(),
+      slug: z.string().optional(),
+      // Formule commerciale de l'exposant (Lot Admin-1B, docs/EXPOSANTS_IMPORT.md).
+      // Appartient à l'exposant, n'est jamais déduite de ses offres — voir
+      // docs/ADMIN.md. Convention identique à `offres.formule`. C'est aussi le
+      // statut commercial public (voir commentaire ci-dessus).
+      formule: z.enum(['standard', 'silver', 'gold']),
+      univers: z.enum(['emploi', 'formation']),
+      type_structure: z.enum([
+        'entreprise',
+        'organisme-formation',
+        'institution',
+        'accompagnement',
+        'association',
+        'autre',
+      ]),
+      secteurs: z.array(z.string()).default([]),
+      // Présentation courte : affichée sur la carte et en tête de fiche pour
+      // tous les statuts. Longueur maximale dépendant du statut, contrôlée
+      // ci-dessous (300 caractères Standard, 500 Partenaire/Premium).
+      accroche: z.string(),
+      // Présentation longue : réservée au Partenaire premium (gold), voir
+      // superRefine ci-dessous. Absente/vide pour Standard et Partenaire.
+      description: z.string().optional(),
+      logo: z.string().optional(),
+      site_web: z.string().optional(),
+      numero_stand: z.string().optional(),
+      email_public: z.string().optional(),
+      telephone_public: z.string().optional(),
+      // Lien de recrutement externe — réservé Partenaire/Premium (silver, gold).
+      lien_recrutement: z.string().optional(),
+      // Réseaux sociaux — réservés Partenaire/Premium (silver, gold).
+      reseaux_sociaux: z.array(reseauSocial).default([]),
+      // Grande image de couverture — réservée Partenaire premium (gold).
+      image_couverture: z.string().optional(),
+      // Galerie de photos — réservée Partenaire premium (gold).
+      galerie: z.array(imageGalerie).default([]),
+      mise_en_avant: z.boolean().default(false),
+      publie: z.boolean().default(false),
+      ordre: z.number().optional(),
+      date_mise_a_jour: z.coerce.date().optional(),
+      // Fiche de démonstration (Lot 14bis, voir CLAUDE.md et docs/EXPOSANTS.md) :
+      // porte la distinction TEST/RÉEL dans le modèle de données plutôt que
+      // dans une liste de slugs codée en dur (noindex, exclusion sitemap,
+      // mention « FICHE DE DÉMONSTRATION » — voir src/pages/exposants/[slug].astro).
+      demo: z.boolean().default(false),
+      // Facultatifs — à n'afficher que s'ils sont renseignés (section 6 du Lot 4).
+      metiers: z.array(z.string()).optional(),
+      formations: z.array(z.string()).optional(),
+      opportunites: z.array(z.string()).optional(),
+      mots_cles: z.array(z.string()).optional(),
+    })
+    .superRefine((exposant, ctx) => {
+      const maxAccroche = PRESENTATION_COURTE_MAX[exposant.formule];
+      if (exposant.accroche.length > maxAccroche) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['accroche'],
+          message: `Présentation courte trop longue pour le statut ${exposant.formule} : ${exposant.accroche.length} caractères (maximum ${maxAccroche}).`,
+        });
+      }
+
+      if (exposant.formule !== 'gold' && exposant.description && exposant.description.trim() !== '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['description'],
+          message: 'La présentation longue est réservée au statut Partenaire premium (formule gold).',
+        });
+      }
+
+      if (exposant.formule === 'standard') {
+        if (exposant.lien_recrutement) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['lien_recrutement'],
+            message: 'Le lien de recrutement est réservé aux statuts Exposant partenaire et Partenaire premium.',
+          });
+        }
+        if (exposant.reseaux_sociaux.length > 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['reseaux_sociaux'],
+            message: 'Les réseaux sociaux sont réservés aux statuts Exposant partenaire et Partenaire premium.',
+          });
+        }
+      }
+
+      if (exposant.formule !== 'gold') {
+        if (exposant.image_couverture) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['image_couverture'],
+            message: "L'image de couverture est réservée au statut Partenaire premium (formule gold).",
+          });
+        }
+        if (exposant.galerie.length > 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['galerie'],
+            message: 'La galerie photos est réservée au statut Partenaire premium (formule gold).',
+          });
+        }
+      }
+    }),
 });
 
 /*
