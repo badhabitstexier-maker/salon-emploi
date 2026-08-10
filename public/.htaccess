@@ -1,0 +1,20 @@
+# Redirection www -> apex — Salon de l'Emploi & de la Formation 2026
+#
+# Décision LabEvents du 10/08/2026 (voir CLAUDE.md section 4/9) : le domaine
+# canonique de production est https://salonemploi.nc (sans « www »).
+# https://www.salonemploi.nc doit rediriger en 301 vers https://salonemploi.nc
+# en conservant le chemin et la query string.
+#
+# Ce fichier est commité (aucun secret) et déployé tel quel par le pipeline
+# FTP existant vers la racine du site (voir .github/workflows/deploy-preprod.yml
+# et deploy-production.yml). Les deux domaines de production
+# (salonemploi.nc et www.salonemploi.nc) pointent vers le même dossier OVH
+# (salonemploi-prod), donc cette règle s'applique aux deux à la livraison —
+# elle ne redirige que si HTTP_HOST vaut explicitement « www.salonemploi.nc »,
+# jamais preprod.salonemploinc.com ni aucun autre site hébergé sur le
+# compte OVH.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\.salonemploi\.nc$ [NC]
+  RewriteRule ^(.*)$ https://salonemploi.nc/$1 [R=301,L,QSA]
+</IfModule>

@@ -147,7 +147,11 @@ Vérifier sur `https://preprod.salonemploinc.com` :
 
 ## 7bis. Redirection `www.salonemploi.nc` → `salonemploi.nc`
 
-`salonemploi.nc` est le domaine canonique de production (décision du 10/08/2026). `www.salonemploi.nc` doit exister en DNS et rediriger en 301 vers `https://salonemploi.nc` — configuration DNS/Apache OVH, en dehors de ce dépôt et de tout workflow GitHub Actions. Voir le compte rendu de préparation production pour la procédure exacte à réaliser manuellement par Philippe.
+`salonemploi.nc` est le domaine canonique de production (décision du 10/08/2026). `www.salonemploi.nc` doit exister en DNS et rediriger en 301 vers `https://salonemploi.nc`, en conservant le chemin et la query string.
+
+Les deux domaines de production pointent vers le **même** dossier OVH (`salonemploi-prod`) — une redirection purement DNS/Apache au niveau du vhost n'est donc pas possible ici, puisque les deux noms partagent la même racine documentaire. La redirection est réalisée **dans le dépôt**, via `public/.htaccess` (copié tel quel dans `dist/.htaccess` au build, puis transféré par le pipeline FTP existant comme les autres fichiers de `public/`) : la règle ne redirige que si `HTTP_HOST` vaut explicitement `www.salonemploi.nc`, donc sans effet sur `salonemploi.nc`, sur `preprod.salonemploinc.com`, ni sur un autre site hébergé sur le compte OVH.
+
+Reste à la charge de Philippe, en dehors de ce dépôt : la résolution DNS de `www.salonemploi.nc` (pour qu'il pointe vers le même hébergement) et le certificat SSL couvrant les deux domaines — déjà actifs au 10/08/2026 selon le compte rendu de préparation production.
 
 ---
 
