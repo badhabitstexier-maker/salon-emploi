@@ -95,7 +95,7 @@ d'entreprise, jamais le slug.
 | `recue` | Déclarée par l'exposant, pas encore traitée |
 | `a-completer` | Informations manquantes, en attente de l'exposant |
 | `validee` | Validée par LabEvents, pas encore publiée |
-| `publiee` | **Visible publiquement** (fiche individuelle toujours ; catalogue `/offres` sauf si `demo: true`, voir section 4bis) |
+| `publiee` | **Visible publiquement** (fiche individuelle toujours ; catalogue `/offres` selon `afficherCatalogue`, voir section 4bis) |
 | `retiree` | Retirée par l'exposant ou LabEvents |
 | `cloturee` | Poste pourvu ou période de candidature terminée |
 
@@ -103,25 +103,36 @@ d'entreprise, jamais le slug.
 autres statuts existent pour suivre le circuit de validation en interne, sans
 impact sur le site public.
 
-## 4bis. Offres TEST hors catalogue principal (`demo`)
+## 4bis. Offres de démonstration (`demo`) et visibilité catalogue (`afficherCatalogue`)
 
-Champ `demo` (booléen, `false` par défaut, réservé aux offres TEST — le
-build échoue si `demo: true` sur une offre réelle). Une offre `demo: true` :
+Deux champs booléens **indépendants**, chacun avec une seule responsabilité —
+ne pas les confondre ni les réunifier :
+
+| Champ | Défaut | Rôle |
+|---|---|---|
+| `demo` | `false` | Marque une offre comme fictive/TEST. Pilote uniquement le **SEO** : `noindex` sur la fiche individuelle et exclusion du sitemap (voir `src/pages/offres/[slug].astro` et `astro.config.mjs`). Réservé aux offres TEST — le build échoue si `demo: true` sur une offre réelle (intitulé ne commençant pas par `TEST —`). |
+| `afficherCatalogue` | `true` | Pilote uniquement la **visibilité dans le catalogue public `/offres`** (voir le filtre dans `src/pages/offres/index.astro`). Sans lien avec `demo` ni avec le statut TEST/réel. `true` par défaut : une offre réelle future n'est jamais affectée sans action explicite. |
+
+Une offre TEST est donc **toujours** `demo: true`, qu'elle soit visible ou
+non dans le catalogue (`afficherCatalogue: true` ou `false`) : le caractère
+fictif de l'offre ne dépend jamais de sa présence dans `/offres`.
+
+Une offre avec `afficherCatalogue: false` :
 
 - reste publiée (`status: publiee`), accessible par son URL directe et
   possède toujours sa propre fiche `/offres/[slug]` ;
 - reste rattachée et affichée sur la fiche de son exposant (voir
   `offresPublieesDeExposant`, `src/lib/exposants.ts`) ;
-- **n'apparaît pas** dans le catalogue principal `/offres` (voir le filtre
-  dans `src/pages/offres/index.astro`), pour éviter que le catalogue soit
-  saturé d'offres fictives.
+- **n'apparaît pas** dans le catalogue principal `/offres`, pour éviter que
+  celui-ci soit saturé d'offres fictives.
 
 Convention retenue pour les 6 exposants de démonstration
-(`docs/EXPOSANTS.md` section 13) : une seule offre représentative par
-exposant reste visible dans `/offres` (`demo: false`), les autres offres
-TEST du même exposant sont `demo: true`. La distinction est portée par ce
-champ du modèle de données, jamais par une liste de références codée en
-dur.
+(`docs/EXPOSANTS.md` section 13) : les 18 offres TEST sont **toutes**
+`demo: true`. Une seule offre représentative par exposant démo reste
+`afficherCatalogue: true` (visible dans `/offres`), les 7 autres sont
+`afficherCatalogue: false` (accessibles uniquement par URL directe ou depuis
+la fiche exposant). La distinction est portée par ces deux champs du modèle
+de données, jamais par une liste de références codée en dur.
 
 ## 5. Valeurs de formule (`formule`)
 

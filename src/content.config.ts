@@ -281,17 +281,33 @@ const offres = defineCollection({
       // le tri ni le classement des offres (docs/OFFRES.md, section « tri »).
       miseEnAvant: z.boolean().default(false),
       /*
-        Offre TEST volontairement absente du catalogue public /offres (Lot
-        « exposants-statuts », section 15). Réutilise la même logique que
-        `exposants.demo` : la distinction est portée par le modèle de
-        données, jamais par une liste de références codée en dur. Reste
-        accessible par URL directe et référencée depuis la fiche de
-        l'exposant démo correspondant (offresPublieesDeExposant, voir
-        src/lib/exposants.ts) — seul le catalogue principal (src/pages/offres/index.astro)
-        l'exclut. Réservé aux offres TEST : une offre réelle ne peut pas
-        être `demo: true` (voir superRefine ci-dessous).
+        Offre de démonstration (Lot « exposants-statuts », voir CLAUDE.md et
+        docs/OFFRES.md section 4bis). Même sémantique que `exposants.demo` :
+        marque une offre fictive, indépendamment de sa visibilité dans le
+        catalogue public — voir `afficherCatalogue` ci-dessous pour cette
+        seconde question, volontairement séparée (un champ = une
+        responsabilité). `demo: true` pilote uniquement le SEO (`noindex`,
+        exclusion du sitemap — voir src/pages/offres/[slug].astro et
+        astro.config.mjs, lecture directe de ce champ sur disque, jamais une
+        liste de références codée en dur). Réservé aux offres TEST : une
+        offre réelle ne peut pas être `demo: true` (voir superRefine
+        ci-dessous).
       */
       demo: z.boolean().default(false),
+      /*
+        Visibilité dans le catalogue public /offres (src/pages/offres/index.astro).
+        Indépendant de `demo` et de `status` : une offre `publiee` et
+        `afficherCatalogue: false` reste accessible par URL directe et sur la
+        fiche de son exposant (offresPublieesDeExposant, voir
+        src/lib/exposants.ts), mais ne remonte pas dans le catalogue
+        principal. `true` par défaut : une offre réelle future n'est jamais
+        affectée sans action explicite. Utilisé pour les offres de
+        démonstration secondaires d'un exposant démo (une seule offre
+        représentative par exposant reste dans le catalogue, voir
+        docs/OFFRES.md section 4bis) — mais n'implique pas `demo: true` en
+        soi : les deux champs sont indépendants.
+      */
+      afficherCatalogue: z.boolean().default(true),
     })
     .superRefine((offre, ctx) => {
       if (estIntituleOffreTest(offre.intitule)) {

@@ -33,10 +33,18 @@
 > fictives) avec 13 offres TEST associées (`SEF26-006` à `SEF26-018`) — voir section 15.
 >
 > **Amendement du 10 août 2026 (suite, sections 15)** : sur ces 13 offres TEST, 6 (une par
-> exposant démo) restent visibles dans le catalogue public `/offres` ; les 7 autres, marquées
-> `demo: true` (nouveau champ sur la collection `offres`, même logique que `exposants.demo`),
-> restent publiées et accessibles par URL directe et depuis la fiche de leur exposant démo, mais
-> n'apparaissent plus dans le catalogue — pour ne pas le saturer d'offres fictives.
+> exposant démo) restent visibles dans le catalogue public `/offres` ; les 7 autres restent
+> publiées et accessibles par URL directe et depuis la fiche de leur exposant démo, mais
+> n'apparaissent plus dans le catalogue.
+>
+> **Amendement du 10 août 2026 (correction de conception, sections 15)** : le champ `demo` sur la
+> collection `offres` ne pilote plus la visibilité catalogue — deux champs désormais
+> indépendants, chacun une seule responsabilité (voir `docs/OFFRES.md` section 4bis) : `demo`
+> (SEO — `noindex` + hors sitemap, **toutes** les 18 offres TEST, historiques comme démo,
+> `demo: true`) et `afficherCatalogue` (défaut `true`, visibilité dans `/offres` uniquement — `true`
+> pour les 6 offres représentatives + les 5 historiques, `false` pour les 7 offres démo
+> secondaires). Une offre réelle future reste indexable et visible dans le catalogue par défaut,
+> sans action explicite.
 
 ---
 
@@ -334,7 +342,7 @@ Le dashboard et les vues exposants/offres exposent des indicateurs utiles (badge
 
 ## 15. Contenus réels présents (état factuel)
 
-- **Offres** : 18 fiches, **toutes TEST** (`SEF26-001` à `SEF26-018`). Les 5 premières (`SEF26-001` à `SEF26-005`) sont rattachées à l'exposant fictif historique `Entreprise Test NC` (non présent dans la collection `exposants`, anomalie Admin attendue). Les 13 suivantes (`SEF26-006` à `SEF26-018`) sont rattachées aux 6 exposants de démonstration ci-dessous, dont 6 (une par exposant) visibles dans le catalogue `/offres` et 7 marquées `demo: true` (accessibles uniquement par URL directe ou depuis la fiche exposant). **Catalogue public `/offres` : 11 offres visibles au total (5 historiques + 6 démo représentatives). 0 offre réelle.**
+- **Offres** : 18 fiches, **toutes TEST, toutes `demo: true`** (`SEF26-001` à `SEF26-018` — voir `docs/OFFRES.md` section 4bis). Les 5 premières (`SEF26-001` à `SEF26-005`) sont rattachées à l'exposant fictif historique `Entreprise Test NC` (non présent dans la collection `exposants`, anomalie Admin attendue). Les 13 suivantes (`SEF26-006` à `SEF26-018`) sont rattachées aux 6 exposants de démonstration ci-dessous. **Catalogue public `/offres` (champ `afficherCatalogue`) : 11 offres visibles (les 5 historiques + 1 offre représentative par exposant démo) ; 7 offres démo secondaires accessibles uniquement par URL directe ou depuis la fiche exposant.** Les 18 sont `noindex` et exclues du sitemap. **0 offre réelle.**
 - **Exposants** : **6** fiches, **toutes de démonstration** (`demo: true`, préfixe de fichier `demo-*.md` — voir `docs/EXPOSANTS.md` section 13) : 1 Partenaire premium, 2 Exposants partenaires, 3 Exposants. Entièrement fictives (noms, logos, coordonnées), à retirer sans changement de code une fois les exposants réels intégrés. Pipeline d'import prêt (`docs/EXPOSANTS_IMPORT.md`), jamais alimenté avec de vraies données. **0 exposant réel.**
 - **Programme** : **0** entrée. Pipeline d'import prêt (`docs/PROGRAMME_IMPORT.md`), jamais alimenté.
 - **Campagnes Visibilité** : contenu réel du `visibilites.json` serveur **non déterminable depuis Git** (par construction — voir section 12). Ne jamais affirmer un nombre de campagnes actives sans avoir consulté `/admin/visibilite` en direct.

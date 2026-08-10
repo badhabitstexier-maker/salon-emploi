@@ -64,7 +64,7 @@ const jobPostingSchema = {
 <BaseLayout
   title={`${data.intitule} — ${data.exposantNom}`}
   description={data.descriptionCourte}
-  noindex={testOffre}
+  noindex={data.demo}
 >
   <Fragment slot="head">
     {!testOffre && <script type="application/ld+json" set:html={JSON.stringify(jobPostingSchema)} />}
