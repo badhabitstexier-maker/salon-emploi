@@ -15,6 +15,12 @@
 > de production changé de `www.salonemploi.nc` à `salonemploi.nc` ; séparation préprod/production du
 > module Visibilité faite explicitement au build (placeholders + variables GitHub par environnement),
 > plus par un chemin unique en dur.
+>
+> **Amendements du 10 août 2026 (audit post-mise en production, sections 4/8/12/16)** : production
+> **ouverte** (premier déploiement effectué), config serveur Visibilité production en place et
+> distincte de la préprod, Admin production fonctionnel, redirection 301 `www` → apex assurée en
+> dépôt par `public/.htaccess`. Correctifs SEO du même audit : page `/merci` passée en `noindex` et
+> exclue du sitemap.
 
 ---
 
@@ -55,7 +61,7 @@ Le site doit être **réutilisable pour les éditions futures**.
 
 ## 4. Domaine et fournisseurs de formulaires
 
-**Nom de domaine : `salonemploi.nc`.** URL canonique de production : `https://salonemploi.nc` **sans** `www.` (décision LabEvents du 10/08/2026, remplace `https://www.salonemploi.nc`). `www.salonemploi.nc` doit exister en DNS et rediriger en 301 vers `https://salonemploi.nc` — configuration DNS/Apache OVH, hors dépôt, à réaliser manuellement par Philippe (voir `docs/deploiement-preproduction.md` section 7bis). Aucun domaine n'est codé en dur dans le dépôt : `astro.config.mjs` lit `PUBLIC_SITE_URL` (variable d'environnement) avec un repli sur `http://localhost:4321` en son absence.
+**Nom de domaine : `salonemploi.nc`.** URL canonique de production : `https://salonemploi.nc` **sans** `www.` (décision LabEvents du 10/08/2026, remplace `https://www.salonemploi.nc`). La redirection 301 `www.salonemploi.nc` → `https://salonemploi.nc` (chemin + query string conservés) est désormais réalisée **dans le dépôt**, via `public/.htaccess` (copié tel quel dans `dist/.htaccess` au build, puis transféré par le pipeline FTP) : la règle ne s'active que si `HTTP_HOST` vaut explicitement `www.salonemploi.nc`, donc sans effet sur `salonemploi.nc`, `preprod.salonemploinc.com` ni aucun autre site du compte OVH. Reste une **action manuelle OVH/DNS** : que `www.salonemploi.nc` existe en DNS et pointe vers le même dossier OVH (`salonemploi-prod`) pour que cette règle s'applique (voir `docs/deploiement-preproduction.md` section 7bis). Aucun domaine n'est codé en dur dans le dépôt : `astro.config.mjs` lit `PUBLIC_SITE_URL` (variable d'environnement) avec un repli sur `http://localhost:4321` en son absence.
 
 **Fournisseurs de formulaires :**
 - **Web3Forms** — contact commercial exposant/visiteur sur `/exposer`.
@@ -172,8 +178,8 @@ e2e/            → suite Playwright (voir section 13)
 ## 8. Environnements
 
 - **Local** : `npm run dev` (Astro dev server). Aucune donnée réelle requise pour développer — les collections vides et l'API Visibilité indisponible sont gérées sans crash (build réussit avec des avertissements, fail-safe sur le module Visibilité).
-- **Préproduction** : `https://preprod.salonemploinc.com`. Déployée automatiquement à chaque fusion sur `main` (`.github/workflows/deploy-preprod.yml`). C'est l'environnement où vit l'architecture Visibilité actuellement configurée (voir section 12) : `.htpasswd`, dossier de données hors webroot, chemins OVH — tout est câblé pour la préprod, **rien pour la production**.
-- **Production** : déploiement strictement manuel (`.github/workflows/deploy-production.yml`, `workflow_dispatch` uniquement). **Aucune configuration serveur production n'existe à ce jour** pour le module Visibilité (`.htpasswd` production, dossier de données production) — à faire avant toute ouverture publique si ce module doit être actif en prod (voir section 16).
+- **Préproduction** : `https://preprod.salonemploinc.com`. Déployée automatiquement à chaque fusion sur `main` (`.github/workflows/deploy-preprod.yml`). Environnement de recette : `PUBLIC_NOINDEX=true` (jamais indexé), `.htpasswd` et dossier de données Visibilité propres à la préprod, chemins OVH renseignés dans l'environnement GitHub `preprod`.
+- **Production** : **ouverte** (premier déploiement effectué). Domaine canonique `https://salonemploi.nc`, dossier OVH `salonemploi-prod`. Déploiement strictement manuel (`.github/workflows/deploy-production.yml`, `workflow_dispatch` uniquement) — chaque déclenchement reconstruit `main` avec les variables/secrets de l'environnement GitHub `production` (sans `PUBLIC_NOINDEX`, donc indexable ; sans `PUBLIC_TALLY_CANDIDATURE_URL`, voir section 4). La configuration serveur Visibilité **production** (`.htpasswd` production, dossier de données production, variables GitHub `production`) est désormais en place et distincte de la préprod (voir section 12).
 
 ---
 
@@ -267,7 +273,7 @@ C'est un module fonctionnel, pas un chantier en cours. Fonctionnement réel au c
 
 **Distinction préprod / production — séparation faite AU BUILD (décision du 10/08/2026), jamais par détection runtime Apache** : `public/admin/.htaccess`, `public/admin-api/.htaccess` et `public/api/_visibilites-lib.php` ne portent plus de chemin OVH en dur dans le dépôt, seulement des placeholders (`__VISIBILITES_AUTH_USER_FILE__`, `__VISIBILITES_DATA_DIR__`). Chaque workflow de déploiement (`deploy-preprod.yml`, `deploy-production.yml`) les substitue dans `dist/`, juste avant le transfert FTP, avec les variables GitHub `VISIBILITES_AUTH_USER_FILE`/`VISIBILITES_DATA_DIR` de son propre environnement — voir `docs/VISIBILITE.md` section 15.9 pour l'architecture complète.
 - **PRÉPRODUCTION** : opérationnelle — `.htpasswd` et dossier de données (`/home/salonez/salon-emploi-data-preprod/`) déjà créés côté OVH, chemins renseignés dans les variables de l'environnement GitHub `preprod`.
-- **PRODUCTION** : **le code est prêt à recevoir une configuration distincte, mais rien n'est encore créé côté OVH ni dans l'environnement GitHub `production`** — aucun `.htpasswd` production, aucun dossier de données production. Ne pas supposer que la bascule en prod fonctionnera sans ces deux créations manuelles (voir `docs/VISIBILITE.md` section 15.9 pour la procédure exacte).
+- **PRODUCTION** : **opérationnelle** — `.htpasswd` production et dossier de données production distincts créés côté OVH, chemins renseignés dans les variables `VISIBILITES_AUTH_USER_FILE`/`VISIBILITES_DATA_DIR` de l'environnement GitHub `production` (valeurs distinctes de la préprod, jamais réutilisées). La protection Basic Auth de `/admin` fonctionne en production, le module Admin production est fonctionnel. Les campagnes saisies en préprod **ne sont pas migrées automatiquement** vers la production (chaînes de données séparées) : `visibilites.json` production démarre absent/vide, ce que l'API publique gère sans erreur (fail-safe, liste vide en statut 200). Toute migration de campagne serait une opération manuelle explicite (dépôt du visuel + saisie via `/admin/visibilite` en production), hors du périmètre de tout déploiement automatique.
 
 Voir `docs/VISIBILITE.md` pour l'architecture technique complète (chemins exacts, procédure de dépôt d'un visuel, sécurité détaillée).
 
@@ -319,19 +325,20 @@ Le dashboard et les vues exposants/offres exposent des indicateurs utiles (badge
 
 ---
 
-## 16. Ce qui reste à faire avant ouverture publique (priorités)
+## 16. Ce qui reste à faire (production ouverte — suivi post-mise en production)
 
-Dans l'ordre de blocage, pas de priorité arbitraire :
+La production est ouverte depuis le premier déploiement. Les points ci-dessous ne sont plus des bloqueurs d'ouverture mais des chantiers de fiabilisation et de contenu, dans l'ordre d'importance :
 
-1. **Configuration production du module Visibilité** — le code injecte désormais la configuration serveur au build (voir section 12, décision du 10/08/2026) ; il reste à créer côté OVH le `.htpasswd` production et le dossier de données production, puis à renseigner les variables `VISIBILITES_AUTH_USER_FILE`/`VISIBILITES_DATA_DIR` de l'environnement GitHub `production`. Sans cela, le module ne peut pas fonctionner en production.
+1. ~~**Configuration production du module Visibilité**~~ — **FAIT** : `.htpasswd` production, dossier de données production et variables GitHub `production` en place, distincts de la préprod (voir section 12).
 2. **Import des exposants réels** — la collection `exposants` est vide ; `/exposants` n'a aucun contenu à montrer en l'état.
 3. **Alimentation du programme réel** — la collection `programme` est vide ; `/programme` n'a aucun contenu à montrer en l'état.
-4. **Remplacement progressif des offres TEST par des offres réelles** — via le pipeline habituel (section 11), en conservant ou retirant les fiches TEST selon la décision de Philippe une fois du contenu réel disponible.
-5. **Vérification de la configuration Tally réelle** — l'intégration existe dans le code, mais le comportement effectif dépend d'une configuration externe (`PUBLIC_TALLY_CANDIDATURE_URL`) non vérifiable depuis le dépôt.
-6. **Recette visuelle de préproduction** — après chaque fusion, sur `https://preprod.salonemploinc.com` (pas automatisable, nécessite un humain).
-7. **Vérification manuelle OVH/Apache/`.htpasswd`** — l'état réel de la protection serveur (préprod et future prod) n'est pas vérifiable depuis une session Claude Code sans accès direct à l'hébergement.
-8. **Résolution ou validation du warning `public/images/hall-formation.webp`** — le build signale cette image manquante (repli automatique géré par `Visuel.astro`, donc pas bloquant pour le build, mais à trancher : fournir l'image ou confirmer que le repli est le comportement voulu).
-9. **Recette finale avant mise en production** — dernier passage complet (build, QA, recette visuelle) juste avant le déclenchement manuel de `deploy-production.yml`.
+4. **Remplacement progressif des offres TEST par des offres réelles** — via le pipeline habituel (section 11). Décision confirmée : les 5 offres TEST **restent publiées** en production comme démonstration pour les exposants, clairement identifiées (`TEST —`, message « Offre fictive de démonstration », noindex, exclues du sitemap).
+5. **Câblage Tally production** — volontairement non fait tant que la recette Tally n'est pas validée : `PUBLIC_TALLY_CANDIDATURE_URL` absente de l'environnement `production`, donc `/candidater` affiche proprement « Le formulaire de candidature sera prochainement disponible » (pas d'iframe morte). Ne pas câbler sans feu vert de Philippe.
+6. **Image Open Graph `public/og-image.jpg`** — référencée par `src/components/Seo.astro` (`og:image` de toutes les pages publiques) mais **absente du dépôt** : l'aperçu au partage sur les réseaux sociaux est cassé (404). Sans impact sur l'indexation Google. À fournir : une image `1200×630` (JPG) déposée dans `public/og-image.jpg` — décision de contenu/graphisme (Philippe/ChatGPT).
+7. **Résolution ou validation du warning `public/images/hall-formation.webp`** — le build signale cette image manquante (repli automatique géré par `Visuel.astro`, donc pas bloquant, mais à trancher : fournir l'image ou confirmer que le repli est le comportement voulu).
+8. **Vérification manuelle OVH/Apache/DNS** — non vérifiable depuis une session Claude Code : que `www.salonemploi.nc` existe en DNS et pointe vers `salonemploi-prod` (pour que la règle 301 de `public/.htaccess` s'applique), et que la protection `.htpasswd` production est bien active.
+9. **Soumission à Google Search Console** — déclarer `https://salonemploi.nc` et soumettre le sitemap (`https://salonemploi.nc/sitemap-index.xml`) pour accélérer l'indexation (action manuelle hors dépôt).
+10. **Recette visuelle** — après chaque fusion sur la préprod (`https://preprod.salonemploinc.com`), et recette complète avant chaque déclenchement manuel de `deploy-production.yml`.
 
 ---
 
