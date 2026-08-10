@@ -79,8 +79,9 @@ supprimer, consulter) — ce n'est plus une page en lecture seule (voir section 
 | `typeAnnonceur` | `exposant \| sponsor \| partenaire \| institution \| annonceur_externe \| autre` | oui | Catégorie, pour le tri/filtre Admin uniquement. |
 | `exposantId` | texte (`EXP26-XXX`) | non | Si l'annonceur est aussi exposant, permet un lien vers sa fiche Admin. Jamais utilisé pour l'éligibilité ni le poids. |
 | `format` | `bandeau_horizontal` | oui | Un seul format en V1 (voir section 5). |
-| `visuel` | chemin `public/` | oui | Image du bandeau. |
-| `alt` | texte | oui | Texte alternatif — obligatoire et pertinent (accessibilité). |
+| `visuel` | chemin `public/` | oui | Image du bandeau, **visuel desktop** — affichée à partir de 640px de large, et sert aussi de repli automatique sur mobile si `visuelMobile` est absent. Dimensions recommandées : 1600 × 200 px (ratio 8:1). |
+| `visuelMobile` | chemin `public/` | non | Image dédiée au mobile (< 640px de large). Dimensions recommandées : 900 × 300 px (ratio 3:1). **Optionnel** : si absent, `visuel` (desktop) est utilisé sur toutes les largeurs — voir section 5bis. |
+| `alt` | texte | oui | Texte alternatif — obligatoire et pertinent (accessibilité), commun aux deux visuels. |
 | `lien` | URL | non | Si absent, le bandeau n'est pas cliquable. |
 | `pages` | liste parmi `accueil, offres, exposants, programme` | oui (≥ 1) | Pages où la campagne peut apparaître. |
 | `emplacement` | `principal` (seule valeur possible en V1) | non (défaut `principal`) | Zone dans la page — un seul emplacement par page en V1. |
@@ -106,6 +107,7 @@ pratique, ces champs se renseignent via le formulaire `/admin/visibilite/formula
   "typeAnnonceur": "sponsor",
   "format": "bandeau_horizontal",
   "visuel": "/visibilites/sponsor-principal.png",
+  "visuelMobile": "/visibilites/sponsor-principal-mobile.png",
   "alt": "Bandeau du sponsor principal du salon",
   "lien": "https://exemple.nc",
   "pages": ["accueil", "offres"],
@@ -125,7 +127,7 @@ besoin distinct à ce stade ; voir section 11 pour une piste Admin-2B.
 Volontairement **pas de carrousel automatique** : la sélection se fait une fois au chargement de la
 page et reste fixe pendant la consultation (voir section 6).
 
-## 5bis. Rendu du visuel — ratio naturel, sans recadrage
+## 5bis. Rendu du visuel — deux visuels responsives, ratio naturel, sans recadrage
 
 **Depuis le lot « affichage responsive »** (09/08/2026), le bandeau public affiche le visuel dans
 son **ratio naturel intégral**, sans aucun recadrage :
@@ -133,7 +135,7 @@ son **ratio naturel intégral**, sans aucun recadrage :
 - `src/components/VisibilitySlot.astro` : le conteneur (`[data-visibility-visual]`) n'impose plus
   d'`aspect-[6/1]`/`aspect-[8/1]` — sa largeur reste contrainte à 100% du slot, sa hauteur n'est plus
   fixée.
-- `src/lib/visibilite-ui.ts` (fonction `remplir()`) : l'`<img>` injectée au chargement n'utilise plus
+- `src/lib/visibilite-ui.ts` (fonction `remplir()`) : l'image injectée au chargement n'utilise plus
   `object-cover` — elle est rendue en `w-full h-auto`, donc **entièrement visible, sans déformation
   ni crop**, avec une hauteur qui découle mécaniquement du ratio réel du fichier image et de la
   largeur disponible.
@@ -142,13 +144,52 @@ son **ratio naturel intégral**, sans aucun recadrage :
 8:1) reste naturellement **peu haut** sur un écran étroit (mobile), puisque sa hauteur affichée est
 strictement proportionnelle à sa largeur affichée. Ce n'est plus un recadrage qui masque une partie
 de l'image — c'est l'image entière, simplement rendue plus compacte en hauteur sur les petits écrans.
-La recommandation de ratio (section 11) reste donc pertinente pour la lisibilité, même si elle n'est
-plus imposée techniquement.
 
 Historique : avant ce lot, le conteneur imposait `aspect-[6/1]` (mobile) / `aspect-[8/1]` (`sm:` et
 plus) avec `object-cover`, ce qui garantissait une hauteur stable mais rognait systématiquement toute
 image dont le ratio réel différait de ces valeurs — en particulier sur mobile, où le rognage était le
 plus visible. Ce comportement a été abandonné au profit de l'affichage intégral décrit ci-dessus.
+
+### Depuis le lot « visibilité mobile » (10/08/2026) — deux visuels distincts par campagne
+
+Le ratio naturel sans recadrage (ci-dessus) a exposé un problème d'usage propre au **mobile** : un
+visuel desktop très panoramique (proche de 8:1, format recommandé pour un bandeau publicitaire lisible
+avec texte/logo/CTA sur grand écran) devient mécaniquement **très bas** sur un écran étroit — au point
+de perdre en visibilité. Des essais de recadrage mobile forcé (5:1, 4:1) ont été écartés : ils coupent
+trop souvent le CTA ou le logo, ce qui n'est pas acceptable pour un bandeau publicitaire porteur de
+texte.
+
+**Solution retenue : deux visuels par campagne, le second optionnel avec repli automatique** :
+
+- `visuel` (existant, inchangé) reste le **visuel desktop** — dimensions recommandées
+  **1600 × 200 px** (ratio 8:1). Reste **obligatoire**, exactement comme avant ce lot.
+- `visuelMobile` (nouveau champ) est le **visuel mobile**, dédié aux écrans étroits — dimensions
+  recommandées **900 × 300 px** (ratio 3:1), un format nettement moins panoramique donc plus lisible
+  et plus haut sur un téléphone, sans recadrage de contenu. **Optionnel.**
+
+**Rétrocompatibilité — le point clé de ce lot** : `visuelMobile` est un champ additif, jamais un
+remplacement de `visuel`. Toute campagne créée avant ce lot n'a pas de `visuelMobile` (champ absent,
+`null` dans `visibilites.json` et dans la réponse de l'API publique) — son comportement ne change
+strictement en rien : le visuel desktop existant continue de s'afficher sur toutes les largeurs,
+mobile compris, exactement comme avant ce lot. Aucune migration de données n'est nécessaire.
+
+**Seuil et rendu — `picture`/`source`, repli natif, aucune logique JS de correspondance de largeur** :
+
+- `src/lib/visibilite-ui.ts` (fonction `remplir()`) construit désormais un `<picture>` : si
+  `visuelMobile` est renseigné, une `<source media="(min-width: 640px)" srcset="<visuel desktop>">`
+  est ajoutée, et l'`<img>` de repli porte `src="<visuelMobile>"` — c'est le mécanisme natif du
+  navigateur qui choisit la source active selon la largeur de la fenêtre, y compris au
+  redimensionnement, sans code JS de correspondance à maintenir. Si `visuelMobile` est absent, aucune
+  `<source>` n'est ajoutée : l'`<img>` porte directement `src="<visuel desktop>"`, structure identique
+  à avant ce lot.
+- Seuil : **< 640px** → visuel mobile (ou desktop en repli) ; **≥ 640px** → toujours le visuel
+  desktop. 640px correspond au point de bascule `sm:` déjà utilisé ailleurs dans la charte Tailwind du
+  site (cohérence avec le reste du responsive).
+- Le ratio naturel sans recadrage (section 5bis, premier paragraphe) s'applique identiquement aux deux
+  visuels : aucun `object-cover`, aucune hauteur imposée par le conteneur.
+- Whitelist publique (`VisibiliteResume`, `CHAMPS_RESUME_PUBLIC`, section 15.7) : `visuelMobile` est
+  ajouté à la liste des champs publics transmis par `GET /api/visibilites.php` (valeur `null` si la
+  campagne n'en a pas) — même traitement que `lien`, déjà optionnel.
 
 ## 6. Pages et emplacements intégrés
 
@@ -242,11 +283,18 @@ depuis la navigation Admin (« Visibilité »). Toujours pas d'upload d'image (v
 
 La liste n'est plus rendue au build : elle est entièrement construite côté client, au chargement de
 la page, à partir de `GET /admin-api/visibilites.php` (voir section 15). Affiche, pour chaque
-campagne : aperçu du visuel, annonceur (+ nom interne), type, format, pages/emplacement, période,
-poids, statut calculé, et trois actions (**Modifier**, **Activer/Désactiver**, **Supprimer** — avec
-confirmation). Un lien vers la fiche Admin de l'exposant apparaît quand `exposantId` est renseigné et
-correspond à un exposant connu (l'exposant, lui, reste résolu au build : la collection `exposants`
-n'est pas concernée par Admin-2B).
+campagne : aperçu du visuel desktop (avec la mention « Visuel mobile dédié » ou « Mobile : repli
+desktop » selon que `visuelMobile` est renseigné — voir section 5bis), annonceur (+ nom interne),
+type, format, pages/emplacement, période, poids, statut calculé, et trois actions (**Modifier**,
+**Activer/Désactiver**, **Supprimer** — avec confirmation). Un lien vers la fiche Admin de l'exposant
+apparaît quand `exposantId` est renseigné et correspond à un exposant connu (l'exposant, lui, reste
+résolu au build : la collection `exposants` n'est pas concernée par Admin-2B).
+
+Le formulaire (`/admin/visibilite/formulaire`) porte deux champs visuel distincts et explicitement
+libellés : **« Visuel desktop * »** (obligatoire, avec rappel des dimensions recommandées 1600 × 200
+px et de son rôle de repli mobile automatique) et **« Visuel mobile (optionnel) »** (avec rappel des
+dimensions recommandées 900 × 300 px et un rappel explicite que le laisser vide déclenche le repli sur
+le visuel desktop — voir section 5bis).
 
 Filtres disponibles : statut, type d'annonceur, page — appliqués côté client sur les données reçues.
 
@@ -285,9 +333,16 @@ l'espace `/admin` (voir docs/ADMIN.md) — rien de spécifique à ajouter ici.
 6. Pour retirer une campagne sans la supprimer (garder une trace) : bouton **Désactiver**. Pour la
    retirer définitivement : bouton **Supprimer** (confirmation demandée, irréversible).
 
-**Recommandation visuelle** : bandeau large, ratio approximatif 6:1 à 8:1 — c'est une recommandation
-de confort de lecture (un visuel trop étroit/haut reste peu lisible en bandeau), **pas une contrainte
-technique** : voir section 5bis, le conteneur public n'impose plus aucun ratio ni recadrage.
+**Recommandation visuelle** — deux visuels, le second optionnel (voir section 5bis) :
+
+- **Desktop** (`visuel`, obligatoire) : **1600 × 200 px**, ratio 8:1.
+- **Mobile** (`visuelMobile`, optionnel) : **900 × 300 px**, ratio 3:1. Si non fourni, le visuel
+  desktop est utilisé automatiquement sur mobile — comportement par défaut, sans bandeau cassé.
+
+Ce sont des recommandations de confort de lecture (un visuel trop étroit/haut, ou trop panoramique sur
+un petit écran, reste peu lisible en bandeau), **pas une contrainte technique bloquante** : voir
+section 5bis, le conteneur public n'impose aucun ratio ni recadrage — une image dans d'autres
+proportions reste affichée intégralement, simplement avec une hauteur différente.
 
 ## 12. Absence de tracking
 
@@ -481,9 +536,9 @@ un lot ultérieur si cette procédure s'avère trop contraignante à l'usage —
 
 ### 15.7 Contrat public — whitelist
 
-`GET /api/visibilites.php` ne renvoie jamais que les 8 champs de `VisibiliteResume`
-(`src/lib/visibilites.ts`) : `id`, `annonceur`, `visuel`, `alt`, `lien`, `poids`, `dateDebut`,
-`dateFin`. `resumePublicVisibilite()` (`public/api/_visibilites-lib.php`) construit cet objet
+`GET /api/visibilites.php` ne renvoie jamais que les 9 champs de `VisibiliteResume`
+(`src/lib/visibilites.ts`) : `id`, `annonceur`, `visuel`, `visuelMobile`, `alt`, `lien`, `poids`,
+`dateDebut`, `dateFin`. `resumePublicVisibilite()` (`public/api/_visibilites-lib.php`) construit cet objet
 explicitement, champ par champ — jamais par un simple filtre négatif sur l'enregistrement complet, ce
 qui garantit qu'un futur champ interne ajouté au schéma ne fuite pas par oubli. Testé par
 `scripts/visibilites-api.test.mjs` (« Contrat public ») : une campagne créée avec `nomInterne`,

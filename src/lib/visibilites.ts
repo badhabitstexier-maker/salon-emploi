@@ -54,6 +54,7 @@ export interface Visibilite {
   exposantId?: string;
   format: FormatVisibilite;
   visuel: string;
+  visuelMobile?: string;
   alt: string;
   lien?: string;
   pages: PageVisibilite[];
@@ -240,6 +241,7 @@ export interface VisibiliteResume {
   id: string;
   annonceur: string;
   visuel: string;
+  visuelMobile?: string;
   alt: string;
   lien?: string;
   poids: number;
@@ -247,13 +249,22 @@ export interface VisibiliteResume {
   dateFin?: string;
 }
 
-const CHAMPS_RESUME_PUBLIC = ['id', 'annonceur', 'visuel', 'alt', 'lien', 'poids', 'dateDebut', 'dateFin'] as const;
+const CHAMPS_RESUME_PUBLIC = ['id', 'annonceur', 'visuel', 'visuelMobile', 'alt', 'lien', 'poids', 'dateDebut', 'dateFin'] as const;
 
+/*
+  `visuelMobile` est optionnel dès la saisie Admin (voir docs/VISIBILITE.md
+  §4/§5bis) : si absent, le rendu public retombe sur `visuel` (desktop) pour
+  toutes les largeurs — c'est le contrôleur client (src/lib/visibilite-ui.ts)
+  qui applique ce repli via <picture>/<source>, jamais ce module ni l'API, qui
+  transmettent tels quels les deux champs (visuelMobile potentiellement
+  absent).
+*/
 export function visibiliteResume(visibilite: Visibilite): VisibiliteResume {
   return {
     id: visibilite.id,
     annonceur: visibilite.annonceur,
     visuel: visibilite.visuel,
+    visuelMobile: visibilite.visuelMobile,
     alt: visibilite.alt,
     lien: visibilite.lien,
     poids: visibilite.poids,

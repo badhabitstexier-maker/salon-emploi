@@ -187,6 +187,10 @@ const exposantsParId = exposants.map((exposant) => ({
     img.loading = 'lazy';
     img.className = 'h-10 w-24 rounded object-cover';
     tdApercu.appendChild(img);
+    const pMobile = document.createElement('p');
+    pMobile.className = 'mt-1 text-[11px] text-encre/60';
+    pMobile.textContent = visibilite.visuelMobile ? 'Visuel mobile dédié' : 'Mobile : repli desktop';
+    tdApercu.appendChild(pMobile);
     tr.appendChild(tdApercu);
 
     const tdAnnonceur = document.createElement('td');

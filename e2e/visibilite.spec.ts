@@ -51,6 +51,45 @@ test.describe('Visibilité — site public (Admin-2B, dynamique)', () => {
     await expect(lien.locator('img')).toHaveAttribute('alt', 'Bandeau offres E2E');
   });
 
+  test('campagne historique (visuel unique, sans visuelMobile) : aucune <source>, le visuel desktop sert sur toutes les largeurs', async ({ page }) => {
+    await mockApiPublique(page, [campagne({ id: 'historique-1', pages: ['accueil'] })]);
+
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto('/');
+    const slot = page.locator('#visibilite-slot-accueil-principal');
+    await expect(slot).toBeVisible();
+    await expect(slot.locator('picture source')).toHaveCount(0);
+    await expect(slot.locator('img')).toHaveAttribute('src', VISUEL);
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(slot.locator('img')).toHaveAttribute('src', VISUEL);
+  });
+
+  test('campagne desktop + mobile : le visuel mobile est utilisé sous 640px, le desktop à partir de 640px', async ({ page }) => {
+    const VISUEL_MOBILE = '/brand/logo-salon-emploi-formation-mark-192.png';
+    await mockApiPublique(page, [
+      campagne({ id: 'responsive-1', pages: ['accueil'], visuel: VISUEL, visuelMobile: VISUEL_MOBILE }),
+    ]);
+
+    await page.goto('/');
+    const slot = page.locator('#visibilite-slot-accueil-principal');
+    await expect(slot).toBeVisible();
+
+    // Repli natif <picture>/<source> : une seule structure DOM, le
+    // navigateur choisit la source active selon la largeur (voir
+    // docs/VISIBILITE.md §4/§5bis) — pas de logique JS de correspondance.
+    const source = slot.locator('picture source');
+    await expect(source).toHaveAttribute('media', '(min-width: 640px)');
+    await expect(source).toHaveAttribute('srcset', VISUEL);
+    await expect(slot.locator('img')).toHaveAttribute('src', VISUEL_MOBILE);
+
+    await page.setViewportSize({ width: 375, height: 800 });
+    await expect.poll(() => slot.locator('img').evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(VISUEL_MOBILE);
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect.poll(() => slot.locator('img').evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(VISUEL);
+  });
+
   test('une visibilité désactivée, future ou expirée ne s\'affiche jamais', async ({ page }) => {
     const maintenant = Date.now();
     await mockApiPublique(page, [
@@ -238,6 +277,26 @@ test.describe('Visibilité — Admin (Admin-2B, CRUD)', () => {
     await expect(page.locator('[data-visibilite-row]', { hasText: 'Nouvel annonceur E2E' })).toBeVisible();
   });
 
+  test('création : le champ visuel mobile est optionnel et transmis à l\'API quand renseigné', async ({ page }) => {
+    const VISUEL_MOBILE = '/brand/logo-salon-emploi-formation-mark-192.png';
+    const etat = await mockApiAdmin(page, []);
+    await page.goto('/admin/visibilite/formulaire');
+
+    await expect(page.getByLabel('Visuel desktop *')).toBeVisible();
+    await expect(page.getByLabel('Visuel mobile (optionnel)')).toBeVisible();
+
+    await page.fill('#champ-nomInterne', 'Campagne responsive E2E');
+    await page.fill('#champ-annonceur', 'Annonceur responsive E2E');
+    await page.fill('#champ-visuel', VISUEL);
+    await page.fill('#champ-visuelMobile', VISUEL_MOBILE);
+    await page.fill('#champ-alt', 'Alt responsive');
+    await page.check('input[name="pages"][value="accueil"]');
+
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page).toHaveURL(/\/admin\/visibilite$/);
+    expect(etat.find((v) => v.annonceur === 'Annonceur responsive E2E')?.visuelMobile).toBe(VISUEL_MOBILE);
+  });
+
   test('création : les erreurs renvoyées par le serveur s\'affichent sans navigation', async ({ page }) => {
     await mockApiAdmin(page, []);
     await page.goto('/admin/visibilite/formulaire');
@@ -261,12 +320,22 @@ test.describe('Visibilité — Admin (Admin-2B, CRUD)', () => {
 
     await expect(page.locator('#champ-annonceur')).toHaveValue('Avant modification');
     await expect(page.locator('#champ-poids')).toHaveValue('4');
+    await expect(page.locator('#champ-visuelMobile')).toHaveValue(''); // campagne historique, pas de visuel mobile
 
     await page.fill('#champ-annonceur', 'Après modification');
     await page.getByRole('button', { name: 'Enregistrer' }).click();
 
     await expect(page).toHaveURL(/\/admin\/visibilite$/);
     await expect(page.locator('[data-visibilite-row]', { hasText: 'Après modification' })).toBeVisible();
+  });
+
+  test('modification : une campagne avec visuel mobile existant le préremplit', async ({ page }) => {
+    const VISUEL_MOBILE = '/brand/logo-salon-emploi-formation-mark-192.png';
+    await mockApiAdmin(page, [
+      campagne({ id: 'vis-2', annonceur: 'Avec mobile', visuel: VISUEL, visuelMobile: VISUEL_MOBILE, pages: ['accueil'] }),
+    ]);
+    await page.goto('/admin/visibilite/formulaire?id=vis-2');
+    await expect(page.locator('#champ-visuelMobile')).toHaveValue(VISUEL_MOBILE);
   });
 
   test('le tableau de bord affiche un résumé issu de l\'API Admin', async ({ page }) => {

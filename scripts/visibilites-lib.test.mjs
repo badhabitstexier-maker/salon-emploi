@@ -214,7 +214,10 @@ test('visibiliteResume : n\'expose aucune donnée interne (nomInterne, typeAnnon
     exposantId: 'EXP26-001',
   });
   const resume = visibiliteResume(v);
-  assert.deepEqual(Object.keys(resume).sort(), ['alt', 'annonceur', 'dateDebut', 'dateFin', 'id', 'lien', 'poids', 'visuel'].sort());
+  assert.deepEqual(
+    Object.keys(resume).sort(),
+    ['alt', 'annonceur', 'dateDebut', 'dateFin', 'id', 'lien', 'poids', 'visuel', 'visuelMobile'].sort(),
+  );
   assert.equal('nomInterne' in resume, false);
   assert.equal('typeAnnonceur' in resume, false);
   assert.equal('exposantId' in resume, false);
@@ -225,6 +228,25 @@ test('estResumePublicValide : accepte le résumé whitelisté, refuse tout champ
   assert.equal(estResumePublicValide({ id: 'x', nomInterne: 'fuite' }), false);
   assert.equal(estResumePublicValide({ id: 'x', typeAnnonceur: 'sponsor' }), false);
   assert.equal(estResumePublicValide({ id: 'x', exposantId: 'EXP26-001' }), false);
+  assert.equal(estResumePublicValide({ id: 'x', visuelMobile: '/m.png' }), true);
+});
+
+// ---------------------------------------------------------------------------
+// visuelMobile — optionnel, rétrocompatible (voir docs/VISIBILITE.md §4/§5bis)
+// ---------------------------------------------------------------------------
+
+test('visibiliteResume : campagne historique sans visuelMobile -> champ transmis vide (repli desktop géré côté client)', () => {
+  const v = visibilite(); // pas de visuelMobile, comme toute campagne créée avant ce lot
+  const resume = visibiliteResume(v);
+  assert.equal(resume.visuelMobile, undefined);
+  assert.equal(resume.visuel, '/fixture.png');
+});
+
+test('visibiliteResume : campagne avec visuelMobile -> les deux visuels sont transmis distinctement', () => {
+  const v = visibilite({ visuel: '/desktop.png', visuelMobile: '/mobile.png' });
+  const resume = visibiliteResume(v);
+  assert.equal(resume.visuel, '/desktop.png');
+  assert.equal(resume.visuelMobile, '/mobile.png');
 });
 
 test('visibilitesEnvoyables : envoie une campagne active même hors de sa fenêtre de dates (filtrage reporté au client)', () => {

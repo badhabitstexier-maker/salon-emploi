@@ -233,6 +233,18 @@ function validerVisibilite(array $entree): array
     }
     $valeurs['visuel'] = $visuel;
 
+    // visuelMobile est optionnel (voir docs/VISIBILITE.md §4/§5bis) : si
+    // absent, le rendu public retombe sur `visuel` (desktop) sur toutes les
+    // largeurs — ce repli est appliqué côté client (VisibilitySlot), jamais
+    // ici : on se contente de normaliser une chaîne vide en null, comme pour
+    // `lien`.
+    $visuelMobile = $entree['visuelMobile'] ?? null;
+    if ($visuelMobile !== null && trim((string) $visuelMobile) !== '') {
+        $valeurs['visuelMobile'] = trim((string) $visuelMobile);
+    } else {
+        $valeurs['visuelMobile'] = null;
+    }
+
     $alt = trim((string) ($entree['alt'] ?? ''));
     if ($alt === '') {
         $erreurs[] = 'alt est obligatoire (texte alternatif, accessibilité).';
@@ -324,6 +336,7 @@ function resumePublicVisibilite(array $visibilite): array
         'id' => $visibilite['id'] ?? null,
         'annonceur' => $visibilite['annonceur'] ?? null,
         'visuel' => $visibilite['visuel'] ?? null,
+        'visuelMobile' => $visibilite['visuelMobile'] ?? null,
         'alt' => $visibilite['alt'] ?? null,
         'lien' => $visibilite['lien'] ?? null,
         'poids' => $visibilite['poids'] ?? null,
