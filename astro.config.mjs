@@ -65,8 +65,17 @@ export default defineConfig({
       ? []
       : [
           sitemap({
+            /*
+              Exclusions du sitemap :
+              - fiches offres TEST (slugsOffresTest ci-dessus) ;
+              - /admin (jamais indexé, voir robotsTxt ci-dessous) ;
+              - /merci (page de confirmation post-formulaire, marquée noindex
+                dans src/pages/merci.astro : aucune valeur en indexation).
+            */
             filter: (page) =>
-              !slugsOffresTest.some((slug) => page.includes(`/offres/${slug}`)) && !page.includes('/admin'),
+              !slugsOffresTest.some((slug) => page.includes(`/offres/${slug}`)) &&
+              !page.includes('/admin') &&
+              !page.includes('/merci'),
           }),
         ]),
     robotsTxt({

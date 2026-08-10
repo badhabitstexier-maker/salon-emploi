@@ -2,9 +2,16 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
+<!--
+  Page de confirmation post-formulaire (Web3Forms) : sans intérêt d'indexation
+  et sans valeur en résultat de recherche (contenu de remerciement, atteignable
+  uniquement après l'envoi d'un formulaire). Forcée en noindex ici et exclue du
+  sitemap (voir astro.config.mjs) pour ne jamais être proposée à Google.
+-->
 <BaseLayout
   title="Message envoyé"
   description="Votre demande concernant le Salon de l'Emploi & de la Formation 2026 a bien été transmise à l'équipe LabEvents."
+  noindex
 >
   <section class="bg-brume">
     <div class="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6 lg:py-28">
