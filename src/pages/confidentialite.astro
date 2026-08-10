@@ -149,15 +149,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             en Inde ; sa politique de confidentialité indique recourir à plusieurs sous-traitants
             d'infrastructure (hébergement et sécurité, notamment AWS, Cloudflare et Hetzner),
             susceptibles de traiter des données dans différents pays selon les besoins techniques.
-            Sur la durée de conservation des soumissions, les informations publiées par Web3Forms
-            ne sont pas parfaitement concordantes d'une page à l'autre de son site : ses pages
-            commerciales indiquent une conservation de 30 jours pour le plan gratuit et d'un an
-            pour le plan payant, tandis que sa politique de confidentialité prévoit une
-            conservation pouvant atteindre 3 ans au maximum, sauf durée plus courte propre au plan
-            souscrit ou suppression anticipée. Le plan Web3Forms effectivement souscrit par
-            LabEvents n'est pas déterminable depuis le dépôt, alors qu'il conditionne la durée
-            réelle appliquée :
-            {'[À CONFIRMER PAR PHILIPPE]'}. Sources consultées :
+            LabEvents utilise le plan <strong>gratuit (Free)</strong> de Web3Forms, pour lequel les
+            pages commerciales du prestataire annoncent une conservation des soumissions de
+            <strong>30 jours</strong> avant suppression automatique. Cette indication n'est
+            toutefois pas totalement concordante avec la politique de confidentialité de
+            Web3Forms, qui prévoit par ailleurs une durée de conservation générale pouvant
+            atteindre jusqu'à 3 ans selon les cas, sans garantir explicitement que le plan gratuit
+            reste plafonné à 30 jours en toute circonstance. Sources consultées :
             <a
               href="https://web3forms.com/privacy"
               class="font-semibold text-marine underline hover:text-village"
@@ -228,10 +226,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <h2 class="font-titre text-xl font-bold uppercase text-marine">8. Durées de conservation</h2>
         <ul class="mt-2 list-inside list-disc space-y-1">
           <li>
-            Formulaire « Exposer » : les emails reçus sont conservés par LabEvents pour la durée
-            nécessaire au traitement de la demande et à l'organisation du salon. La durée précise de
-            conservation de la boîte email de LabEvents n'est pas figée à ce jour :
-            {'[À CONFIRMER PAR PHILIPPE]'}.
+            Formulaire « Exposer » : deux durées distinctes s'appliquent successivement. Chez le
+            prestataire technique Web3Forms, la soumission n'est conservée que temporairement (30
+            jours annoncés pour le plan gratuit utilisé par LabEvents, voir point 5). Une fois
+            l'email reçu par LabEvents dans sa propre messagerie, il est conservé
+            <strong>3 ans à compter du dernier contact</strong> avec le prospect, exposant ou
+            partenaire concerné, puis supprimé.
           </li>
           <li>
             Candidatures (une fois le formulaire activé) : conservées jusqu'au
