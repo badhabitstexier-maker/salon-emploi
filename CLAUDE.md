@@ -10,6 +10,11 @@
 > dépôt (code, `main` distant, PR GitHub), pas des comptes rendus de conversation antérieurs.
 > Commit de référence : `e8bacaf` (PR #46 fusionnée, module Visibilité CRUD). Remplace
 > intégralement la v4.2 — ne pas s'y référer comme source concurrente.
+>
+> **Amendements du 10 août 2026** (préparation production, sections 4/9/12/16) : domaine canonique
+> de production changé de `www.salonemploi.nc` à `salonemploi.nc` ; séparation préprod/production du
+> module Visibilité faite explicitement au build (placeholders + variables GitHub par environnement),
+> plus par un chemin unique en dur.
 
 ---
 
@@ -50,7 +55,7 @@ Le site doit être **réutilisable pour les éditions futures**.
 
 ## 4. Domaine et fournisseurs de formulaires
 
-**Nom de domaine : `salonemploi.nc`.** URL canonique : `https://www.salonemploi.nc`. Aucun domaine n'est codé en dur dans le dépôt : `astro.config.mjs` lit `PUBLIC_SITE_URL` (variable d'environnement) avec un repli sur `http://localhost:4321` en son absence.
+**Nom de domaine : `salonemploi.nc`.** URL canonique de production : `https://salonemploi.nc` **sans** `www.` (décision LabEvents du 10/08/2026, remplace `https://www.salonemploi.nc`). `www.salonemploi.nc` doit exister en DNS et rediriger en 301 vers `https://salonemploi.nc` — configuration DNS/Apache OVH, hors dépôt, à réaliser manuellement par Philippe (voir `docs/deploiement-preproduction.md` section 7bis). Aucun domaine n'est codé en dur dans le dépôt : `astro.config.mjs` lit `PUBLIC_SITE_URL` (variable d'environnement) avec un repli sur `http://localhost:4321` en son absence.
 
 **Fournisseurs de formulaires :**
 - **Web3Forms** — contact commercial exposant/visiteur sur `/exposer`.
@@ -185,7 +190,7 @@ e2e/            → suite Playwright (voir section 13)
 
 ⚠️ **Piège vérifié en pratique** : une Pull Request peut être fusionnée avant qu'une session Claude Code n'ait fini de pousser tous ses commits sur la branche (fusion en squash notamment). Un commit poussé après la fusion n'est **pas** automatiquement inclus dans `main`. **Avant d'affirmer qu'un commit est en production/préproduction, toujours vérifier directement sur le dépôt distant** (`git fetch origin main`, comparer les SHA) plutôt que de supposer qu'un `git push` réussi suffit.
 
-Les secrets (clé Web3Forms, `PUBLIC_TALLY_CANDIDATURE_URL`, identifiants FTP, `PUBLIC_SITE_URL`, `PUBLIC_NOINDEX`) vivent exclusivement dans les environnements GitHub `preprod` et `production` — jamais dans le code, un commit, ou un fichier de documentation.
+Les secrets (clé Web3Forms, identifiants FTP) et variables (`PUBLIC_SITE_URL`, `PUBLIC_NOINDEX`, `PUBLIC_TALLY_CANDIDATURE_URL`, `VISIBILITES_AUTH_USER_FILE`, `VISIBILITES_DATA_DIR`) vivent exclusivement dans les environnements GitHub `preprod` et `production` — jamais dans le code, un commit, ou un fichier de documentation. `VISIBILITES_AUTH_USER_FILE`/`VISIBILITES_DATA_DIR` sont des chemins serveur (variables, pas des secrets) injectés dans `dist/` par chaque workflow de déploiement, en remplacement de placeholders commités — voir section 12 et `docs/VISIBILITE.md` section 15.9. `PUBLIC_TALLY_CANDIDATURE_URL` n'est volontairement pas encore câblée dans `deploy-production.yml` (voir `docs/CANDIDATURES_TALLY.md` section 7) : en attente de validation de la recette en préproduction par Philippe.
 
 ---
 
@@ -260,9 +265,9 @@ C'est un module fonctionnel, pas un chantier en cours. Fonctionnement réel au c
 - **Fail-safe** : toute erreur de l'API publique renvoie une liste vide avec statut 200 — jamais d'erreur visible, jamais de page bloquée pour le visiteur.
 - Le module ne remplace ni ne concurrence le pipeline Offres/Exposants/Programme (section 10) — c'est une chaîne de données entièrement distincte.
 
-**Distinction préprod / production, explicite :**
-- **PRÉPRODUCTION** : architecture déjà prévue et configurée — `.htpasswd`, dossier de données (`/home/salonez/salon-emploi-data-preprod/`), chemins câblés dans `public/admin-api/.htaccess` et documentés dans `docs/VISIBILITE.md`.
-- **PRODUCTION** : **configuration encore à réaliser avant ouverture** — aucun `.htpasswd` production, aucun dossier de données production créé à ce jour. Ne pas supposer que la bascule en prod fonctionnera sans cette étape.
+**Distinction préprod / production — séparation faite AU BUILD (décision du 10/08/2026), jamais par détection runtime Apache** : `public/admin/.htaccess`, `public/admin-api/.htaccess` et `public/api/_visibilites-lib.php` ne portent plus de chemin OVH en dur dans le dépôt, seulement des placeholders (`__VISIBILITES_AUTH_USER_FILE__`, `__VISIBILITES_DATA_DIR__`). Chaque workflow de déploiement (`deploy-preprod.yml`, `deploy-production.yml`) les substitue dans `dist/`, juste avant le transfert FTP, avec les variables GitHub `VISIBILITES_AUTH_USER_FILE`/`VISIBILITES_DATA_DIR` de son propre environnement — voir `docs/VISIBILITE.md` section 15.9 pour l'architecture complète.
+- **PRÉPRODUCTION** : opérationnelle — `.htpasswd` et dossier de données (`/home/salonez/salon-emploi-data-preprod/`) déjà créés côté OVH, chemins renseignés dans les variables de l'environnement GitHub `preprod`.
+- **PRODUCTION** : **le code est prêt à recevoir une configuration distincte, mais rien n'est encore créé côté OVH ni dans l'environnement GitHub `production`** — aucun `.htpasswd` production, aucun dossier de données production. Ne pas supposer que la bascule en prod fonctionnera sans ces deux créations manuelles (voir `docs/VISIBILITE.md` section 15.9 pour la procédure exacte).
 
 Voir `docs/VISIBILITE.md` pour l'architecture technique complète (chemins exacts, procédure de dépôt d'un visuel, sécurité détaillée).
 
@@ -318,7 +323,7 @@ Le dashboard et les vues exposants/offres exposent des indicateurs utiles (badge
 
 Dans l'ordre de blocage, pas de priorité arbitraire :
 
-1. **Configuration production du module Visibilité** — `.htpasswd` production, dossier de données production, `.htaccess` adaptés (voir section 12). Sans cela, le module ne peut pas fonctionner en production.
+1. **Configuration production du module Visibilité** — le code injecte désormais la configuration serveur au build (voir section 12, décision du 10/08/2026) ; il reste à créer côté OVH le `.htpasswd` production et le dossier de données production, puis à renseigner les variables `VISIBILITES_AUTH_USER_FILE`/`VISIBILITES_DATA_DIR` de l'environnement GitHub `production`. Sans cela, le module ne peut pas fonctionner en production.
 2. **Import des exposants réels** — la collection `exposants` est vide ; `/exposants` n'a aucun contenu à montrer en l'état.
 3. **Alimentation du programme réel** — la collection `programme` est vide ; `/programme` n'a aucun contenu à montrer en l'état.
 4. **Remplacement progressif des offres TEST par des offres réelles** — via le pipeline habituel (section 11), en conservant ou retirant les fiches TEST selon la décision de Philippe une fois du contenu réel disponible.

@@ -9,24 +9,22 @@
 # dehors de l'arborescence synchronisée par le déploiement FTP (voir
 # docs/ADMIN.md, section « Créer ou modifier le .htpasswd »).
 #
-# Chemin confirmé pour la préproduction (hébergement OVH, compte
-# salonez) : le .htpasswd vit hors de la racine du site
-# (/home/salonez/salon-emploi-preprod), donc hors de portée du
-# déploiement FTP (voir docs/ADMIN.md, section 4.3).
-#
-# Cette directive AuthUserFile est propre à la préproduction. Le jour où
-# la production sera mise en place, vérifier si le compte d'hébergement
-# de production utilise le même chemin ou un chemin distinct (répertoire
-# racine, login FTP) avant de réutiliser cette valeur telle quelle.
+# AuthUserFile ci-dessous est un PLACEHOLDER, jamais un chemin réel dans ce
+# dépôt (voir docs/VISIBILITE.md section 15.9) : chaque workflow de
+# déploiement (préprod, production) le remplace dans dist/, juste avant le
+# transfert FTP, par la valeur de la variable d'environnement GitHub
+# VISIBILITES_AUTH_USER_FILE propre à son environnement — préprod et
+# production utilisent ainsi deux .htpasswd distincts sans jamais coder de
+# chemin en dur ici ni dans un secret Git.
 #
 # Portée de cette protection : ce fichier ne s'applique qu'au répertoire
 # où il se trouve (admin/ à la racine du site déployé) et à ses
 # sous-répertoires — c'est le comportement standard d'un .htaccess Apache
-# par répertoire. Il n'affecte ni le reste du site salon-emploi-preprod,
-# ni aucun autre site hébergé sur le compte OVH : aucune directive
-# <Directory>/<VirtualHost> globale n'est modifiée ici.
+# par répertoire. Il n'affecte ni le reste du site, ni aucun autre site
+# hébergé sur le compte OVH : aucune directive <Directory>/<VirtualHost>
+# globale n'est modifiée ici.
 
 AuthType Basic
 AuthName "Acces reserve LabEvents"
-AuthUserFile /home/salonez/.htpasswd-salonemploi-preprod
+AuthUserFile __VISIBILITES_AUTH_USER_FILE__
 Require valid-user

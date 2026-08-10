@@ -419,10 +419,10 @@ réseau non-CDN vers l'hébergement OVH plutôt que du contenu déjà généré 
 
 | Fichier | Rôle |
 |---|---|
-| `public/api/_visibilites-lib.php` | Bibliothèque partagée : lecture/écriture atomique de `visibilites.json`, verrouillage (`flock`), validation métier serveur, whitelist du contrat public. Se protège contre un accès direct par URL (403). |
+| `public/api/_visibilites-lib.php` | Bibliothèque partagée : lecture/écriture atomique de `visibilites.json`, verrouillage (`flock`), validation métier serveur, whitelist du contrat public. Se protège contre un accès direct par URL (403). Porte le placeholder `VISIBILITES_DATA_DIR_DEFAUT = '__VISIBILITES_DATA_DIR__'` (voir section 15.9). |
 | `public/api/visibilites.php` | Endpoint public, `GET` uniquement, non authentifié. Consommé par `src/lib/visibilite-ui.ts`. |
 | `public/admin-api/visibilites.php` | Endpoint Admin, CRUD complet (`GET`/`POST`/`PUT`/`DELETE`), protégé par Basic Auth Apache + CSRF applicatif. Consommé par `src/lib/admin-visibilite-ui.ts`. |
-| `public/admin-api/.htaccess` | Basic Auth explicite pour `/admin-api` (voir section 15.6 — ne s'hérite pas de `public/admin/.htaccess`). |
+| `public/admin-api/.htaccess` | Basic Auth explicite pour `/admin-api` (voir section 15.6 — ne s'hérite pas de `public/admin/.htaccess`). Porte le placeholder `AuthUserFile __VISIBILITES_AUTH_USER_FILE__` (voir section 15.9). |
 | `src/lib/visibilites.ts` | Logique pure (statut, éligibilité, tirage pondéré) — miroir volontaire de la logique PHP, aucune dépendance à `astro:content` ni au réseau. |
 | `src/lib/visibilite-ui.ts` | Contrôleur client du site public : `fetch()` vers l'API publique, filtrage par date, tirage, rendu DOM, fallback silencieux. |
 | `src/lib/admin-visibilite-ui.ts` | Contrôleur client de l'Admin : `fetch()` vers l'API Admin, gestion du jeton CSRF, création/modification/activation/suppression. |
@@ -443,10 +443,12 @@ manuel de code** n'est nécessaire pour ce module (contrairement au test diagnos
 |---|---|
 | Racine du compte OVH | `/home/salonez` |
 | Racine du site préprod (webroot, `${FTP_REMOTE_DIR}`) | `/home/salonez/salon-emploi-preprod` |
-| **Dossier de données** (hors webroot, hors Git) | `/home/salonez/salon-emploi-data-preprod/` |
+| **Dossier de données** (hors webroot, hors Git — valeur de la variable GitHub `VISIBILITES_DATA_DIR` de l'environnement `preprod`, voir section 15.9) | `/home/salonez/salon-emploi-data-preprod/` |
 | Fichier de données | `/home/salonez/salon-emploi-data-preprod/visibilites.json` |
 | Sauvegarde de la version précédente | `/home/salonez/salon-emploi-data-preprod/visibilites.json.bak` |
 | Fichier de verrouillage (écritures concurrentes) | `/home/salonez/salon-emploi-data-preprod/visibilites.lock` |
+
+La production a son **propre** dossier de données, à un chemin distinct — voir section 15.9. Ces deux chemins ne vivent nulle part dans le dépôt Git : ils sont uniquement dans les variables `VISIBILITES_DATA_DIR` des environnements GitHub `preprod` et `production`.
 
 Ce dossier a été créé et sa capacité d'écriture par PHP confirmée par un test réel le 09/08/2026
 (voir historique de cadrage) — PHP 8.0.30 confirmé sur cet hébergement.
@@ -508,12 +510,13 @@ un lot ultérieur si cette procédure s'avère trop contraignante à l'usage —
 
 ### 15.6 Sécurité
 
-- **Basic Auth Apache**, réutilisée telle quelle (`AuthUserFile /home/salonez/.htpasswd-salonemploi-preprod`,
-  même fichier que `/admin`) — seule vraie barrière d'accès à `/admin-api`, comme documenté pour
-  `/admin` (docs/ADMIN.md §4, §8). **`/admin-api` est un dossier frère de `/admin`, pas un
-  sous-dossier** : il ne hérite donc pas de `public/admin/.htaccess` — `public/admin-api/.htaccess`
-  répète explicitement la même directive, sans rien changer au niveau racine de l'hébergement (donc
-  sans effet sur d'autres sites du compte OVH).
+- **Basic Auth Apache**, réutilisée telle quelle (`AuthUserFile`, même fichier que `/admin` —
+  chemin injecté au déploiement via `VISIBILITES_AUTH_USER_FILE`, voir section 15.9) — seule vraie
+  barrière d'accès à `/admin-api`, comme documenté pour `/admin` (docs/ADMIN.md §4, §8).
+  **`/admin-api` est un dossier frère de `/admin`, pas un sous-dossier** : il ne hérite donc pas de
+  `public/admin/.htaccess` — `public/admin-api/.htaccess` répète explicitement la même directive,
+  sans rien changer au niveau racine de l'hébergement (donc sans effet sur d'autres sites du compte
+  OVH).
 - **CSRF applicatif**, distinct de Basic Auth (qui ne protège pas seul contre une requête forgée) :
   un `GET` sur `/admin-api/visibilites.php` crée/reprend une session PHP (cookie
   `SameSite=Strict; Secure; HttpOnly`) et renvoie un jeton aléatoire (`csrfToken`, stocké en
@@ -572,28 +575,64 @@ Régressions vérifiées sur ce lot : `npm run build`, `npm run content:check`, 
 (inclut les tests unitaires offres/exposants/programme/visibilites), `npm run visibilites:api-test`,
 `npm run qa` (Playwright complet, desktop + mobile) — tous verts.
 
-### 15.9 Préproduction / production
+### 15.9 Préproduction / production — séparation faite AU BUILD (décision du 10/08/2026)
 
-Ce lot est configuré **exclusivement pour la préproduction** — chemins `/home/salonez/salon-emploi-preprod`
-et `/home/salonez/salon-emploi-data-preprod/`. Rien n'a été créé pour la production.
+**Architecture retenue** : même code source, même dépôt, mêmes fichiers `public/` pour les deux
+environnements — mais **deux workflows de déploiement distincts**, chacun injectant sa propre
+configuration serveur juste avant le transfert FTP. **Aucune détection runtime de l'environnement
+côté Apache/PHP** : le choix a été fait explicitement de séparer préprod et production au moment du
+build/déploiement, pas au moment de la requête.
 
-**Quand la production sera prête** (voir docs/deploiement-preproduction.md §7 pour le cadre général
-préprod/production du site) :
+**Mécanisme** : les trois fichiers qui portaient un chemin OVH en dur (`public/admin/.htaccess`,
+`public/admin-api/.htaccess`, `public/api/_visibilites-lib.php`) ne contiennent plus, dans le dépôt,
+que des **placeholders** :
 
-1. Créer un dossier de données **distinct** sur l'hébergement de production (jamais
-   `salon-emploi-data-preprod/` réutilisé — voir CLAUDE.md, cadrage Admin-2B point 8/13). Convention
-   proposée, à confirmer : `/home/<compte-prod>/salon-emploi-data-production/`.
-   `visibilites.json` y démarre **vide** : aucune campagne préprod n'est migrée automatiquement.
-2. Mettre à jour `VISIBILITES_DATA_DIR_DEFAUT` dans `public/api/_visibilites-lib.php` — actuellement
-   un chemin unique en dur pour la préproduction ; ce point devra être tranché explicitement (chemin
-   en dur différent par environnement déployé séparément, ou lecture d'une variable d'environnement
-   serveur si l'hébergement de production le permet) au moment de préparer ce lot, pas anticipé ici.
-3. Créer `/home/<compte-prod>/salon-emploi-production/admin-api/.htaccess` avec l'`AuthUserFile` de
-   production (distinct de celui de préprod, voir docs/ADMIN.md §4.4).
-4. Recette complète en préproduction (ce lot) avant tout déploiement en production — comme pour
-   n'importe quel autre lot du site (voir CLAUDE.md section 4).
+| Placeholder | Fichiers concernés | Remplacé par |
+|---|---|---|
+| `__VISIBILITES_AUTH_USER_FILE__` | `public/admin/.htaccess`, `public/admin-api/.htaccess` | Variable GitHub `VISIBILITES_AUTH_USER_FILE` |
+| `__VISIBILITES_DATA_DIR__` | `public/api/_visibilites-lib.php` (constante `VISIBILITES_DATA_DIR_DEFAUT`) | Variable GitHub `VISIBILITES_DATA_DIR` |
 
-**Aucune opération manuelle serveur supplémentaire n'est nécessaire pour la préproduction** au-delà
-de la création du dossier `/home/salonez/salon-emploi-data-preprod/` (déjà faite et vérifiée le
-09/08/2026) : le code PHP est déployé par le pipeline FTP existant comme n'importe quel fichier de
-`public/`.
+Chaque workflow (`deploy-preprod.yml`, `deploy-production.yml`) exécute, après `npm run build` et
+avant `SamKirkland/FTP-Deploy-Action`, une étape qui substitue ces deux placeholders dans `dist/`
+(`sed`, pas de modification du dépôt Git) avec les valeurs de son propre environnement GitHub
+(Settings → Environments → *preprod* ou *production* → **Variables**, pas des secrets : ce sont des
+chemins serveur, pas des mots de passe). Si l'une des deux variables est absente ou vide, l'étape
+échoue explicitement (`exit 1`) — pas de déploiement avec un placeholder non résolu. Une vérification
+finale (`grep -rl "__VISIBILITES_" dist/`) échoue le déploiement si un placeholder a survécu, quelle
+qu'en soit la raison.
+
+**Garanties apportées par cette architecture** :
+- Préprod et production utilisent **toujours** deux `.htpasswd` distincts et deux dossiers de
+  données distincts — impossible qu'un déploiement production réutilise par erreur la configuration
+  préprod, puisque chaque workflow ne connaît que les variables de son propre environnement GitHub.
+- Aucun chemin OVH, aucun secret, n'est jamais commité dans Git — `scripts/visibilites-deploy-config.test.mjs`
+  vérifie que les trois fichiers ne contiennent que les placeholders, jamais un chemin en dur.
+- Un seul jeu de fichiers source à maintenir (pas de duplication `public/` par environnement).
+
+**Chemins réels** (jamais dans le dépôt, uniquement dans les variables GitHub) :
+
+| Élément | Préproduction (variable `preprod`) | Production (variable `production`) |
+|---|---|---|
+| `VISIBILITES_AUTH_USER_FILE` | `/home/salonez/.htpasswd-salonemploi-preprod` (déjà en place) | À créer — chemin distinct, jamais réutilisé de la préprod |
+| `VISIBILITES_DATA_DIR` | `/home/salonez/salon-emploi-data-preprod` (déjà en place) | À créer — dossier distinct, jamais réutilisé de la préprod, `visibilites.json` y démarre absent/vide |
+
+**Actions manuelles restant à réaliser côté OVH pour la production** (aucune ne peut être faite
+depuis ce dépôt ni depuis une session Claude Code — voir compte rendu de préparation production) :
+
+1. Créer un `.htpasswd` production (utilisateurs/mots de passe LabEvents), à un chemin hors du
+   webroot du site production, distinct de celui de préprod.
+2. Créer un dossier de données production, hors webroot, distinct de
+   `salon-emploi-data-preprod/`, avec droits d'écriture pour le compte FTP/PHP de production.
+   `visibilites.json` s'y crée automatiquement à la première écriture — aucune campagne préprod
+   n'est migrée automatiquement.
+3. Renseigner ces deux chemins dans les variables `VISIBILITES_AUTH_USER_FILE` et
+   `VISIBILITES_DATA_DIR` de l'environnement GitHub `production` (Settings → Environments →
+   production → Variables).
+4. Recette complète en préproduction (déjà faite pour ce lot) avant tout déclenchement de
+   `deploy-production.yml` — comme pour n'importe quel autre lot du site (voir CLAUDE.md section 4).
+
+**Aucune opération manuelle serveur supplémentaire n'est nécessaire pour la préproduction** :
+`/home/salonez/salon-emploi-data-preprod/` existe déjà (créé et vérifié le 09/08/2026) ; il suffit
+que la variable `VISIBILITES_DATA_DIR` de l'environnement `preprod` pointe vers ce chemin (et
+`VISIBILITES_AUTH_USER_FILE` vers le `.htpasswd` préprod existant) pour que `deploy-preprod.yml`
+continue de fonctionner exactement comme avant ce lot.

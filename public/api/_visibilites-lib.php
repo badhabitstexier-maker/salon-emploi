@@ -28,19 +28,25 @@ if (basename(__FILE__) === basename((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')
 }
 
 // ---------------------------------------------------------------------------
-// Emplacement des données — PRÉPRODUCTION UNIQUEMENT (voir docs/VISIBILITE.md,
-// section « Admin-2B — préproduction / production »). Hors webroot, hors Git.
-// Ne JAMAIS réutiliser ce chemin pour la production : la production aura son
-// propre dossier de données, distinct, à définir explicitement dans un lot
-// dédié (voir CLAUDE.md, cadrage Admin-2B point 8/13).
+// Emplacement des données — hors webroot, hors Git (voir docs/VISIBILITE.md,
+// section 15.9 « Admin-2B — préproduction / production »).
+//
+// La valeur ci-dessous est un PLACEHOLDER, jamais un chemin réel dans ce
+// dépôt : chaque workflow de déploiement (deploy-preprod.yml,
+// deploy-production.yml) le remplace dans dist/, juste avant le transfert
+// FTP, par la variable d'environnement GitHub VISIBILITES_DATA_DIR propre à
+// son environnement — préprod et production utilisent ainsi deux dossiers de
+// données distincts sans jamais coder de chemin en dur ici ni dans un secret
+// Git. Séparation faite AU BUILD (choix explicite, pas de détection
+// runtime de l'environnement Apache).
 //
 // `VISIBILITES_DATA_DIR_TEST` (variable d'environnement, JAMAIS une entrée
 // HTTP) permet aux tests fonctionnels (scripts/visibilites-api.test.mjs) de
-// pointer vers un dossier temporaire au lieu du chemin OVH réel — voir ce
-// script. Absente en production/préproduction réelle : le chemin ci-dessous
-// s'applique alors sans modification.
+// pointer vers un dossier temporaire au lieu de la valeur ci-dessous — voir
+// ce script. Elle prime toujours sur VISIBILITES_DATA_DIR_DEFAUT, y compris
+// si celui-ci n'a pas été substitué (cas du dépôt source, hors dist/).
 // ---------------------------------------------------------------------------
-const VISIBILITES_DATA_DIR_DEFAUT = '/home/salonez/salon-emploi-data-preprod';
+const VISIBILITES_DATA_DIR_DEFAUT = '__VISIBILITES_DATA_DIR__';
 
 function visibilitesDataDir(): string
 {

@@ -9,7 +9,12 @@
 #
 # Ne contient aucun secret : le fichier .htpasswd réel vit hors du dépôt,
 # exclusivement sur le serveur OVH (voir docs/ADMIN.md §4.2).
+#
+# AuthUserFile est un PLACEHOLDER (voir docs/VISIBILITE.md section 15.9) :
+# chaque workflow de déploiement le remplace dans dist/, avant le transfert
+# FTP, par VISIBILITES_AUTH_USER_FILE (variable GitHub propre à son
+# environnement) — même mécanisme que public/admin/.htaccess.
 AuthType Basic
 AuthName "Acces reserve LabEvents"
-AuthUserFile /home/salonez/.htpasswd-salonemploi-preprod
+AuthUserFile __VISIBILITES_AUTH_USER_FILE__
 Require valid-user

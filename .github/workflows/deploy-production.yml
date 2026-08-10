@@ -30,6 +30,30 @@ jobs:
           PUBLIC_SITE_URL: ${{ secrets.PUBLIC_SITE_URL }}
           PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.PUBLIC_WEB3FORMS_ACCESS_KEY }}
           # Pas de PUBLIC_NOINDEX en production : le site doit être indexé.
+          # PUBLIC_TALLY_CANDIDATURE_URL volontairement absente ici : le câblage
+          # production reste en attente de la validation de la recette Tally en
+          # préproduction par Philippe (voir docs/CANDIDATURES_TALLY.md section 7).
+
+      - name: Injecter la configuration Visibilité (Auth + dossier de données) — production
+        # Même mécanisme que deploy-preprod.yml (voir ce fichier et
+        # docs/VISIBILITE.md section 15.9), avec les valeurs de l'environnement
+        # GitHub "production" (Settings → Environments → production → Variables) —
+        # jamais les mêmes valeurs que preprod : deux .htpasswd et deux dossiers de
+        # données distincts, garantis par cette étape.
+        run: |
+          set -euo pipefail
+          AUTH_FILE="${{ vars.VISIBILITES_AUTH_USER_FILE }}"
+          DATA_DIR="${{ vars.VISIBILITES_DATA_DIR }}"
+          if [ -z "$AUTH_FILE" ] || [ -z "$DATA_DIR" ]; then
+            echo "::error::VISIBILITES_AUTH_USER_FILE ou VISIBILITES_DATA_DIR manquant dans les variables de l'environnement GitHub production."
+            exit 1
+          fi
+          sed -i "s#__VISIBILITES_AUTH_USER_FILE__#${AUTH_FILE}#g" dist/admin/.htaccess dist/admin-api/.htaccess
+          sed -i "s#__VISIBILITES_DATA_DIR__#${DATA_DIR}#g" dist/api/_visibilites-lib.php
+          if grep -rl "__VISIBILITES_" dist/ ; then
+            echo "::error::Placeholder Visibilité non substitué détecté dans dist/ — déploiement annulé."
+            exit 1
+          fi
 
       - name: Déployer le contenu de dist/ vers OVH (FTP)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
