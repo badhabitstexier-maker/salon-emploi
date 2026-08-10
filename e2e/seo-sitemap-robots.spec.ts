@@ -47,9 +47,12 @@ test.describe('Sitemap', () => {
       expect(chemins, `route publique attendue dans le sitemap : ${route}`).toContain(cheminAttendu);
     }
 
-    // Les 5 offres TEST du catalogue (SEF26-001 à SEF26-005) ne doivent
-    // jamais apparaître dans le sitemap (voir astro.config.mjs, filter).
-    const referencesTestExclues = ['sef26-001', 'sef26-002', 'sef26-003', 'sef26-004', 'sef26-005'];
+    // Les 18 offres TEST du dépôt (SEF26-001 à SEF26-018 — voir CLAUDE.md
+    // section 15 et docs/OFFRES.md section 4bis) ne doivent jamais
+    // apparaître dans le sitemap, qu'elles soient visibles ou non dans le
+    // catalogue public /offres (`demo: true` pilote le SEO indépendamment
+    // de `afficherCatalogue` — voir astro.config.mjs, filter).
+    const referencesTestExclues = Array.from({ length: 18 }, (_, i) => `sef26-${String(i + 1).padStart(3, '0')}`);
     for (const slug of referencesTestExclues) {
       expect(chemins.some((chemin) => chemin.includes(`/offres/${slug}`)), `${slug} ne doit pas figurer dans le sitemap`).toBe(
         false,

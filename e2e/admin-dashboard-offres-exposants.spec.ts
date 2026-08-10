@@ -30,11 +30,19 @@ test.describe('Admin — tableau de bord (Lot Admin-1)', () => {
   });
 
   /*
-    En environnement E2E, la collection ne contient que des offres TEST
-    (SEF26-001 à 005) et 3 offres réelles fixture (la fixture principale +
-    2 fixtures d'anomalie, voir scripts/e2e-fixtures.mjs, Lot Admin-1C) :
-    « Offres réelles » doit donc valoir 3, et l'indicateur secondaire doit
-    signaler les 5 offres TEST sans les compter dans les KPI principaux.
+    En environnement E2E, la collection contient les 18 offres TEST commitées
+    (SEF26-001 à 018 — voir CLAUDE.md section 15 et docs/OFFRES.md section
+    4bis) et 3 offres réelles fixture (la fixture principale + 2 fixtures
+    d'anomalie, voir scripts/e2e-fixtures.mjs, Lot Admin-1C) : « Offres
+    réelles » doit donc valoir 3, et l'indicateur secondaire doit signaler
+    les 18 offres TEST sans les compter dans les KPI principaux.
+
+    Le dashboard (src/pages/admin/dashboard.astro) calcule `offresTest` via
+    `estOffreTest()` sur l'intégralité de la collection `offres` — il ne
+    tient pas compte des champs `demo`/`afficherCatalogue` (qui ne pilotent
+    que le SEO et le catalogue public /offres, voir docs/OFFRES.md section
+    4bis). Le compte attendu ici est donc bien 18 (les 11 offres TEST
+    visibles dans /offres + les 7 masquées du catalogue), pas 11.
   */
   test('exclut les offres TEST des KPI et les signale séparément', async ({ page }) => {
     await page.goto('/admin/dashboard');
@@ -45,7 +53,7 @@ test.describe('Admin — tableau de bord (Lot Admin-1)', () => {
     const cartePubliees = page.locator('p', { hasText: 'Offres réelles — publiées' }).locator('..');
     await expect(cartePubliees.locator('p').nth(1)).toHaveText('3');
 
-    await expect(page.getByText('5 offres TEST')).toBeVisible();
+    await expect(page.getByText('18 offres TEST')).toBeVisible();
 
     const blocExposants = page.locator('h2', { hasText: 'Offres par exposant' }).locator('..');
     await expect(blocExposants.getByText(FIXTURE_EXPOSANT_NOM)).toBeVisible();
@@ -110,7 +118,7 @@ test.describe('Admin — offres (Lot Admin-1)', () => {
   /*
     Réutilise le mécanisme de détection existant (préfixe `TEST —` sur
     `intitule`, voir src/lib/offres.ts::estOffreTest) — SEF26-001 est une
-    des 5 offres TEST réelles du dépôt (voir docs/OFFRES.md).
+    des 18 offres TEST du dépôt (voir docs/OFFRES.md section 4bis).
   */
   const REFERENCE_OFFRE_TEST = 'SEF26-001';
 

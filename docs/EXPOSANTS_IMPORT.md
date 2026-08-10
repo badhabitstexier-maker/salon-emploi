@@ -51,21 +51,33 @@ entièrement fictifs — aucune entreprise réelle).
 | `univers` | oui | Hall : `emploi` (Hall Emploi) ou `formation` (Hall Formation) — voir section 6. |
 | `type_structure` | oui | `entreprise`, `organisme-formation`, `institution`, `accompagnement`, `association`, `autre`. |
 | `secteurs` | oui (peut être vide) | Liste de secteurs, séparés par `\|`. |
-| `accroche` | oui | Phrase courte affichée sur la carte de la liste. |
-| `description` | oui | Contenu détaillé de la fiche individuelle. |
+| `accroche` | oui | Présentation courte, affichée sur la carte et en tête de fiche. **300 caractères maximum pour `standard`, 500 pour `silver`/`gold`** — ligne rejetée au-delà (voir `docs/EXPOSANTS.md`, section 12). |
+| `description` | non | Présentation longue de la fiche individuelle. **Réservée à `formule: gold`** — ligne rejetée si renseignée pour `standard` ou `silver`. |
 | `logo` | non | Chemin public du logo (voir section 8). |
 | `site_web` | non | URL publique, doit commencer par `http://` ou `https://`. |
 | `numero_stand` | non | Numéro de stand (voir section 7). |
 | `email_public` | non | Adresse email **publique** uniquement — jamais un contact RH interne. |
 | `telephone_public` | non | Téléphone **public** uniquement. |
-| `mise_en_avant` | non (défaut `non`) | `oui`/`non`. |
+| `lien_recrutement` | non | URL de recrutement externe. **Réservé à `silver`/`gold`** — ligne rejetée pour `standard`. |
+| `reseaux_sociaux` | non | Format `plateforme:url`, plusieurs entrées séparées par `\|` (ex. `facebook:https://…\|linkedin:https://…`). Plateformes autorisées : `facebook`, `instagram`, `linkedin`, `tiktok`, `youtube`, `autre`. **Réservé à `silver`/`gold`.** |
+| `image_couverture` | non | Chemin public de la grande image de couverture (mêmes règles que `logo`). **Réservée à `formule: gold`.** |
+| `galerie` | non | Format `src::alt`, plusieurs entrées séparées par `\|` (ex. `/images/exposants/g1.webp::Vue du stand\|/images/exposants/g2.webp::Équipe`). Texte alternatif obligatoire. **Réservée à `formule: gold`.** |
+| `demo` | non (défaut `non`) | `oui`/`non` — `oui` pour une fiche de démonstration (voir `docs/EXPOSANTS.md`, section 13) : jamais `oui` pour un exposant réel. |
+| `mise_en_avant` | non (défaut `non`) | `oui`/`non`. N'influence plus l'ordre de l'annuaire public depuis le Lot « exposants-statuts » (voir `docs/EXPOSANTS.md`, section 9) — conservé pour un usage éditorial futur. |
 | `publie` | non (défaut `non`) | `oui`/`non` — voir rappel ci-dessus. |
-| `ordre` | non | Nombre, départage le tri à égalité de mise en avant. |
+| `ordre` | non | Nombre — n'influence plus l'ordre de l'annuaire public (voir `mise_en_avant` ci-dessus). |
 | `date_mise_a_jour` | non | Format `AAAA-MM-JJ`. |
 | `metiers`, `formations`, `opportunites`, `mots_cles` | non | Listes séparées par `\|`, affichées seulement si renseignées. |
 
 Les valeurs booléennes acceptent `oui`/`non` (ou `true`/`false`,
 `vrai`/`faux`, `1`/`0`).
+
+Les colonnes réservées par statut (`description`, `lien_recrutement`,
+`reseaux_sociaux`, `image_couverture`, `galerie`) sont validées à deux
+niveaux : dès la lecture de la ligne CSV (`scripts/lib/exposants-import-core.mjs`,
+message d'erreur explicite) et, en dernier recours, par le schéma Astro
+(`src/content.config.ts`) si une fiche était modifiée à la main sans passer
+par le pipeline.
 
 ## 3. `exposantId` — identifiant métier stable
 

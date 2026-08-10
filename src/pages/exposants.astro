@@ -4,18 +4,26 @@ import ExposantCard from '../components/ExposantCard.astro';
 import VisibilitySlot from '../components/VisibilitySlot.astro';
 import {
   getExposantsPublies,
-  trierExposants,
+  regrouperParFormule,
   secteursDisponibles,
   universLabels,
   typeStructureLabels,
 } from '../lib/exposants';
 
-const exposants = trierExposants(await getExposantsPublies());
-const total = exposants.length;
-const totalEmploi = exposants.filter((e) => e.data.univers === 'emploi').length;
-const totalFormation = exposants.filter((e) => e.data.univers === 'formation').length;
+const exposantsPublies = await getExposantsPublies();
+const total = exposantsPublies.length;
+const totalEmploi = exposantsPublies.filter((e) => e.data.univers === 'emploi').length;
+const totalFormation = exposantsPublies.filter((e) => e.data.univers === 'formation').length;
 
-const secteurs = secteursDisponibles(exposants);
+/*
+  Annuaire en trois catégories (Premium → Partenaire → Standard), chacune
+  triée par ordre alphabétique — voir section 4 du Lot « exposants-statuts »
+  et src/lib/exposants.ts::regrouperParFormule. Remplace l'ancien tri unique
+  par `mise_en_avant`/`ordre` pour l'annuaire public.
+*/
+const categories = regrouperParFormule(exposantsPublies);
+
+const secteurs = secteursDisponibles(exposantsPublies);
 
 const infosSalon = [
   'Hall Emploi',
@@ -171,9 +179,28 @@ const infosSalon = [
             </div>
           </form>
 
-          <!-- ========================= GRILLE ========================= -->
-          <div id="grille-exposants" class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {exposants.map((exposant) => <ExposantCard exposant={exposant} />)}
+          <!-- ==================== CATÉGORIES DE L'ANNUAIRE ====================
+               Trois catégories visuellement distinctes, dans l'ordre Premium →
+               Partenaire → Standard (section 4 du Lot). Ordre alphabétique
+               uniquement à l'intérieur de chaque catégorie.
+          -->
+          <div id="categories-exposants" class="mt-8 space-y-12">
+            {
+              categories.map((categorie) => (
+                <section data-categorie-exposants={categorie.formule}>
+                  <div class="flex items-center gap-3">
+                    <h2 class="font-titre text-xl font-bold uppercase tracking-wide text-marine sm:text-2xl">
+                      {categorie.libelle}
+                    </h2>
+                    <span class="h-px flex-1 bg-marine/15" aria-hidden="true" />
+                    <span class="text-sm font-semibold text-encre/70">{categorie.exposants.length}</span>
+                  </div>
+                  <div class="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-grille-categorie={categorie.formule}>
+                    {categorie.exposants.map((exposant) => <ExposantCard exposant={exposant} />)}
+                  </div>
+                </section>
+              ))
+            }
           </div>
 
           <p id="aucun-resultat" class="mt-8 hidden rounded-2xl border border-marine/15 bg-brume p-8 text-center text-sm text-encre">
@@ -184,13 +211,14 @@ const infosSalon = [
 
         <script>
           const form = document.getElementById('filtres-exposants') as HTMLFormElement | null;
-          const grille = document.getElementById('grille-exposants');
+          const conteneur = document.getElementById('categories-exposants');
           const compte = document.getElementById('resultats-compte');
           const aucunResultat = document.getElementById('aucun-resultat');
           const champRecherche = document.getElementById('recherche-exposant') as HTMLInputElement | null;
 
-          if (form && grille && compte && aucunResultat) {
-            const cartes = Array.from(grille.querySelectorAll<HTMLElement>('[data-exposant-card]'));
+          if (form && conteneur && compte && aucunResultat) {
+            const sections = Array.from(conteneur.querySelectorAll<HTMLElement>('[data-categorie-exposants]'));
+            const cartes = Array.from(conteneur.querySelectorAll<HTMLElement>('[data-exposant-card]'));
 
             const normaliser = (valeur: string) =>
               valeur
@@ -217,6 +245,12 @@ const infosSalon = [
                 const visible = matchRecherche && matchUnivers && matchType && matchSecteur;
                 carte.classList.toggle('hidden', !visible);
                 if (visible) visibles += 1;
+              }
+
+              // Masque une catégorie entière si aucune de ses cartes n'est visible.
+              for (const section of sections) {
+                const visiblesSection = section.querySelectorAll('[data-exposant-card]:not(.hidden)').length;
+                section.classList.toggle('hidden', visiblesSection === 0);
               }
 
               compte.textContent = `${visibles} ${visibles > 1 || visibles === 0 ? 'résultats' : 'résultat'}`;

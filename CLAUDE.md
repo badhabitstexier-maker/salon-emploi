@@ -21,6 +21,30 @@
 > distincte de la préprod, Admin production fonctionnel, redirection 301 `www` → apex assurée en
 > dépôt par `public/.htaccess`. Correctifs SEO du même audit : page `/merci` passée en `noindex` et
 > exclue du sitemap.
+>
+> **Amendements du 10 août 2026 (Lot « exposants-statuts », sections 7/15)** : fiches exposants
+> publiques différenciées par statut commercial (`formule`, déjà existant, réutilisé comme statut
+> public — voir `docs/EXPOSANTS.md` section 12). Annuaire `/exposants` désormais en trois
+> catégories (Partenaires premium → Exposants partenaires → Exposants, alphabétique dans chaque
+> catégorie). Nouveaux champs facultatifs et réservés par statut sur la collection `exposants`
+> (`lien_recrutement`, `reseaux_sociaux`, `image_couverture`, `galerie`, `presentation longue` via
+> `description` désormais optionnel) et champ `demo` (fiche de démonstration : noindex, exclue du
+> sitemap). Six fiches de démonstration ajoutées (`src/content/exposants/demo-*.md`, entièrement
+> fictives) avec 13 offres TEST associées (`SEF26-006` à `SEF26-018`) — voir section 15.
+>
+> **Amendement du 10 août 2026 (suite, sections 15)** : sur ces 13 offres TEST, 6 (une par
+> exposant démo) restent visibles dans le catalogue public `/offres` ; les 7 autres restent
+> publiées et accessibles par URL directe et depuis la fiche de leur exposant démo, mais
+> n'apparaissent plus dans le catalogue.
+>
+> **Amendement du 10 août 2026 (correction de conception, sections 15)** : le champ `demo` sur la
+> collection `offres` ne pilote plus la visibilité catalogue — deux champs désormais
+> indépendants, chacun une seule responsabilité (voir `docs/OFFRES.md` section 4bis) : `demo`
+> (SEO — `noindex` + hors sitemap, **toutes** les 18 offres TEST, historiques comme démo,
+> `demo: true`) et `afficherCatalogue` (défaut `true`, visibilité dans `/offres` uniquement — `true`
+> pour les 6 offres représentatives + les 5 historiques, `false` pour les 7 offres démo
+> secondaires). Une offre réelle future reste indexable et visible dans le catalogue par défaut,
+> sans action explicite.
 
 ---
 
@@ -318,8 +342,8 @@ Le dashboard et les vues exposants/offres exposent des indicateurs utiles (badge
 
 ## 15. Contenus réels présents (état factuel)
 
-- **Offres** : 5 fiches, **toutes TEST** (`SEF26-001` à `SEF26-005`, exposant fictif `Entreprise Test NC`). **0 offre réelle.**
-- **Exposants** : **0** fiche. Pipeline d'import prêt (`docs/EXPOSANTS_IMPORT.md`), jamais alimenté avec de vraies données.
+- **Offres** : 18 fiches, **toutes TEST, toutes `demo: true`** (`SEF26-001` à `SEF26-018` — voir `docs/OFFRES.md` section 4bis). Les 5 premières (`SEF26-001` à `SEF26-005`) sont rattachées à l'exposant fictif historique `Entreprise Test NC` (non présent dans la collection `exposants`, anomalie Admin attendue). Les 13 suivantes (`SEF26-006` à `SEF26-018`) sont rattachées aux 6 exposants de démonstration ci-dessous. **Catalogue public `/offres` (champ `afficherCatalogue`) : 11 offres visibles (les 5 historiques + 1 offre représentative par exposant démo) ; 7 offres démo secondaires accessibles uniquement par URL directe ou depuis la fiche exposant.** Les 18 sont `noindex` et exclues du sitemap. **0 offre réelle.**
+- **Exposants** : **6** fiches, **toutes de démonstration** (`demo: true`, préfixe de fichier `demo-*.md` — voir `docs/EXPOSANTS.md` section 13) : 1 Partenaire premium, 2 Exposants partenaires, 3 Exposants. Entièrement fictives (noms, logos, coordonnées), à retirer sans changement de code une fois les exposants réels intégrés. Pipeline d'import prêt (`docs/EXPOSANTS_IMPORT.md`), jamais alimenté avec de vraies données. **0 exposant réel.**
 - **Programme** : **0** entrée. Pipeline d'import prêt (`docs/PROGRAMME_IMPORT.md`), jamais alimenté.
 - **Campagnes Visibilité** : contenu réel du `visibilites.json` serveur **non déterminable depuis Git** (par construction — voir section 12). Ne jamais affirmer un nombre de campagnes actives sans avoir consulté `/admin/visibilite` en direct.
 
@@ -332,7 +356,7 @@ La production est ouverte depuis le premier déploiement. Les points ci-dessous 
 1. ~~**Configuration production du module Visibilité**~~ — **FAIT** : `.htpasswd` production, dossier de données production et variables GitHub `production` en place, distincts de la préprod (voir section 12).
 2. **Import des exposants réels** — la collection `exposants` est vide ; `/exposants` n'a aucun contenu à montrer en l'état.
 3. **Alimentation du programme réel** — la collection `programme` est vide ; `/programme` n'a aucun contenu à montrer en l'état.
-4. **Remplacement progressif des offres TEST par des offres réelles** — via le pipeline habituel (section 11). Décision confirmée : les 5 offres TEST **restent publiées** en production comme démonstration pour les exposants, clairement identifiées (`TEST —`, message « Offre fictive de démonstration », noindex, exclues du sitemap).
+4. **Remplacement progressif des offres TEST par des offres réelles** — via le pipeline habituel (section 11). Décision confirmée : les 18 offres TEST **restent publiées** en production comme démonstration pour les exposants (dont les 6 exposants de démonstration, voir section 15), clairement identifiées (`TEST —`, message « Offre fictive de démonstration », `demo: true`, noindex, exclues du sitemap).
 5. **Câblage Tally production** — volontairement non fait tant que la recette Tally n'est pas validée : `PUBLIC_TALLY_CANDIDATURE_URL` absente de l'environnement `production`, donc `/candidater` affiche proprement « Le formulaire de candidature sera prochainement disponible » (pas d'iframe morte). Ne pas câbler sans feu vert de Philippe.
 6. **Image Open Graph `public/og-image.jpg`** — référencée par `src/components/Seo.astro` (`og:image` de toutes les pages publiques) mais **absente du dépôt** : l'aperçu au partage sur les réseaux sociaux est cassé (404). Sans impact sur l'indexation Google. À fournir : une image `1200×630` (JPG) déposée dans `public/og-image.jpg` — décision de contenu/graphisme (Philippe/ChatGPT).
 7. **Résolution ou validation du warning `public/images/hall-formation.webp`** — le build signale cette image manquante (repli automatique géré par `Visuel.astro`, donc pas bloquant, mais à trancher : fournir l'image ou confirmer que le repli est le comportement voulu).

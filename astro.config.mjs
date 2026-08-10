@@ -8,25 +8,51 @@ import sitemap from '@astrojs/sitemap';
 import robotsTxt from 'astro-robots-txt';
 
 /*
-  Offres fictives de démonstration (intitulé commençant par `TEST —`, voir
-  docs/OFFRES.md et src/lib/offres.ts::estOffreTest) : exclues du sitemap
-  pour ne jamais être proposées à l'indexation comme de vraies offres
-  d'emploi. Lu directement sur le disque (frontmatter des fichiers Markdown)
-  car astro.config.mjs s'exécute hors du pipeline Astro : `astro:content`
-  n'y est pas disponible.
+  Offres de démonstration (`demo: true`, voir src/content.config.ts et
+  docs/OFFRES.md section 4bis) : exclues du sitemap pour ne jamais être
+  proposées à l'indexation comme de vraies offres d'emploi — qu'elles soient
+  visibles ou non dans le catalogue public /offres (`afficherCatalogue` est
+  une question distincte, sans effet sur le SEO). La distinction est portée
+  par le champ `demo` du modèle de données, jamais par une liste de
+  références codée en dur (même mécanisme que slugsExposantsDemo ci-dessous).
+  Offres sans champ `slug` dédié (voir docs/OFFRES.md) : le nom de fichier
+  fait foi pour l'adresse de la fiche. Lu directement sur le disque
+  (frontmatter des fichiers Markdown) car astro.config.mjs s'exécute hors du
+  pipeline Astro : `astro:content` n'y est pas disponible.
 */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dossierOffres = path.join(__dirname, 'src/content/offres');
-let slugsOffresTest = [];
+let slugsOffresDemo = [];
 try {
-  slugsOffresTest = readdirSync(dossierOffres)
+  slugsOffresDemo = readdirSync(dossierOffres)
     .filter((fichier) => fichier.endsWith('.md'))
-    .filter((fichier) => {
-      const contenu = readFileSync(path.join(dossierOffres, fichier), 'utf8');
-      const m = /^intitule:\s*"(.*)"\s*$/m.exec(contenu);
-      return m ? m[1].startsWith('TEST —') : false;
-    })
+    .filter((fichier) => /^demo:\s*true\s*$/m.test(readFileSync(path.join(dossierOffres, fichier), 'utf8')))
     .map((fichier) => fichier.replace(/\.md$/, ''));
+} catch {
+  // Dossier absent ou vide (collection non encore alimentée) : rien à exclure.
+}
+
+/*
+  Fiches exposants de démonstration (`demo: true`, voir src/content.config.ts
+  et docs/EXPOSANTS.md) : exclues du sitemap pour ne jamais présenter ces
+  entreprises fictives à Google comme de vrais exposants. La distinction
+  TEST/RÉEL est portée par le champ `demo` du modèle de données, pas par une
+  liste de slugs codée en dur — ce bloc ne fait que lire ce champ sur
+  disque, au même titre que slugsOffresTest ci-dessus.
+*/
+const dossierExposants = path.join(__dirname, 'src/content/exposants');
+let slugsExposantsDemo = [];
+try {
+  slugsExposantsDemo = readdirSync(dossierExposants)
+    .filter((fichier) => fichier.endsWith('.md'))
+    .filter((fichier) => /^demo:\s*true\s*$/m.test(readFileSync(path.join(dossierExposants, fichier), 'utf8')))
+    .map((fichier) => {
+      // Le champ `slug` en frontmatter force l'adresse de la fiche (voir
+      // src/lib/exposants.ts::exposantSlug) — sinon c'est le nom de fichier.
+      const contenu = readFileSync(path.join(dossierExposants, fichier), 'utf8');
+      const slugForce = /^slug:\s*"?([^"\n]+?)"?\s*$/m.exec(contenu);
+      return slugForce ? slugForce[1] : fichier.replace(/\.md$/, '');
+    });
 } catch {
   // Dossier absent ou vide (collection non encore alimentée) : rien à exclure.
 }
@@ -58,8 +84,8 @@ export default defineConfig({
     /*
       Sitemap désactivé quand PUBLIC_NOINDEX=true : plus simple et plus sûr
       que de le laisser généré-mais-non-indexé (voir docs/deploiement-preproduction.md).
-      `filter` exclut en plus les fiches offres TEST (voir slugsOffresTest
-      ci-dessus), même quand le sitemap est actif.
+      `filter` exclut en plus les fiches offres de démonstration (voir
+      slugsOffresDemo ci-dessus), même quand le sitemap est actif.
     */
     ...(noindex
       ? []
@@ -67,13 +93,15 @@ export default defineConfig({
           sitemap({
             /*
               Exclusions du sitemap :
-              - fiches offres TEST (slugsOffresTest ci-dessus) ;
+              - fiches offres de démonstration (slugsOffresDemo ci-dessus) ;
+              - fiches exposants de démonstration (slugsExposantsDemo ci-dessus) ;
               - /admin (jamais indexé, voir robotsTxt ci-dessous) ;
               - /merci (page de confirmation post-formulaire, marquée noindex
                 dans src/pages/merci.astro : aucune valeur en indexation).
             */
             filter: (page) =>
-              !slugsOffresTest.some((slug) => page.includes(`/offres/${slug}`)) &&
+              !slugsOffresDemo.some((slug) => page.includes(`/offres/${slug}`)) &&
+              !slugsExposantsDemo.some((slug) => page.includes(`/exposants/${slug}`)) &&
               !page.includes('/admin') &&
               !page.includes('/merci'),
           }),

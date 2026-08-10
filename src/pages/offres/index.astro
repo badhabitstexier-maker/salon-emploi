@@ -15,7 +15,18 @@ import {
   niveauxFormationDisponibles,
 } from '../../lib/offres';
 
-const offres = trierOffres(await getOffresPubliees());
+/*
+  Catalogue public : n'affiche que les offres avec `afficherCatalogue: true`
+  (Lot « exposants-statuts », voir CLAUDE.md et docs/OFFRES.md section 4bis).
+  Ce champ est indépendant de `demo` (qui pilote le SEO, voir
+  src/pages/offres/[slug].astro et astro.config.mjs) : une offre TEST peut
+  très bien rester visible ici (une offre représentative par exposant démo),
+  et une offre masquée du catalogue reste accessible par URL directe et sur
+  la fiche de son exposant (offresPublieesDeExposant, voir
+  src/pages/exposants/[slug].astro). `true` par défaut : une offre réelle
+  future n'est jamais affectée sans action explicite.
+*/
+const offres = trierOffres((await getOffresPubliees()).filter((offre) => offre.data.afficherCatalogue));
 const total = offres.length;
 
 const offresDisponibles = offres.map((offre) => ({

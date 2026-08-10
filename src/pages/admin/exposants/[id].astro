@@ -43,6 +43,15 @@ const { data } = exposant;
 const plafondFormule = CAPACITE_OFFRES_PAR_FORMULE[data.formule];
 const depassementFormule = plafondFormule !== undefined && offresLiees.length > plafondFormule;
 
+/*
+  Champs enrichis réservés par statut (Lot « exposants-statuts », voir
+  CLAUDE.md) — affichés ici seulement s'ils sont à la fois autorisés pour
+  le statut ET renseignés, comme sur la fiche publique.
+*/
+const estPartenaireOuPlus = data.formule === 'silver' || data.formule === 'gold';
+const estPremium = data.formule === 'gold';
+const afficherPresentationLongue = estPremium && Boolean(data.description && data.description.trim() !== '');
+
 const listesComplementaires = [
   { titre: 'Métiers présentés', valeurs: data.metiers },
   { titre: 'Formations proposées', valeurs: data.formations },
@@ -70,6 +79,13 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
       <span class="mt-2 inline-block w-fit rounded-full bg-marine/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-marine">
         Formule {formuleLabels[data.formule]}
       </span>
+      {
+        data.demo && (
+          <span class="mt-2 ml-1.5 inline-block w-fit rounded-full bg-orange/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-orange-dark">
+            Fiche de démonstration
+          </span>
+        )
+      }
     </div>
     <span
       class:list={[
@@ -100,9 +116,41 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
       }
 
       <p class="text-base font-semibold text-marine">{data.accroche}</p>
-      <div class="mt-4 space-y-3 text-sm text-encre">
-        {data.description.split(/\n{2,}/).map((paragraphe) => <p>{paragraphe}</p>)}
-      </div>
+      <p class="mt-1 text-xs text-encre/60">
+        Présentation courte : {data.accroche.length} caractère{data.accroche.length > 1 ? 's' : ''}
+      </p>
+
+      {
+        afficherPresentationLongue && (
+          <div class="mt-4 space-y-3 text-sm text-encre">
+            {data.description!.split(/\n{2,}/).map((paragraphe) => <p>{paragraphe}</p>)}
+          </div>
+        )
+      }
+
+      {
+        data.image_couverture && (
+          <p class="mt-4 text-sm text-encre/80">
+            <span class="font-bold text-marine">Image de couverture : </span>
+            <code class="text-xs">{data.image_couverture}</code>
+          </p>
+        )
+      }
+
+      {
+        data.galerie.length > 0 && (
+          <div class="mt-4">
+            <p class="text-sm font-bold text-marine">Galerie ({data.galerie.length} image{data.galerie.length > 1 ? 's' : ''})</p>
+            <ul class="mt-1 space-y-1 text-xs text-encre/70">
+              {data.galerie.map((image) => (
+                <li>
+                  <code>{image.src}</code> — {image.alt}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
 
       {data.secteurs.length > 0 && (
         <p class="mt-4 text-sm text-encre/80">
@@ -135,7 +183,7 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
 
     <div class="space-y-6">
       {
-        (data.site_web || data.email_public || data.telephone_public) && (
+        (data.site_web || data.email_public || data.telephone_public || data.lien_recrutement || data.reseaux_sociaux.length > 0) && (
           <div class="rounded-2xl border border-marine/15 bg-blanc p-4">
             <h2 class="font-titre text-sm font-bold uppercase text-marine">Coordonnées</h2>
             <ul class="mt-2 space-y-1.5 text-sm text-encre">
@@ -148,6 +196,20 @@ const formateurDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
               )}
               {data.email_public && <li>{data.email_public}</li>}
               {data.telephone_public && <li>{data.telephone_public}</li>}
+              {estPartenaireOuPlus && data.lien_recrutement && (
+                <li>
+                  <a href={data.lien_recrutement} target="_blank" rel="noopener noreferrer" class="text-marine underline">
+                    Lien de recrutement
+                  </a>
+                </li>
+              )}
+              {estPartenaireOuPlus && data.reseaux_sociaux.map((reseau) => (
+                <li>
+                  <a href={reseau.url} target="_blank" rel="noopener noreferrer" class="text-marine underline">
+                    {reseau.plateforme}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         )

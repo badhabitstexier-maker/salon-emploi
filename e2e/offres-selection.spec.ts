@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 import { FIXTURE_REFERENCE, FIXTURE_INTITULE } from '../scripts/e2e-fixtures.mjs';
 
 /*
-  Les 5 offres TEST du catalogue public masquent volontairement le bouton de
+  Les offres TEST du catalogue public (18 au total, voir CLAUDE.md section 15
+  et docs/OFFRES.md section 4bis) masquent volontairement le bouton de
   sélection (voir CLAUDE.md, section 12). Ces tests utilisent la fixture E2E
   jetable (scripts/e2e-fixtures.mjs, créée avant le build et supprimée après
   par e2e/global-teardown.ts) — la seule offre « réelle » du jeu de données de

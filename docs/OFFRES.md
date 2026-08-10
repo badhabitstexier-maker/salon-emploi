@@ -61,7 +61,8 @@ datePublication: 2026-09-15
 Champs facultatifs : `datePrisePoste`, `niveauFormation` (liste),
 `sansExperience` (booléen, `false` par défaut), `missions` (liste),
 `competencesPrerequis` (liste), `dateCloture` (voir section 6),
-`miseEnAvant` (booléen, `false` par défaut).
+`miseEnAvant` (booléen, `false` par défaut), `demo` (booléen, `false` par
+défaut — voir section 4bis).
 
 `nombrePostes` vaut `1` par défaut si absent. `accepteCandidaturesEnLigne`
 vaut `true` par défaut si absent.
@@ -80,9 +81,12 @@ d'entreprise, jamais le slug.
   `docs/EXPOSANTS_IMPORT.md` section 3bis).
 - **Offre TEST** (préfixe `TEST —` sur `intitule`, voir section 12 de
   CLAUDE.md et `estOffreTest()` dans `src/lib/offres.ts`) : ne représente
-  aucun exposant réel. Convention retenue : `exposantId: TEST-EXPOSANT-NC`
-  — un identifiant dédié, jamais un vrai `EXP26-XXX`, pour qu'une offre de
-  démonstration ne puisse jamais être confondue avec un vrai rattachement.
+  aucun exposant réel. Deux cas selon l'origine : `exposantId:
+  TEST-EXPOSANT-NC` pour les 5 offres TEST historiques (exposant fictif
+  `Entreprise Test NC`, absent de la collection `exposants`), ou
+  l'`exposantId` réel d'un exposant de démonstration (`EXP26-901` à
+  `EXP26-906`, voir `docs/EXPOSANTS.md` section 13) pour les offres TEST
+  rattachées aux fiches exposants démo.
 
 ## 4. Valeurs de statut (`status`)
 
@@ -91,13 +95,44 @@ d'entreprise, jamais le slug.
 | `recue` | Déclarée par l'exposant, pas encore traitée |
 | `a-completer` | Informations manquantes, en attente de l'exposant |
 | `validee` | Validée par LabEvents, pas encore publiée |
-| `publiee` | **Visible publiquement sur `/offres`** |
+| `publiee` | **Visible publiquement** (fiche individuelle toujours ; catalogue `/offres` selon `afficherCatalogue`, voir section 4bis) |
 | `retiree` | Retirée par l'exposant ou LabEvents |
 | `cloturee` | Poste pourvu ou période de candidature terminée |
 
 **Seul le statut `publiee` rend une offre visible sur le site.** Tous les
 autres statuts existent pour suivre le circuit de validation en interne, sans
 impact sur le site public.
+
+## 4bis. Offres de démonstration (`demo`) et visibilité catalogue (`afficherCatalogue`)
+
+Deux champs booléens **indépendants**, chacun avec une seule responsabilité —
+ne pas les confondre ni les réunifier :
+
+| Champ | Défaut | Rôle |
+|---|---|---|
+| `demo` | `false` | Marque une offre comme fictive/TEST. Pilote uniquement le **SEO** : `noindex` sur la fiche individuelle et exclusion du sitemap (voir `src/pages/offres/[slug].astro` et `astro.config.mjs`). Réservé aux offres TEST — le build échoue si `demo: true` sur une offre réelle (intitulé ne commençant pas par `TEST —`). |
+| `afficherCatalogue` | `true` | Pilote uniquement la **visibilité dans le catalogue public `/offres`** (voir le filtre dans `src/pages/offres/index.astro`). Sans lien avec `demo` ni avec le statut TEST/réel. `true` par défaut : une offre réelle future n'est jamais affectée sans action explicite. |
+
+Une offre TEST est donc **toujours** `demo: true`, qu'elle soit visible ou
+non dans le catalogue (`afficherCatalogue: true` ou `false`) : le caractère
+fictif de l'offre ne dépend jamais de sa présence dans `/offres`.
+
+Une offre avec `afficherCatalogue: false` :
+
+- reste publiée (`status: publiee`), accessible par son URL directe et
+  possède toujours sa propre fiche `/offres/[slug]` ;
+- reste rattachée et affichée sur la fiche de son exposant (voir
+  `offresPublieesDeExposant`, `src/lib/exposants.ts`) ;
+- **n'apparaît pas** dans le catalogue principal `/offres`, pour éviter que
+  celui-ci soit saturé d'offres fictives.
+
+Convention retenue pour les 6 exposants de démonstration
+(`docs/EXPOSANTS.md` section 13) : les 18 offres TEST sont **toutes**
+`demo: true`. Une seule offre représentative par exposant démo reste
+`afficherCatalogue: true` (visible dans `/offres`), les 7 autres sont
+`afficherCatalogue: false` (accessibles uniquement par URL directe ou depuis
+la fiche exposant). La distinction est portée par ces deux champs du modèle
+de données, jamais par une liste de références codée en dur.
 
 ## 5. Valeurs de formule (`formule`)
 
