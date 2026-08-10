@@ -6,10 +6,106 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   title="Mentions légales"
   description="Mentions légales du site du Salon de l'Emploi & de la Formation 2026, édité par LabEvents."
 >
-  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-    <h1 class="text-3xl font-bold text-marine sm:text-4xl">Mentions légales</h1>
-    <p class="mt-6 max-w-2xl text-encre">
-      {'{{À COMPLÉTER : mentions légales — éditeur, hébergeur, SIREN/RIDET, directeur de publication}}'}
-    </p>
+  <section class="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+    <h1 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">Mentions légales</h1>
+
+    <div class="prose-salon mt-8 space-y-6 text-encre">
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Éditeur du site</h2>
+        <p class="mt-2">
+          Le site <strong>salonemploi.nc</strong>, dédié au Salon de l'Emploi &amp; de la Formation
+          2026, est édité par :
+        </p>
+        <p class="mt-2">
+          <strong>Philippe Texier</strong>, entrepreneur individuel, exerçant sous le nom
+          commercial <strong>LAB EVENTS</strong>.
+        </p>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          <li>Forme juridique : entreprise individuelle (personne physique)</li>
+          <li>RIDET : 0 504 530.003</li>
+          <li>Code APE/NAF : 90.02Z — Organisation d'événements</li>
+          <li>Adresse de correspondance : BP 2960 – 98846 Nouméa Cedex</li>
+          <li>
+            Contact :
+            <a href="mailto:labevents@icloud.com" class="font-semibold text-marine underline hover:text-village"
+              >labevents@icloud.com</a
+            > — +687 77 36 47
+          </li>
+        </ul>
+        <p class="mt-2 text-sm text-encre/70">
+          L'entreprise étant une entreprise individuelle immatriculée en Nouvelle-Calédonie, elle
+          n'est rattachée à aucun numéro RCS, RM, ni capital social, et n'est pas assujettie à la
+          TVA intracommunautaire (régime hors Union européenne).
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Directeur de la publication</h2>
+        <p class="mt-2">
+          Le directeur de la publication est <strong>Philippe Texier</strong>, en sa qualité de
+          responsable de l'entreprise individuelle éditrice du site.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Hébergeur</h2>
+        <p class="mt-2">Le site est hébergé par :</p>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          <li><strong>OVH SAS</strong></li>
+          <li>Société par actions simplifiée au capital de 50 000 000 €</li>
+          <li>RCS Lille Métropole 424 761 419</li>
+          <li>Siège social : 2 rue Kellermann, 59100 Roubaix, France</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Propriété intellectuelle</h2>
+        <p class="mt-2">
+          L'ensemble des éléments du site (textes, mise en page, graphisme, logos, photographies,
+          sauf mention contraire) est protégé au titre du droit de la propriété intellectuelle et
+          reste la propriété de LabEvents ou de ses partenaires et prestataires. Toute
+          reproduction, représentation ou réutilisation, totale ou partielle, sans autorisation
+          préalable est interdite.
+        </p>
+        <p class="mt-2">
+          Les logos et marques des exposants, partenaires et sponsors éventuellement présentés sur
+          le site restent la propriété de leurs titulaires respectifs et ne sont publiés qu'avec
+          leur accord.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Responsabilité</h2>
+        <p class="mt-2">
+          LabEvents s'efforce d'assurer l'exactitude et la mise à jour des informations diffusées
+          sur ce site, notamment le programme et les dates de l'événement, sans garantir
+          l'exhaustivité ou l'absence d'erreur. Le contenu du site peut être modifié à tout moment,
+          sans préavis.
+        </p>
+        <p class="mt-2">
+          Le site peut contenir des liens vers des sites tiers (exposants, partenaires, prestataires
+          de formulaires). LabEvents n'exerce aucun contrôle sur le contenu de ces sites tiers et
+          décline toute responsabilité quant à leur contenu.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Données personnelles</h2>
+        <p class="mt-2">
+          Le traitement des données personnelles collectées via le site (formulaires, candidatures)
+          est décrit dans la
+          <a href="/confidentialite" class="font-semibold text-marine underline hover:text-village"
+            >politique de confidentialité</a
+          >.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">Droit applicable</h2>
+        <p class="mt-2">
+          Les présentes mentions légales sont soumises au droit applicable en Nouvelle-Calédonie.
+        </p>
+      </section>
+    </div>
   </section>
 </BaseLayout>
