@@ -593,21 +593,41 @@ que des **placeholders** :
 | `__VISIBILITES_DATA_DIR__` | `public/api/_visibilites-lib.php` (constante `VISIBILITES_DATA_DIR_DEFAUT`) | Variable GitHub `VISIBILITES_DATA_DIR` |
 
 Chaque workflow (`deploy-preprod.yml`, `deploy-production.yml`) exécute, après `npm run build` et
-avant `SamKirkland/FTP-Deploy-Action`, une étape qui substitue ces deux placeholders dans `dist/`
-(`sed`, pas de modification du dépôt Git) avec les valeurs de son propre environnement GitHub
-(Settings → Environments → *preprod* ou *production* → **Variables**, pas des secrets : ce sont des
-chemins serveur, pas des mots de passe). Si l'une des deux variables est absente ou vide, l'étape
-échoue explicitement (`exit 1`) — pas de déploiement avec un placeholder non résolu. Une vérification
-finale (`grep -rl "__VISIBILITES_" dist/`) échoue le déploiement si un placeholder a survécu, quelle
-qu'en soit la raison.
+avant `SamKirkland/FTP-Deploy-Action`, une étape `node scripts/inject-visibilite-config.mjs` qui
+substitue ces deux placeholders dans `dist/` (pas de modification du dépôt Git) avec les valeurs de
+son propre environnement GitHub (Settings → Environments → *preprod* ou *production* → **Variables**,
+pas des secrets : ce sont des chemins serveur, pas des mots de passe).
+
+**Historique — pourquoi un script Node plutôt que `sed`** : la première version de cette étape
+interpolait directement l'expression `${{ vars.VISIBILITES_AUTH_USER_FILE }}` dans le texte d'un
+script `sed`. Un retour à la ligne parasite dans la valeur de la variable GitHub (saisie manuelle,
+copier-coller) suffisait à casser la commande `sed` avant même son exécution
+(`sed: -e expression #1, char 77: unterminated 's' command`), avec le run entier en échec. Corrigé en
+faisant transiter les valeurs par `env:` (jamais collées dans un texte de script) et en déléguant la
+substitution à `scripts/inject-visibilite-config.mjs` / `scripts/lib/visibilite-deploy-injection.mjs` :
+
+- les valeurs sont nettoyées explicitement (`nettoyerValeur()` : tout `\r` supprimé, espaces/`\n` de
+  bordure retirés) avant validation ;
+- une valeur vide après nettoyage, ou contenant encore un `\r`/`\n` (défense en profondeur), fait
+  échouer l'étape avant toute écriture — message d'erreur sans jamais afficher la valeur elle-même ;
+- la substitution est **littérale** (`String.prototype.split/join`, pas de regex, pas de `sed`) :
+  aucun caractère de la valeur n'est jamais interprété comme un délimiteur ou une classe de caractère ;
+- un balayage final de tout `dist/` (hors fichiers binaires connus) échoue le déploiement si un
+  placeholder a survécu quelque part, quelle qu'en soit la raison.
+
+Testé par `scripts/visibilite-deploy-injection.test.mjs` (`npm run visibilites:deploy-injection-test`) :
+valeur normale, LF final, CRLF final (cas exact du bug historique), variable vide/absente, placeholder
+résiduel détecté après substitution.
 
 **Garanties apportées par cette architecture** :
 - Préprod et production utilisent **toujours** deux `.htpasswd` distincts et deux dossiers de
   données distincts — impossible qu'un déploiement production réutilise par erreur la configuration
   préprod, puisque chaque workflow ne connaît que les variables de son propre environnement GitHub.
 - Aucun chemin OVH, aucun secret, n'est jamais commité dans Git — `scripts/visibilites-deploy-config.test.mjs`
-  vérifie que les trois fichiers ne contiennent que les placeholders, jamais un chemin en dur.
+  vérifie que les trois fichiers ne contiennent que les placeholders, jamais un chemin en dur, et que
+  les deux workflows lisent les variables via `env:` (jamais interpolées directement dans un script).
 - Un seul jeu de fichiers source à maintenir (pas de duplication `public/` par environnement).
+- Robuste aux CR/LF parasites dans la saisie des variables GitHub (voir historique ci-dessus).
 
 **Chemins réels** (jamais dans le dépôt, uniquement dans les variables GitHub) :
 

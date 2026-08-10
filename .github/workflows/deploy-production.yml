@@ -40,20 +40,16 @@ jobs:
         # GitHub "production" (Settings → Environments → production → Variables) —
         # jamais les mêmes valeurs que preprod : deux .htpasswd et deux dossiers de
         # données distincts, garantis par cette étape.
-        run: |
-          set -euo pipefail
-          AUTH_FILE="${{ vars.VISIBILITES_AUTH_USER_FILE }}"
-          DATA_DIR="${{ vars.VISIBILITES_DATA_DIR }}"
-          if [ -z "$AUTH_FILE" ] || [ -z "$DATA_DIR" ]; then
-            echo "::error::VISIBILITES_AUTH_USER_FILE ou VISIBILITES_DATA_DIR manquant dans les variables de l'environnement GitHub production."
-            exit 1
-          fi
-          sed -i "s#__VISIBILITES_AUTH_USER_FILE__#${AUTH_FILE}#g" dist/admin/.htaccess dist/admin-api/.htaccess
-          sed -i "s#__VISIBILITES_DATA_DIR__#${DATA_DIR}#g" dist/api/_visibilites-lib.php
-          if grep -rl "__VISIBILITES_" dist/ ; then
-            echo "::error::Placeholder Visibilité non substitué détecté dans dist/ — déploiement annulé."
-            exit 1
-          fi
+        #
+        # Les valeurs transitent par `env:` (jamais interpolées directement dans le
+        # texte d'un script shell) — scripts/inject-visibilite-config.mjs nettoie tout
+        # CR/LF parasite, valide les valeurs puis substitue littéralement, avant de
+        # vérifier qu'aucun placeholder ne subsiste dans dist/ (voir
+        # scripts/lib/visibilite-deploy-injection.mjs et son test associé).
+        run: node scripts/inject-visibilite-config.mjs
+        env:
+          VISIBILITES_AUTH_USER_FILE: ${{ vars.VISIBILITES_AUTH_USER_FILE }}
+          VISIBILITES_DATA_DIR: ${{ vars.VISIBILITES_DATA_DIR }}
 
       - name: Déployer le contenu de dist/ vers OVH (FTP)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
