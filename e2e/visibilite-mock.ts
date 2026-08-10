@@ -25,6 +25,7 @@ export interface VisibiliteMock {
   exposantId?: string;
   format: string;
   visuel: string;
+  visuelMobile?: string;
   alt: string;
   lien?: string;
   pages: string[];
@@ -42,6 +43,7 @@ function resumePublic(v: VisibiliteMock) {
     id: v.id,
     annonceur: v.annonceur,
     visuel: v.visuel,
+    visuelMobile: v.visuelMobile,
     alt: v.alt,
     lien: v.lien,
     poids: v.poids,
@@ -130,6 +132,7 @@ export async function mockApiAdmin(page: Page, visibilitesInitiales: VisibiliteM
         exposantId: corps.exposantId,
         format: corps.format ?? 'bandeau_horizontal',
         visuel: corps.visuel ?? '',
+        visuelMobile: corps.visuelMobile,
         alt: corps.alt ?? '',
         lien: corps.lien,
         pages: corps.pages ?? [],

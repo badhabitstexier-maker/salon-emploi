@@ -367,6 +367,26 @@ test('Validation : visuel manquant -> 422', async () => {
   assert.ok(corps.details.some((d) => d.includes('visuel')));
 });
 
+test('Validation : visuelMobile est optionnel — absent ou vide accepté, campagne créée sans lui', async () => {
+  const session = await ouvrirSessionAdmin();
+  const { statut, corps } = await creerViaAdmin(session, { visuelMobile: '' });
+  assert.equal(statut, 200);
+  assert.equal(corps.visibilite.visuelMobile, null);
+  await supprimerViaAdmin(session, corps.visibilite.id);
+});
+
+test('Validation : visuelMobile renseigné est conservé distinctement du visuel desktop', async () => {
+  const session = await ouvrirSessionAdmin();
+  const { statut, corps } = await creerViaAdmin(session, {
+    visuel: '/visibilites/desktop.png',
+    visuelMobile: '/visibilites/mobile.png',
+  });
+  assert.equal(statut, 200);
+  assert.equal(corps.visibilite.visuel, '/visibilites/desktop.png');
+  assert.equal(corps.visibilite.visuelMobile, '/visibilites/mobile.png');
+  await supprimerViaAdmin(session, corps.visibilite.id);
+});
+
 test('Validation : poids invalide (0, négatif, non entier) -> 422', async () => {
   const session = await ouvrirSessionAdmin();
   for (const poids of [0, -3, 'abc', 2.5]) {
@@ -453,12 +473,26 @@ test('Contrat public : nomInterne/typeAnnonceur/exposantId jamais exposés, mêm
   assert.ok(trouvee, 'la campagne active doit apparaître sur la page accueil');
   assert.deepEqual(
     Object.keys(trouvee).sort(),
-    ['alt', 'annonceur', 'dateDebut', 'dateFin', 'id', 'lien', 'poids', 'visuel'].sort(),
+    ['alt', 'annonceur', 'dateDebut', 'dateFin', 'id', 'lien', 'poids', 'visuel', 'visuelMobile'].sort(),
   );
   assert.equal('nomInterne' in trouvee, false);
   assert.equal('typeAnnonceur' in trouvee, false);
   assert.equal('exposantId' in trouvee, false);
 
+  await supprimerViaAdmin(session, id);
+});
+
+test('Contrat public : campagne historique sans visuelMobile -> champ présent mais null (repli desktop géré côté client)', async () => {
+  const session = await ouvrirSessionAdmin();
+  const { corps } = await creerViaAdmin(session, { annonceur: 'Historique — sans visuelMobile', pages: ['accueil'] });
+  const id = corps.visibilite.id;
+
+  const reponsePublique = await fetch(`${base}/api/visibilites.php?page=accueil&emplacement=principal`);
+  const corpsPublic = await reponsePublique.json();
+  const trouvee = corpsPublic.visibilites.find((v) => v.id === id);
+
+  assert.ok(trouvee);
+  assert.equal(trouvee.visuelMobile, null);
   await supprimerViaAdmin(session, id);
 });
 

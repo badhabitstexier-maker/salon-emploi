@@ -78,12 +78,25 @@ const exposantsIds = exposants.map((exposant) => exposant.data.exposantId);
     </div>
 
     <div>
-      <label for="champ-visuel" class="block text-sm font-bold text-marine">Visuel *</label>
+      <label for="champ-visuel" class="block text-sm font-bold text-marine">Visuel desktop *</label>
       <p class="text-xs text-encre/60">
         Chemin ou URL d'une image déjà présente sur le serveur (ex. <code class="rounded bg-marine/10 px-1">/visibilites/mon-annonceur.png</code>).
+        Dimensions recommandées : <strong>1600 × 200 px</strong> (ratio 8:1). Affiché à partir de 640px de large ;
+        sert aussi de <strong>repli automatique sur mobile</strong> si aucun visuel mobile n'est renseigné ci-dessous.
         Pas d'upload dans cette version — voir docs/VISIBILITE.md, procédure de dépôt d'un visuel.
       </p>
       <input id="champ-visuel" name="visuel" type="text" required class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
+    </div>
+
+    <div>
+      <label for="champ-visuelMobile" class="block text-sm font-bold text-marine">Visuel mobile (optionnel)</label>
+      <p class="text-xs text-encre/60">
+        Chemin ou URL d'une image déjà présente sur le serveur. Dimensions recommandées :
+        <strong>900 × 300 px</strong> (ratio 3:1). Affiché en dessous de 640px de large (téléphones).
+        <strong>Laisser vide pour utiliser automatiquement le visuel desktop ci-dessus sur mobile</strong> —
+        c'est le comportement par défaut, sans risque de bandeau cassé.
+      </p>
+      <input id="champ-visuelMobile" name="visuelMobile" type="text" class="mt-1.5 w-full rounded-md border border-marine/20 bg-brume px-3 py-2.5 text-sm text-encre focus:border-marine focus:outline-none focus:ring-2 focus:ring-marine/30" />
     </div>
 
     <div>
@@ -174,6 +187,7 @@ const exposantsIds = exposants.map((exposant) => exposant.data.exposantId);
     (form.elements.namedItem('exposantId') as HTMLInputElement).value = v.exposantId ?? '';
     (form.elements.namedItem('format') as HTMLSelectElement).value = v.format;
     (form.elements.namedItem('visuel') as HTMLInputElement).value = v.visuel;
+    (form.elements.namedItem('visuelMobile') as HTMLInputElement).value = v.visuelMobile ?? '';
     (form.elements.namedItem('alt') as HTMLInputElement).value = v.alt;
     (form.elements.namedItem('lien') as HTMLInputElement).value = v.lien ?? '';
     (form.elements.namedItem('emplacement') as HTMLSelectElement).value = v.emplacement;
@@ -236,6 +250,7 @@ const exposantsIds = exposants.map((exposant) => exposant.data.exposantId);
       exposantId: String(donnees.get('exposantId') ?? '').trim() || undefined,
       format: String(donnees.get('format') ?? ''),
       visuel: String(donnees.get('visuel') ?? ''),
+      visuelMobile: String(donnees.get('visuelMobile') ?? '').trim() || undefined,
       alt: String(donnees.get('alt') ?? ''),
       lien: String(donnees.get('lien') ?? '').trim() || undefined,
       pages: donnees.getAll('pages').map(String),

@@ -41,6 +41,15 @@ async function chargerCandidats(page: string, emplacement: string): Promise<Visi
   }
 }
 
+/*
+  Seuil mobile/desktop du bandeau (voir docs/VISIBILITE.md §4/§5bis) : en
+  dessous de 640px, le visuel mobile (s'il existe) est chargé ; à partir de
+  640px, toujours le visuel desktop. Repli natif géré par le navigateur via
+  <picture>/<source> — aucune logique JS de correspondance de largeur à
+  maintenir ici, et aucun flash/rechargement au redimensionnement.
+*/
+const SEUIL_DESKTOP = '(min-width: 640px)';
+
 function remplir(visuel: HTMLElement, choisie: VisibiliteResume): void {
   const lien = document.createElement(choisie.lien ? 'a' : 'div');
   if (choisie.lien) {
@@ -48,14 +57,27 @@ function remplir(visuel: HTMLElement, choisie: VisibiliteResume): void {
   }
   lien.className = 'block w-full';
 
+  const picture = document.createElement('picture');
+
+  // visuelMobile est optionnel : absent -> pas de <source> dédiée, l'<img>
+  // (desktop) sert alors de visuel unique sur toutes les largeurs, comme
+  // avant l'introduction du visuel mobile.
+  if (choisie.visuelMobile) {
+    const source = document.createElement('source');
+    source.media = SEUIL_DESKTOP;
+    source.srcset = choisie.visuel;
+    picture.appendChild(source);
+  }
+
   const img = document.createElement('img');
-  img.src = choisie.visuel;
+  img.src = choisie.visuelMobile || choisie.visuel;
   img.alt = choisie.alt;
   img.loading = 'lazy';
   // Ratio naturel du visuel, aucun crop : largeur fluide (100% du slot),
   // hauteur automatique (voir docs/VISIBILITE.md §5bis).
   img.className = 'block h-auto w-full';
-  lien.appendChild(img);
+  picture.appendChild(img);
+  lien.appendChild(picture);
 
   visuel.replaceChildren(lien);
 }
