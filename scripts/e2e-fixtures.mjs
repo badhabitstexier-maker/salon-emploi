@@ -2,7 +2,7 @@
   Fixtures E2E pour la suite Playwright : crée/supprime une offre et un
   exposant factices, uniquement pour la durée d'une exécution Playwright.
 
-  Offre (Lot 4B-2, parcours Offres) : nécessaire car les 5 offres TEST du
+  Offre (Lot 4B-2, parcours Offres) : nécessaire car les offres TEST du
   catalogue public (voir docs/OFFRES.md, src/lib/offres.ts::estOffreTest)
   masquent volontairement le bouton de sélection — impossible de tester
   l'ajout/retrait/limite de sélection sans une offre « réelle ».
