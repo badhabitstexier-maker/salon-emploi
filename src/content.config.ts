@@ -280,6 +280,18 @@ const offres = defineCollection({
       // Champ conservé pour un usage éditorial futur — ne doit PAS influencer
       // le tri ni le classement des offres (docs/OFFRES.md, section « tri »).
       miseEnAvant: z.boolean().default(false),
+      /*
+        Offre TEST volontairement absente du catalogue public /offres (Lot
+        « exposants-statuts », section 15). Réutilise la même logique que
+        `exposants.demo` : la distinction est portée par le modèle de
+        données, jamais par une liste de références codée en dur. Reste
+        accessible par URL directe et référencée depuis la fiche de
+        l'exposant démo correspondant (offresPublieesDeExposant, voir
+        src/lib/exposants.ts) — seul le catalogue principal (src/pages/offres/index.astro)
+        l'exclut. Réservé aux offres TEST : une offre réelle ne peut pas
+        être `demo: true` (voir superRefine ci-dessous).
+      */
+      demo: z.boolean().default(false),
     })
     .superRefine((offre, ctx) => {
       if (estIntituleOffreTest(offre.intitule)) {
@@ -291,6 +303,13 @@ const offres = defineCollection({
           });
         }
         return;
+      }
+      if (offre.demo) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['demo'],
+          message: 'demo: true est réservé aux offres TEST (intitulé commençant par « TEST — ») — jamais à une offre réelle.',
+        });
       }
       if (offre.exposantId.trim() === '') {
         ctx.addIssue({

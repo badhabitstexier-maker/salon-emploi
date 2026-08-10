@@ -15,7 +15,16 @@ import {
   niveauxFormationDisponibles,
 } from '../../lib/offres';
 
-const offres = trierOffres(await getOffresPubliees());
+/*
+  Catalogue public : exclut les offres marquées `demo: true` (Lot
+  « exposants-statuts », voir CLAUDE.md et docs/EXPOSANTS.md section 13).
+  Ces offres restent des offres TEST publiées comme les autres (accessibles
+  par URL directe, référencées depuis la fiche de l'exposant démo
+  correspondant via `offresPublieesDeExposant` — voir
+  src/pages/exposants/[slug].astro) mais ne remontent pas dans le catalogue
+  principal, pour ne pas le saturer d'offres fictives.
+*/
+const offres = trierOffres((await getOffresPubliees()).filter((offre) => !offre.data.demo));
 const total = offres.length;
 
 const offresDisponibles = offres.map((offre) => ({

@@ -288,6 +288,14 @@ les fichiers `src/content/exposants/demo-*.md` (et leurs offres TEST
 associées dans `src/content/offres/`, référence `SEF26-006` à `SEF26-018`) :
 aucune modification de code n'est nécessaire.
 
+Chaque exposant démo a 2 ou 3 offres TEST rattachées (`docs/OFFRES.md`
+section 3bis), toutes affichées sur sa fiche. Pour ne pas saturer le
+catalogue public `/offres` d'offres fictives, une seule offre représentative
+par exposant y reste visible (`demo: false`) ; les autres portent
+`demo: true` (voir `docs/OFFRES.md` section 4bis) — même principe de champ
+de données, pas de liste codée en dur, et toujours accessibles par URL
+directe ou depuis la fiche exposant.
+
 Ces six exposants fictifs ne représentent aucune entreprise réelle
 calédonienne : noms, logos, coordonnées et visuels sont entièrement inventés
 (voir `public/images/exposants/demo-*.svg`, placeholders SVG neutres).
