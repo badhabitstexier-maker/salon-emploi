@@ -4,32 +4,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout
   title="Politique de confidentialité"
-  description="Politique de confidentialité et gestion des données des formulaires du Salon de l'Emploi & de la Formation 2026."
+  description="Politique de confidentialité du site du Salon de l'Emploi & de la Formation 2026 : données collectées, prestataires, durées de conservation et droits."
 >
   <section class="mx-auto max-w-3xl px-4 py-16 sm:px-6">
     <h1 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
       Politique de confidentialité
     </h1>
-    <p class="mt-3 text-sm text-encre/70">
-      Texte provisoire — à valider par Philippe avant mise en ligne (voir encadré en fin de page).
-    </p>
+    <p class="mt-3 text-sm text-encre/70">Dernière mise à jour : 10 août 2026.</p>
 
     <div class="prose-salon mt-8 space-y-6 text-encre">
       <section>
-        <h2 class="font-titre text-xl font-bold uppercase text-marine">Pourquoi ces données sont collectées</h2>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">1. Responsable du traitement</h2>
         <p class="mt-2">
-          Les formulaires du site (demande exposant / partenaire et question visiteur) collectent
-          uniquement les informations nécessaires pour répondre à votre demande concernant le
-          Salon de l'Emploi &amp; de la Formation 2026. Ces données ne sont utilisées à aucune
-          autre fin, ni cédées ni revendues à un tiers.
+          Le responsable des traitements de données personnelles réalisés via le site
+          <strong>salonemploi.nc</strong> est <strong>Philippe Texier</strong>, entrepreneur
+          individuel exerçant sous le nom commercial <strong>LabEvents</strong> (RIDET
+          0 504 530.003), organisateur du Salon de l'Emploi &amp; de la Formation 2026. Voir les
+          <a href="/mentions-legales" class="font-semibold text-marine underline hover:text-village"
+            >mentions légales</a
+          > pour les coordonnées complètes.
         </p>
-      </section>
-
-      <section>
-        <h2 class="font-titre text-xl font-bold uppercase text-marine">Qui reçoit ces données</h2>
         <p class="mt-2">
-          Les informations transmises via les formulaires sont adressées directement à
-          <strong> LabEvents</strong>, organisateur du salon, à l'adresse
+          LabEvents ne dispose pas d'un délégué à la protection des données (DPO) désigné : pour
+          toute question ou demande relative à vos données, le contact est
           <a href="mailto:labevents@icloud.com" class="font-semibold text-marine underline hover:text-village"
             >labevents@icloud.com</a
           >.
@@ -37,103 +34,343 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </section>
 
       <section>
-        <h2 class="font-titre text-xl font-bold uppercase text-marine">Prestataire technique</h2>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">2. Quelles données sont collectées, et pourquoi</h2>
         <p class="mt-2">
-          L'envoi des formulaires est assuré par <strong>Web3Forms</strong>, un service tiers qui
-          transmet le contenu du formulaire par email sans le stocker durablement de manière
-          consultable par LabEvents au-delà de cet envoi. Aucune base de données visiteurs ou
-          exposants n'est constituée par le site lui-même.
+          Le site ne comporte pas de compte utilisateur ni de base de données de visiteurs. Les
+          seules données personnelles traitées sont celles que vous transmettez volontairement via
+          l'un des formulaires ci-dessous.
+        </p>
+
+        <h3 class="mt-4 font-titre text-lg font-bold text-marine">Formulaire « Exposer » (page /exposer)</h3>
+        <p class="mt-2">
+          Ce formulaire comporte deux versions : une demande <strong>exposant / partenaire</strong>
+          (raison sociale, nom et fonction du contact, email, téléphone, type de structure, secteur
+          d'activité, formule souhaitée, message, et facultativement site internet, nombre
+          d'emplacements souhaité, meilleur moment pour être recontacté) et une question
+          <strong>visiteur</strong> (nom, email, objet, message). Les champs marqués comme
+          obligatoires dans le formulaire doivent être renseignés pour que la demande puisse être
+          traitée ; les autres sont facultatifs.
+        </p>
+        <p class="mt-2">
+          <strong>Finalité :</strong> traiter votre demande de stand ou de partenariat, ou répondre
+          à votre question concernant le salon.
+        </p>
+        <p class="mt-2">
+          <strong>Base légale :</strong> l'exécution de mesures précontractuelles prises à votre
+          initiative, en vue d'un éventuel partenariat ou d'une réservation de stand (ou, pour la
+          question visiteur, en vue de répondre à une démarche que vous engagez vous-même auprès
+          de LabEvents). La case à cocher du formulaire ne constitue pas une base légale distincte
+          : elle atteste que vous avez pris connaissance de la présente politique de
+          confidentialité avant l'envoi de votre demande.
+        </p>
+
+        <h3 class="mt-4 font-titre text-lg font-bold text-marine" id="candidatures">
+          Formulaire de candidature (page /candidater)
+        </h3>
+        <p class="mt-2">
+          <strong>Ce formulaire n'est pas encore activé sur le site en production</strong> à la date
+          de mise à jour de cette page : la page <code>/candidater</code> affiche un message
+          indiquant que le formulaire sera prochainement disponible, sans qu'aucune donnée ne soit
+          collectée. Les informations ci-dessous décrivent le fonctionnement prévu, tel qu'il sera
+          activé après recette.
+        </p>
+        <p class="mt-2">
+          Une fois activé, le formulaire (hébergé par le prestataire <strong>Tally</strong>) devra
+          permettre de recueillir : votre identité et vos coordonnées, votre situation
+          professionnelle actuelle, votre projet professionnel (poste recherché, secteurs, type de
+          contrat, disponibilité, mobilité), vos compétences, langues, permis et habilitations,
+          votre CV (fichier PDF), un texte libre de présentation de votre candidature, le choix
+          d'au maximum 5 offres ou entreprises du salon, ainsi que les cases décrites au point 9
+          ci-dessous.
+        </p>
+        <p class="mt-2">
+          <strong>Finalité :</strong> vous mettre en relation avec les exposants correspondant à
+          votre sélection et, si vous le souhaitez, avec d'autres exposants du salon.
+        </p>
+        <p class="mt-2">
+          <strong>Base légale :</strong> le fondement diffère selon la destination des données
+          (voir le détail au point 9) :
+        </p>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          <li>
+            transmission de votre candidature aux exposants correspondant aux offres que vous avez
+            sélectionnées : mesures précontractuelles prises à votre initiative, puisque c'est
+            vous qui demandez au site de vous mettre en relation avec les exposants de votre
+            choix ;
+          </li>
+          <li>
+            orientation facultative de votre candidature vers d'autres exposants du salon
+            (« vivier ») : votre consentement, spécifique, libre et distinct, donné par une case
+            non cochée par défaut.
+          </li>
+        </ul>
+
+        <h3 class="mt-4 font-titre text-lg font-bold text-marine">Sélection d'offres avant candidature</h3>
+        <p class="mt-2">
+          Sur les pages <code>/offres</code> et <code>/ma-selection</code>, vous pouvez présélectionner
+          jusqu'à 5 offres avant de candidater. Cette sélection ne contient que des références
+          d'offres déjà publiques (ex. <code>SEF26-001</code>) : elle est conservée uniquement dans
+          l'adresse de la page (paramètres d'URL), <strong>sans aucun cookie, sans localStorage,
+          sessionStorage ni autre stockage du navigateur</strong>, et ne constitue pas une donnée
+          personnelle.
         </p>
       </section>
 
       <section>
-        <h2 class="font-titre text-xl font-bold uppercase text-marine">Champs obligatoires</h2>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">3. Offres d'emploi publiées</h2>
         <p class="mt-2">
-          Dans chaque formulaire, les champs obligatoires sont identifiés par un astérisque (*).
-          Les autres champs sont facultatifs et ne conditionnent pas le traitement de votre
-          demande.
+          Les fiches offres publiées sur <code>/offres</code> décrivent un poste et l'entreprise qui
+          le propose (intitulé, secteur, type de contrat, missions, etc.). Elles ne contiennent
+          aucune coordonnée personnelle d'un contact recruteur : ces informations, transmises par
+          les exposants en amont, sont volontairement exclues de la publication et restent un usage
+          interne de LabEvents pour le pilotage du salon.
         </p>
       </section>
 
       <section>
-        <h2 class="font-titre text-xl font-bold uppercase text-marine">Données sensibles</h2>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">4. Espace d'administration LabEvents</h2>
         <p class="mt-2">
-          Merci de ne transmettre, dans les champs libres (message, précisions), aucune donnée
-          sensible au sens du RGPD (origine, santé, opinions, etc.). Ces formulaires ne sont pas
-          conçus pour recueillir ce type d'information.
+          Le site comporte un espace d'administration interne (<code>/admin</code>), réservé à
+          LabEvents et protégé par un accès nom d'utilisateur / mot de passe. Il permet de consulter
+          les exposants et les offres (lecture seule) et de gérer les campagnes de visibilité
+          (bandeaux publicitaires) affichées sur le site. Aucune donnée de candidat n'y est traitée
+          ; les informations qui y figurent sont des données professionnelles d'exposants, pas des
+          données de visiteurs ou de candidats.
         </p>
       </section>
 
       <section>
-        <h2 class="font-titre text-xl font-bold uppercase text-marine">Vos droits</h2>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">5. Formulaires et prestataires concernés</h2>
+        <p class="mt-2">Deux prestataires tiers traitent des données pour le compte de LabEvents :</p>
+        <ul class="mt-2 list-inside list-disc space-y-2">
+          <li>
+            <strong>Web3Forms</strong> — utilisé par le formulaire « Exposer ». Il transmet le
+            contenu du formulaire par email à LabEvents. Web3Forms est édité par une société basée
+            en Inde ; sa politique de confidentialité indique recourir à plusieurs sous-traitants
+            d'infrastructure (hébergement et sécurité, notamment AWS, Cloudflare et Hetzner),
+            susceptibles de traiter des données dans différents pays selon les besoins techniques.
+            LabEvents utilise le plan <strong>gratuit (Free)</strong> de Web3Forms, pour lequel les
+            pages commerciales du prestataire annoncent une conservation des soumissions de
+            <strong>30 jours</strong> avant suppression automatique. Cette indication n'est
+            toutefois pas totalement concordante avec la politique de confidentialité de
+            Web3Forms, qui prévoit par ailleurs une durée de conservation générale pouvant
+            atteindre jusqu'à 3 ans selon les cas, sans garantir explicitement que le plan gratuit
+            reste plafonné à 30 jours en toute circonstance. Sources consultées :
+            <a
+              href="https://web3forms.com/privacy"
+              class="font-semibold text-marine underline hover:text-village"
+              target="_blank"
+              rel="noopener noreferrer">web3forms.com/privacy</a
+            >
+            et
+            <a
+              href="https://web3forms.com/pricing"
+              class="font-semibold text-marine underline hover:text-village"
+              target="_blank"
+              rel="noopener noreferrer">web3forms.com/pricing</a
+            >.
+          </li>
+          <li>
+            <strong>Tally</strong> — prévu pour le futur formulaire de candidature. Tally indique
+            héberger les données en Europe, selon sa propre politique de confidentialité,
+            consultable sur
+            <a
+              href="https://tally.so/help/privacy-policy"
+              class="font-semibold text-marine underline hover:text-village"
+              target="_blank"
+              rel="noopener noreferrer">tally.so/help/privacy-policy</a
+            >.
+          </li>
+        </ul>
         <p class="mt-2">
-          Vous pouvez demander l'accès, la correction ou la suppression des données transmises via
-          les formulaires du site en écrivant à
-          <a href="mailto:labevents@icloud.com" class="font-semibold text-marine underline hover:text-village"
-            >labevents@icloud.com</a
-          >.
+          Le site est par ailleurs hébergé par <strong>OVHcloud</strong> (voir
+          <a href="/mentions-legales" class="font-semibold text-marine underline hover:text-village"
+            >mentions légales</a
+          >), qui héberge techniquement les pages du site mais ne reçoit aucune donnée de
+          formulaire : les formulaires transmettent directement vos données à Web3Forms ou à Tally,
+          sans transiter par une base de données du site.
         </p>
       </section>
 
       <section>
-        <h2 class="font-titre text-xl font-bold uppercase text-marine" id="candidatures">
-          Candidatures aux offres du salon
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">6. Destinataires des données</h2>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          <li>
+            Formulaire « Exposer » : LabEvents uniquement (boîte email de l'organisateur).
+          </li>
+          <li>
+            Formulaire de candidature (une fois activé) : LabEvents, puis les exposants dont les
+            offres ont été sélectionnées et, uniquement si vous avez donné le consentement
+            optionnel distinct prévu à cet effet, d'autres exposants du salon correspondant à votre
+            profil. Il n'existe pas de CVthèque librement consultable ni d'accès direct des
+            exposants à une base de profils : c'est LabEvents qui transmet individuellement les
+            dossiers concernés.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">7. Transferts de données hors Nouvelle-Calédonie</h2>
+        <p class="mt-2">
+          Web3Forms, société basée en Inde, s'appuie sur des sous-traitants techniques
+          (hébergement, sécurité) susceptibles de traiter des données dans plusieurs pays hors
+          Nouvelle-Calédonie et hors Union européenne, selon les informations publiées par ce
+          prestataire (voir point 5) : les données du formulaire « Exposer » transitent donc par
+          un ou plusieurs pays tiers avant transmission par email à LabEvents. Tally indique
+          héberger les données de formulaire en Europe. Aucun autre transfert de données n'est
+          effectué par le site.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">8. Durées de conservation</h2>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          <li>
+            Formulaire « Exposer » : deux durées distinctes s'appliquent successivement. Chez le
+            prestataire technique Web3Forms, la soumission n'est conservée que temporairement (30
+            jours annoncés pour le plan gratuit utilisé par LabEvents, voir point 5). Une fois
+            l'email reçu par LabEvents dans sa propre messagerie, il est conservé
+            <strong>3 ans à compter du dernier contact</strong> avec le prospect, exposant ou
+            partenaire concerné, puis supprimé.
+          </li>
+          <li>
+            Candidatures (une fois le formulaire activé) : conservées jusqu'au
+            <strong>31 décembre 2026</strong> au plus tard, puis supprimées.
+          </li>
+          <li>
+            Journaux techniques du serveur (voir point 10) : durée définie par les paramètres
+            techniques d'OVHcloud, strictement nécessaire au fonctionnement et à la sécurité du
+            site.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">
+          9. Transmission de candidature et vivier facultatif
         </h2>
         <p class="mt-2">
-          <strong>Responsable du traitement :</strong> LabEvents, organisateur du Salon de l'Emploi
-          &amp; de la Formation 2026.
+          Lorsque le formulaire de candidature sera activé, deux cases distinctes seront
+          proposées, avec des fondements juridiques différents :
+        </p>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          <li>
+            une case <strong>obligatoire</strong> pour que votre candidature soit transmise aux
+            exposants correspondant aux offres que vous avez sélectionnées. Cette transmission
+            étant la mesure précontractuelle que vous demandez vous-même au site (voir point 2),
+            cette case a vocation à vous informer et à recueillir la preuve de cette information,
+            plutôt qu'à constituer un consentement au sens strict, qui n'est pas requis pour cette
+            finalité ;
+          </li>
+          <li>
+            une case <strong>facultative et distincte</strong>, non cochée par défaut, pour
+            autoriser LabEvents à orienter votre candidature vers d'autres exposants du salon dont
+            les besoins correspondent à votre profil, au-delà de votre sélection initiale. Cette
+            case constitue, elle, un véritable consentement libre et spécifique, révocable à tout
+            moment.
+          </li>
+        </ul>
+        <p class="mt-2 text-sm text-encre/70">
+          Point de vigilance : la conception initiale du formulaire prévoyait de présenter la
+          première case comme un « consentement obligatoire ». Une fois le formulaire de
+          candidature effectivement construit dans l'outil Tally, il conviendra de vérifier que
+          son libellé reflète cette qualification (information/prise de connaissance plutôt que
+          consentement), à l'image de la modification déjà appliquée aux cases du formulaire
+          « Exposer ».
         </p>
         <p class="mt-2">
-          <strong>Finalité :</strong> la page
-          <a href="/candidater" class="font-semibold text-marine underline hover:text-village">/candidater</a>
-          permet de déposer une candidature en ligne, avec ou sans offre sélectionnée, en vue de la
-          mettre en relation avec les exposants du salon.
-        </p>
-        <p class="mt-2">
-          <strong>Catégories de données collectées</strong> (via le formulaire Tally) : coordonnées
-          (prénom, nom, email, téléphone, commune de résidence), situation professionnelle actuelle,
-          niveau de formation et expérience, projet professionnel (poste recherché, secteurs visés,
-          type de contrat, disponibilité, mobilité), compétences, langues, permis et habilitations,
-          CV, texte de valorisation personnelle, références des offres sélectionnées (le cas
-          échéant) et consentements donnés.
-        </p>
-        <p class="mt-2">
-          <strong>Destinataires :</strong> LabEvents ; les exposants correspondant aux offres que
-          vous avez sélectionnées ; et, uniquement si vous avez donné le consentement optionnel
-          correspondant, d'autres exposants du salon dont les besoins correspondent à votre profil.
-        </p>
-        <p class="mt-2">
-          Il n'existe ni CVthèque librement consultable, ni accès public à votre CV, ni accès
-          autonome des exposants à une base de profils : LabEvents transmet individuellement les
-          dossiers aux exposants concernés, après la clôture du salon.
-        </p>
-        <p class="mt-2">
-          <strong>Conservation :</strong> vos données de candidature sont conservées jusqu'au
-          <strong> 31 décembre 2026</strong> au plus tard, puis supprimées.
-        </p>
-        <p class="mt-2">
-          <strong>Outil de collecte :</strong> le formulaire est hébergé par
-          <strong> Tally</strong> (tally.so), prestataire tiers. LabEvents n'apporte aucune garantie
-          technique ou juridique au-delà de celles publiées par Tally lui-même.
-        </p>
-        <p class="mt-2">
-          Vous pouvez demander l'accès, la rectification ou la suppression de vos données de
-          candidature en écrivant à
+          Vous pouvez à tout moment revenir sur le consentement facultatif au vivier, ou vous
+          opposer à la transmission ciblée avant son envoi effectif, en écrivant à
           <a href="mailto:labevents@icloud.com" class="font-semibold text-marine underline hover:text-village"
             >labevents@icloud.com</a
           >.
         </p>
       </section>
-    </div>
 
-    <div class="mt-10 rounded-2xl border border-orange/40 bg-orange/10 p-6">
-      <h2 class="font-titre text-lg font-bold uppercase text-orange-dark">À valider avant publication</h2>
-      <ul class="mt-3 list-inside list-disc space-y-1.5 text-sm text-encre">
-        <li>Confirmation de Web3Forms comme prestataire retenu pour la V1 (CLAUDE.md, section 3bis).</li>
-        <li>Durée réelle de conservation des emails reçus par LabEvents (boîte mail).</li>
-        <li>Vérification que ce texte provisoire n'a pas besoin d'un avis juridique avant mise en ligne.</li>
-        <li>Relecture de la section « Candidatures aux offres du salon » (Lot 2) avant ouverture réelle des candidatures.</li>
-      </ul>
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">10. Sécurité</h2>
+        <p class="mt-2">
+          Le site est hébergé par OVHcloud et transmet ses pages en HTTPS. L'espace
+          d'administration (<code>/admin</code>) est protégé par une authentification nom
+          d'utilisateur / mot de passe, distincte de l'accès public au site. Comme tout hébergement
+          web, le serveur génère des journaux techniques (adresse IP, date, page consultée)
+          nécessaires à son fonctionnement et à sa sécurité ; ces journaux ne sont pas exploités par
+          LabEvents à d'autres fins.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">11. Cookies et traceurs</h2>
+        <p class="mt-2">
+          Le site salonemploi.nc <strong>ne dépose aucun cookie ni traceur nécessitant votre
+          consentement</strong> : il n'intègre ni outil de mesure d'audience (Google Analytics ou
+          équivalent), ni publicité ciblée, ni réseau social. Aucune bannière de consentement
+          « cookies » n'est donc affichée, faute de traceur à ce jour.
+        </p>
+        <p class="mt-2">
+          La sélection d'offres avant candidature (point 2) est conservée uniquement dans l'adresse
+          de la page, sans aucun cookie ni stockage du navigateur.
+        </p>
+        <p class="mt-2">
+          Une fois le formulaire de candidature activé, la page <code>/candidater</code> chargera le
+          script du prestataire Tally (tally.so), qui peut déposer ses propres cookies techniques
+          nécessaires au fonctionnement du formulaire intégré. Cette page sera mise à jour en
+          conséquence à l'activation du formulaire, le cas échéant.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">12. Vos droits</h2>
+        <p class="mt-2">
+          Conformément à la loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers
+          et aux libertés (dite « loi Informatique et Libertés »), applicable en Nouvelle-Calédonie,
+          vous disposez d'un droit d'accès, de rectification, d'effacement et de limitation
+          concernant les données vous concernant, ainsi que du droit de retirer à tout moment votre
+          consentement lorsque le traitement en repose.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">13. Comment exercer vos droits</h2>
+        <p class="mt-2">
+          Pour exercer ces droits, écrivez à
+          <a href="mailto:labevents@icloud.com" class="font-semibold text-marine underline hover:text-village"
+            >labevents@icloud.com</a
+          >
+          en précisant votre demande. Une copie d'une pièce d'identité pourra vous être demandée en
+          cas de doute raisonnable sur votre identité.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">14. Réclamation auprès de l'autorité compétente</h2>
+        <p class="mt-2">
+          La loi Informatique et Libertés (loi n° 78-17 du 6 janvier 1978 modifiée) s'applique
+          pleinement en Nouvelle-Calédonie : depuis le 1er juin 2019, ce territoire bénéficie du
+          même régime de protection des données que la métropole. Le règlement général sur la
+          protection des données (RGPD) n'est pas directement applicable en droit dans certains
+          territoires d'outre-mer, dont la Nouvelle-Calédonie, mais ses règles s'y appliquent par
+          les renvois exprès que la loi Informatique et Libertés y opère elle-même — il ne s'agit
+          donc pas d'une absence de protection, mais d'un mode d'application indirect. La
+          <strong>Commission nationale de l'informatique et des libertés (CNIL)</strong> est
+          l'autorité de contrôle compétente, y compris pour les organismes établis en
+          Nouvelle-Calédonie. Vous pouvez introduire une réclamation auprès d'elle :
+          <a
+            href="https://www.cnil.fr/fr/plaintes"
+            class="font-semibold text-marine underline hover:text-village"
+            target="_blank"
+            rel="noopener noreferrer">cnil.fr/fr/plaintes</a
+          >.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">15. Mise à jour de cette politique</h2>
+        <p class="mt-2">
+          Cette politique peut être mise à jour, notamment lors de l'activation du formulaire de
+          candidature Tally. La date de dernière mise à jour figure en haut de cette page.
+        </p>
+      </section>
     </div>
   </section>
 </BaseLayout>
