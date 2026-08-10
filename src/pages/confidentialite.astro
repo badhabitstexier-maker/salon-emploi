@@ -56,10 +56,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           à votre question concernant le salon.
         </p>
         <p class="mt-2">
-          <strong>Base légale :</strong> les mesures que vous nous demandez de prendre à votre
-          initiative avant une éventuelle réservation de stand (démarche précontractuelle), et,
-          pour le traitement de votre demande, votre accord donné via la case à cocher du
-          formulaire.
+          <strong>Base légale :</strong> l'exécution de mesures précontractuelles prises à votre
+          initiative, en vue d'un éventuel partenariat ou d'une réservation de stand (ou, pour la
+          question visiteur, en vue de répondre à une démarche que vous engagez vous-même auprès
+          de LabEvents). La case à cocher du formulaire ne constitue pas une base légale distincte
+          : elle atteste que vous avez pris connaissance de la présente politique de
+          confidentialité avant l'envoi de votre demande.
         </p>
 
         <h3 class="mt-4 font-titre text-lg font-bold text-marine" id="candidatures">
@@ -78,17 +80,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           professionnelle actuelle, votre projet professionnel (poste recherché, secteurs, type de
           contrat, disponibilité, mobilité), vos compétences, langues, permis et habilitations,
           votre CV (fichier PDF), un texte libre de présentation de votre candidature, le choix
-          d'au maximum 5 offres ou entreprises du salon, ainsi que les cases de consentement
-          décrites au point 5 ci-dessous.
+          d'au maximum 5 offres ou entreprises du salon, ainsi que les cases décrites au point 9
+          ci-dessous.
         </p>
         <p class="mt-2">
           <strong>Finalité :</strong> vous mettre en relation avec les exposants correspondant à
           votre sélection et, si vous le souhaitez, avec d'autres exposants du salon.
         </p>
         <p class="mt-2">
-          <strong>Base légale :</strong> votre consentement, recueilli au moment du dépôt de la
-          candidature (voir point 5).
+          <strong>Base légale :</strong> le fondement diffère selon la destination des données
+          (voir le détail au point 9) :
         </p>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          <li>
+            transmission de votre candidature aux exposants correspondant aux offres que vous avez
+            sélectionnées : mesures précontractuelles prises à votre initiative, puisque c'est
+            vous qui demandez au site de vous mettre en relation avec les exposants de votre
+            choix ;
+          </li>
+          <li>
+            orientation facultative de votre candidature vers d'autres exposants du salon
+            (« vivier ») : votre consentement, spécifique, libre et distinct, donné par une case
+            non cochée par défaut.
+          </li>
+        </ul>
 
         <h3 class="mt-4 font-titre text-lg font-bold text-marine">Sélection d'offres avant candidature</h3>
         <p class="mt-2">
@@ -130,17 +145,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <ul class="mt-2 list-inside list-disc space-y-2">
           <li>
             <strong>Web3Forms</strong> — utilisé par le formulaire « Exposer ». Il transmet le
-            contenu du formulaire par email à LabEvents. Web3Forms indique conserver les
-            soumissions temporairement sur ses propres serveurs (situés aux États-Unis) avant
-            suppression automatique, selon sa propre politique de confidentialité, consultable sur
+            contenu du formulaire par email à LabEvents. Web3Forms est édité par une société basée
+            en Inde ; sa politique de confidentialité indique recourir à plusieurs sous-traitants
+            d'infrastructure (hébergement et sécurité, notamment AWS, Cloudflare et Hetzner),
+            susceptibles de traiter des données dans différents pays selon les besoins techniques.
+            Sur la durée de conservation des soumissions, les informations publiées par Web3Forms
+            ne sont pas parfaitement concordantes d'une page à l'autre de son site : ses pages
+            commerciales indiquent une conservation de 30 jours pour le plan gratuit et d'un an
+            pour le plan payant, tandis que sa politique de confidentialité prévoit une
+            conservation pouvant atteindre 3 ans au maximum, sauf durée plus courte propre au plan
+            souscrit ou suppression anticipée. Le plan Web3Forms effectivement souscrit par
+            LabEvents n'est pas déterminable depuis le dépôt, alors qu'il conditionne la durée
+            réelle appliquée :
+            {'[À CONFIRMER PAR PHILIPPE]'}. Sources consultées :
             <a
               href="https://web3forms.com/privacy"
               class="font-semibold text-marine underline hover:text-village"
               target="_blank"
               rel="noopener noreferrer">web3forms.com/privacy</a
-            >. Le plan Web3Forms souscrit par LabEvents (gratuit ou payant) détermine la durée
-            exacte de cette conservation côté prestataire :
-            {'[À CONFIRMER PAR PHILIPPE]'}.
+            >
+            et
+            <a
+              href="https://web3forms.com/pricing"
+              class="font-semibold text-marine underline hover:text-village"
+              target="_blank"
+              rel="noopener noreferrer">web3forms.com/pricing</a
+            >.
           </li>
           <li>
             <strong>Tally</strong> — prévu pour le futur formulaire de candidature. Tally indique
@@ -184,8 +214,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <section>
         <h2 class="font-titre text-xl font-bold uppercase text-marine">7. Transferts de données hors Nouvelle-Calédonie</h2>
         <p class="mt-2">
-          Web3Forms héberge ses serveurs aux États-Unis : les données du formulaire « Exposer »
-          transitent donc par ce pays avant transmission par email à LabEvents. Tally indique
+          Web3Forms, société basée en Inde, s'appuie sur des sous-traitants techniques
+          (hébergement, sécurité) susceptibles de traiter des données dans plusieurs pays hors
+          Nouvelle-Calédonie et hors Union européenne, selon les informations publiées par ce
+          prestataire (voir point 5) : les données du formulaire « Exposer » transitent donc par
+          un ou plusieurs pays tiers avant transmission par email à LabEvents. Tally indique
           héberger les données de formulaire en Europe. Aucun autre transfert de données n'est
           effectué par le site.
         </p>
@@ -213,24 +246,41 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </section>
 
       <section>
-        <h2 class="font-titre text-xl font-bold uppercase text-marine">9. Consentement au dépôt de candidature</h2>
+        <h2 class="font-titre text-xl font-bold uppercase text-marine">
+          9. Transmission de candidature et vivier facultatif
+        </h2>
         <p class="mt-2">
-          Lorsque le formulaire de candidature sera activé, deux cases de consentement distinctes
-          seront proposées :
+          Lorsque le formulaire de candidature sera activé, deux cases distinctes seront
+          proposées, avec des fondements juridiques différents :
         </p>
         <ul class="mt-2 list-inside list-disc space-y-1">
           <li>
-            une case <strong>obligatoire</strong>, nécessaire pour que votre candidature soit
-            transmise aux exposants correspondant aux offres que vous avez sélectionnées ;
+            une case <strong>obligatoire</strong> pour que votre candidature soit transmise aux
+            exposants correspondant aux offres que vous avez sélectionnées. Cette transmission
+            étant la mesure précontractuelle que vous demandez vous-même au site (voir point 2),
+            cette case a vocation à vous informer et à recueillir la preuve de cette information,
+            plutôt qu'à constituer un consentement au sens strict, qui n'est pas requis pour cette
+            finalité ;
           </li>
           <li>
             une case <strong>facultative et distincte</strong>, non cochée par défaut, pour
             autoriser LabEvents à orienter votre candidature vers d'autres exposants du salon dont
-            les besoins correspondent à votre profil, au-delà de votre sélection initiale.
+            les besoins correspondent à votre profil, au-delà de votre sélection initiale. Cette
+            case constitue, elle, un véritable consentement libre et spécifique, révocable à tout
+            moment.
           </li>
         </ul>
+        <p class="mt-2 text-sm text-encre/70">
+          Point de vigilance : la conception initiale du formulaire prévoyait de présenter la
+          première case comme un « consentement obligatoire ». Une fois le formulaire de
+          candidature effectivement construit dans l'outil Tally, il conviendra de vérifier que
+          son libellé reflète cette qualification (information/prise de connaissance plutôt que
+          consentement), à l'image de la modification déjà appliquée aux cases du formulaire
+          « Exposer ».
+        </p>
         <p class="mt-2">
-          Vous pouvez à tout moment revenir sur ces consentements en écrivant à
+          Vous pouvez à tout moment revenir sur le consentement facultatif au vivier, ou vous
+          opposer à la transmission ciblée avant son envoi effectif, en écrivant à
           <a href="mailto:labevents@icloud.com" class="font-semibold text-marine underline hover:text-village"
             >labevents@icloud.com</a
           >.
@@ -295,10 +345,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <section>
         <h2 class="font-titre text-xl font-bold uppercase text-marine">14. Réclamation auprès de l'autorité compétente</h2>
         <p class="mt-2">
-          La Nouvelle-Calédonie n'étant pas soumise directement au droit de l'Union européenne, le
-          règlement général sur la protection des données (RGPD) ne s'y applique pas en tant que tel
-          ; c'est la loi Informatique et Libertés, qui reprend une partie de ses principes par
-          renvoi exprès, qui s'applique intégralement sur le territoire depuis le 1er juin 2019. La
+          La loi Informatique et Libertés (loi n° 78-17 du 6 janvier 1978 modifiée) s'applique
+          pleinement en Nouvelle-Calédonie : depuis le 1er juin 2019, ce territoire bénéficie du
+          même régime de protection des données que la métropole. Le règlement général sur la
+          protection des données (RGPD) n'est pas directement applicable en droit dans certains
+          territoires d'outre-mer, dont la Nouvelle-Calédonie, mais ses règles s'y appliquent par
+          les renvois exprès que la loi Informatique et Libertés y opère elle-même — il ne s'agit
+          donc pas d'une absence de protection, mais d'un mode d'application indirect. La
           <strong>Commission nationale de l'informatique et des libertés (CNIL)</strong> est
           l'autorité de contrôle compétente, y compris pour les organismes établis en
           Nouvelle-Calédonie. Vous pouvez introduire une réclamation auprès d'elle :
