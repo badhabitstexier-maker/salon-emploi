@@ -54,15 +54,34 @@ test('VISIBILITES_DATA_DIR_DEFAUT : la constante PHP porte le placeholder, jamai
   assert.doesNotMatch(contenu, CHEMIN_OVH_INTERDIT, `${FICHIER_DATA_DIR} ne doit plus contenir de chemin OVH en dur`);
 });
 
-test('les deux workflows de déploiement substituent bien les deux placeholders avant le transfert FTP', async () => {
+test('les deux workflows lisent les variables GitHub via env:, jamais interpolées directement dans un script shell', async () => {
   for (const workflow of ['.github/workflows/deploy-preprod.yml', '.github/workflows/deploy-production.yml']) {
     const contenu = await lire(workflow);
-    assert.match(contenu, /vars\.VISIBILITES_AUTH_USER_FILE/, `${workflow} doit lire la variable VISIBILITES_AUTH_USER_FILE`);
-    assert.match(contenu, /vars\.VISIBILITES_DATA_DIR/, `${workflow} doit lire la variable VISIBILITES_DATA_DIR`);
-    assert.match(contenu, new RegExp(AUTH_PLACEHOLDER), `${workflow} doit substituer ${AUTH_PLACEHOLDER}`);
-    assert.match(contenu, new RegExp(DATA_DIR_PLACEHOLDER), `${workflow} doit substituer ${DATA_DIR_PLACEHOLDER}`);
+    // Les valeurs doivent transiter par `env:` (le shell les lit ensuite via
+    // $VISIBILITES_..., jamais collées telles quelles dans le texte du script) —
+    // voir historique : une expression ${{ vars.* }} interpolée directement dans
+    // un script `sed` cassait la commande si la valeur contenait un CR/LF.
+    assert.match(
+      contenu,
+      /VISIBILITES_AUTH_USER_FILE:\s*\$\{\{\s*vars\.VISIBILITES_AUTH_USER_FILE\s*\}\}/,
+      `${workflow} doit passer VISIBILITES_AUTH_USER_FILE via env:`,
+    );
+    assert.match(
+      contenu,
+      /VISIBILITES_DATA_DIR:\s*\$\{\{\s*vars\.VISIBILITES_DATA_DIR\s*\}\}/,
+      `${workflow} doit passer VISIBILITES_DATA_DIR via env:`,
+    );
 
-    const indexInjection = contenu.indexOf(AUTH_PLACEHOLDER);
+    // Plus aucune trace de l'ancienne interpolation directe dans un script sed.
+    assert.doesNotMatch(contenu, /sed -i/, `${workflow} ne doit plus utiliser sed pour cette injection`);
+
+    assert.match(
+      contenu,
+      /node scripts\/inject-visibilite-config\.mjs/,
+      `${workflow} doit appeler scripts/inject-visibilite-config.mjs`,
+    );
+
+    const indexInjection = contenu.indexOf('inject-visibilite-config.mjs');
     const indexFtp = contenu.indexOf('FTP-Deploy-Action');
     assert.ok(indexInjection !== -1 && indexFtp !== -1 && indexInjection < indexFtp, `${workflow} doit injecter la configuration Visibilité AVANT le transfert FTP`);
   }
