@@ -34,6 +34,30 @@ jobs:
           # "preprod", pas un secret — à créer dans Settings → Environments → preprod → Variables.
           PUBLIC_TALLY_CANDIDATURE_URL: ${{ vars.PUBLIC_TALLY_CANDIDATURE_URL }}
 
+      - name: Injecter la configuration Visibilité (Auth + dossier de données) — préprod
+        # Séparation préprod/production faite AU BUILD, jamais par détection runtime
+        # d'environnement Apache (voir docs/VISIBILITE.md section 15.9) : les fichiers
+        # commités ne portent que des placeholders (__VISIBILITES_AUTH_USER_FILE__,
+        # __VISIBILITES_DATA_DIR__), remplacés ici par les valeurs propres à
+        # l'environnement GitHub "preprod" (Settings → Environments → preprod → Variables).
+        # Ni l'un ni l'autre n'est un secret sensible (un chemin, pas un mot de passe),
+        # mais rester hors Git évite qu'une même valeur soit réutilisée par erreur pour
+        # les deux environnements.
+        run: |
+          set -euo pipefail
+          AUTH_FILE="${{ vars.VISIBILITES_AUTH_USER_FILE }}"
+          DATA_DIR="${{ vars.VISIBILITES_DATA_DIR }}"
+          if [ -z "$AUTH_FILE" ] || [ -z "$DATA_DIR" ]; then
+            echo "::error::VISIBILITES_AUTH_USER_FILE ou VISIBILITES_DATA_DIR manquant dans les variables de l'environnement GitHub preprod."
+            exit 1
+          fi
+          sed -i "s#__VISIBILITES_AUTH_USER_FILE__#${AUTH_FILE}#g" dist/admin/.htaccess dist/admin-api/.htaccess
+          sed -i "s#__VISIBILITES_DATA_DIR__#${DATA_DIR}#g" dist/api/_visibilites-lib.php
+          if grep -rl "__VISIBILITES_" dist/ ; then
+            echo "::error::Placeholder Visibilité non substitué détecté dans dist/ — déploiement annulé."
+            exit 1
+          fi
+
       - name: Déployer le contenu de dist/ vers OVH (FTP)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:

@@ -11,7 +11,10 @@
 | Environnement | URL | Déploiement | Déclencheur |
 |---|---|---|---|
 | Préproduction | `https://preprod.salonemploinc.com` | Automatique | Chaque fusion sur `main` |
-| Production | `https://www.salonemploi.nc` | Manuel | Déclenchement depuis l'onglet Actions |
+| Production | `https://salonemploi.nc` | Manuel | Déclenchement depuis l'onglet Actions |
+
+> Domaine canonique de production : `salonemploi.nc` (décision du 10/08/2026, remplace `www.salonemploi.nc`).
+> `www.salonemploi.nc` doit rediriger en 301 vers `https://salonemploi.nc` — voir section 4 et section 7bis.
 
 ---
 
@@ -57,13 +60,18 @@ Les variables vivent **exclusivement** dans les environnements GitHub (Settings 
 
 | Variable | Préprod | Production |
 |---|---|---|
-| `PUBLIC_SITE_URL` | `https://preprod.salonemploinc.com` | `https://www.salonemploi.nc` |
+| `PUBLIC_SITE_URL` | `https://preprod.salonemploinc.com` | `https://salonemploi.nc` (domaine canonique, sans `www.` — décision du 10/08/2026) |
 | `PUBLIC_NOINDEX` | `true` | absent (ou `false`) |
 | `PUBLIC_WEB3FORMS_ACCESS_KEY` | clé Web3Forms | même clé |
+| `PUBLIC_TALLY_CANDIDATURE_URL` | URL Tally (variable, pas un secret) | **volontairement non câblée dans `deploy-production.yml`** tant que Philippe n'a pas validé la recette en préproduction — voir `docs/CANDIDATURES_TALLY.md` section 7 |
 | `FTP_HOST` | serveur FTP OVH | même serveur |
 | `FTP_USERNAME` | identifiant FTP | identifiant FTP prod |
 | `FTP_PASSWORD` | mot de passe FTP | mot de passe FTP prod |
 | `FTP_REMOTE_DIR` | `/salon-emploi-preprod` | dossier racine prod |
+| `VISIBILITES_AUTH_USER_FILE` | chemin OVH du `.htpasswd` préprod (variable, pas un secret) | chemin OVH du `.htpasswd` **production**, distinct — voir `docs/VISIBILITE.md` section 15.9 |
+| `VISIBILITES_DATA_DIR` | dossier de données Visibilité préprod, hors webroot (variable) | dossier de données Visibilité **production**, distinct, hors webroot — voir `docs/VISIBILITE.md` section 15.9 |
+
+`VISIBILITES_AUTH_USER_FILE` et `VISIBILITES_DATA_DIR` sont des **variables** GitHub (Settings → Environments → *env* → Variables), pas des secrets : ce sont des chemins, pas des mots de passe. Elles sont injectées dans `dist/` par chaque workflow de déploiement juste avant le transfert FTP, en remplacement des placeholders `__VISIBILITES_AUTH_USER_FILE__` / `__VISIBILITES_DATA_DIR__` commités dans `public/admin/.htaccess`, `public/admin-api/.htaccess` et `public/api/_visibilites-lib.php` — voir `docs/VISIBILITE.md` section 15.9 pour l'architecture complète.
 
 **Comportement selon l'environnement :**
 
@@ -132,10 +140,14 @@ Vérifier sur `https://preprod.salonemploinc.com` :
 À faire uniquement quand `salonemploi.nc` est configuré sur OVH et prêt.
 
 1. Créer l'environnement `production` sur GitHub (Settings → Environments).
-2. Y ajouter les 7 secrets avec les valeurs de production.
+2. Y ajouter les secrets et variables listés en section 4 (secrets FTP/Web3Forms/`PUBLIC_SITE_URL`, variables `VISIBILITES_AUTH_USER_FILE`/`VISIBILITES_DATA_DIR`), avec les valeurs de production — jamais les mêmes valeurs que l'environnement `preprod`.
 3. Vérifier que `main` est validé sur la préprod.
 4. Aller dans l'onglet **Actions** → workflow **"Déployer en production (manuel)"** → **Run workflow**.
-5. Vérifier sur `https://www.salonemploi.nc`.
+5. Vérifier sur `https://salonemploi.nc`.
+
+## 7bis. Redirection `www.salonemploi.nc` → `salonemploi.nc`
+
+`salonemploi.nc` est le domaine canonique de production (décision du 10/08/2026). `www.salonemploi.nc` doit exister en DNS et rediriger en 301 vers `https://salonemploi.nc` — configuration DNS/Apache OVH, en dehors de ce dépôt et de tout workflow GitHub Actions. Voir le compte rendu de préparation production pour la procédure exacte à réaliser manuellement par Philippe.
 
 ---
 

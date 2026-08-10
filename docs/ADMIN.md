@@ -68,19 +68,26 @@ fois le socle sécurisé validé en conditions réelles (voir section 5).
 ### 4.1 Ce qui est commité
 
 `public/admin/.htaccess` — ne contient **aucun secret**, uniquement les
-directives Apache :
+directives Apache, avec un **placeholder** à la place du chemin réel :
 
 ```apache
 AuthType Basic
 AuthName "Acces reserve LabEvents"
-AuthUserFile /home/salonez/.htpasswd-salonemploi-preprod
+AuthUserFile __VISIBILITES_AUTH_USER_FILE__
 Require valid-user
 ```
 
-Chemin confirmé pour la **préproduction** (compte OVH `salonez`, racine du
-site `/home/salonez/salon-emploi-preprod`). Ce chemin est propre à cet
-environnement — à vérifier/adapter séparément le jour où la production
-sera mise en place (voir 4.3 et 4.4).
+**Depuis la séparation préprod/production au build (10/08/2026)** :
+`__VISIBILITES_AUTH_USER_FILE__` n'est jamais un chemin réel dans ce dépôt.
+Chaque workflow de déploiement (`deploy-preprod.yml`, `deploy-production.yml`)
+le remplace dans `dist/`, juste avant le transfert FTP, par la valeur de la
+variable d'environnement GitHub `VISIBILITES_AUTH_USER_FILE` propre à
+l'environnement concerné (Settings → Environments → *preprod* ou
+*production* → Variables) — voir `docs/VISIBILITE.md` section 15.9 pour
+l'architecture complète et `scripts/visibilites-deploy-config.test.mjs` pour
+le test qui garantit que ce fichier ne redevient jamais un chemin en dur.
+Ce mécanisme protège aussi `public/admin-api/.htaccess` (même placeholder,
+voir 4.3bis).
 
 ### 4.2 Ce qui n'est JAMAIS commité
 
@@ -114,17 +121,23 @@ Réalisées par Philippe, hors du dépôt :
 1. ✅ Chemin absolu du compte confirmé : `/home/salonez`.
 2. ✅ `.htpasswd` créé et transféré : `/home/salonez/.htpasswd-salonemploi-preprod`
    (54 octets, permissions 644).
-3. ✅ `AuthUserFile` mis à jour dans `public/admin/.htaccess` avec ce chemin.
+3. ✅ Chemin renseigné dans la variable d'environnement GitHub
+   `VISIBILITES_AUTH_USER_FILE` de l'environnement `preprod` (depuis la
+   séparation préprod/production au build du 10/08/2026 — voir section 4.1 :
+   `public/admin/.htaccess` ne porte plus de chemin en dur, seulement un
+   placeholder substitué par le workflow de déploiement).
 4. ⬜ **Reste à vérifier avant test réel** : HTTPS actif sur
    `https://preprod.salonemploinc.com/admin` — l'authentification HTTP
    Basic transmet les identifiants encodés (pas chiffrés) à chaque
    requête ; sans HTTPS ce serait une fuite en clair.
 
-**Production** : ce chemin (`/home/salonez/...`) est propre à
-l'environnement de préproduction. Le jour où la production sera mise en
-place, vérifier si elle partage le même compte d'hébergement ou un compte
-distinct avant de réutiliser un chemin identique ou non pour son propre
-`.htpasswd`.
+**Production** : un `.htpasswd` **distinct** de celui de préprod, créé et
+transféré séparément côté OVH (même compte ou compte différent, selon
+l'hébergement), avec son propre chemin renseigné dans la variable
+`VISIBILITES_AUTH_USER_FILE` de l'environnement GitHub `production` — jamais
+la même valeur que `preprod`. Voir `docs/VISIBILITE.md` section 15.9 pour
+l'ensemble des actions manuelles production (`.htpasswd` + dossier de
+données).
 
 ### 4.5 Changer un mot de passe
 
