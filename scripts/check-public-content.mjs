@@ -34,6 +34,11 @@ const REGLES = [
   { nom: "Maison de l'Artisanat (dénomination abandonnée)", regex: /Maison de l['’]Artisanat/gi },
   { nom: '40 emplacements (ancienne capacité, remplacée par 37)', regex: /40\s+emplacements/gi },
   { nom: '270 000 habitants (ancienne population, remplacée par 260 000)', regex: /270\s?000\s+habitants/gi },
+  {
+    nom: 'Montant tarifaire (décision LabEvents du 10/08/2026 : tarifs retirés du site public)',
+    regex: /\b(82\s?500|105\s?000|125\s?000|95\s?000|20\s?000|8\s?000|7\s?000)\s*F(\s*(HT|CFP))?\b/gi,
+  },
+  { nom: 'Mention « Tarif » / « grille tarifaire » (décision LabEvents du 10/08/2026)', regex: /grille tarifaire|\btarif(s|s HT)?\b/gi },
 ];
 
 async function listerFichiers(dossier) {

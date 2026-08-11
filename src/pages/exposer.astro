@@ -59,7 +59,6 @@ const formules = [
   {
     valeur: 'standard',
     nom: 'Standard',
-    tarif: '82 500 F HT',
     items: [
       'Emplacement d’exposition équipé pendant les deux journées',
       'Panneaux de séparation',
@@ -74,7 +73,6 @@ const formules = [
     valeur: 'silver',
     nom: 'Silver',
     sousTitre: 'Exposant partenaire',
-    tarif: '105 000 F HT',
     disponibilite: '4 formules maximum sur l’ensemble du salon',
     intro: 'Comprend les prestations Standard, plus :',
     items: [
@@ -93,7 +91,6 @@ const formules = [
     valeur: 'gold',
     nom: 'Gold',
     sousTitre: 'Partenaire premium',
-    tarif: '125 000 F HT',
     disponibilite: '2 formules maximum sur l’ensemble du salon',
     intro: 'Comprend les prestations Silver, avec une visibilité renforcée :',
     items: [
@@ -114,10 +111,9 @@ const formules = [
 ];
 
 const comparatif = [
-  { critere: 'Tarif HT', standard: '82 500 F', silver: '105 000 F', gold: '125 000 F' },
   { critere: 'Formules disponibles', standard: '—', silver: '4 maximum', gold: '2 maximum' },
   { critere: 'Offres publiées', standard: '5 maximum', silver: '10 maximum', gold: 'Sans plafond prédéfini' },
-  { critere: 'Accès profils compatibles', standard: 'Option +20 000 F HT', silver: 'Inclus', gold: 'Inclus' },
+  { critere: 'Accès profils compatibles', standard: 'Option sur demande', silver: 'Inclus', gold: 'Inclus' },
   { critere: 'Créneau ateliers-conférences', standard: '—', silver: '30 minutes', gold: '2 créneaux, dont 1 prioritaire' },
   { critere: 'Visibilité digitale', standard: 'Fiche essentielle', silver: 'Fiche enrichie + bandeau standard', gold: 'Vitrine premium + bandeau prioritaire' },
 ];
@@ -150,7 +146,7 @@ const contenuDossier = [
 ];
 
 const repartitionProfils = [
-  { formule: 'Standard', valeur: 'Option 20 000 F HT' },
+  { formule: 'Standard', valeur: 'Option sur demande' },
   { formule: 'Silver', valeur: 'Inclus' },
   { formule: 'Gold', valeur: 'Inclus' },
 ];
@@ -167,7 +163,6 @@ const equipementEmplacement = [
 const optionsComplementaires = [
   {
     nom: 'Affiche de stand',
-    tarif: '8 000 F HT',
     items: [
       'Format 110 × 145 cm',
       'Impression comprise',
@@ -177,12 +172,10 @@ const optionsComplementaires = [
   },
   {
     nom: 'Barnum extérieur',
-    tarif: '7 000 F HT',
     items: ['Format 3 × 3 m', 'Sous réserve de disponibilité', 'Sous réserve de validation de l’activité et des contraintes techniques'],
   },
   {
     nom: 'Partenaire de l’espace ateliers-conférences',
-    tarif: '95 000 F HT',
     disponibilite: 'Partenariat unique — une seule formule disponible sur l’ensemble du salon.',
     description: 'Associez votre marque à l’ensemble de la programmation de l’espace ateliers-conférences.',
     typeDemande: 'ateliers-conferences',
@@ -348,7 +341,6 @@ const labelClass = 'block text-sm font-semibold text-marine';
             >
               <h3 class="font-titre text-2xl font-bold uppercase leading-tight text-marine">{formule.nom}</h3>
               {formule.sousTitre && <p class="mt-1 text-sm font-semibold text-encre/70">{formule.sousTitre}</p>}
-              <p class="mt-3 font-titre text-2xl font-bold text-village-dark">{formule.tarif}</p>
               {formule.disponibilite && (
                 <p class="mt-1 text-xs font-bold uppercase tracking-wide text-orange-dark">{formule.disponibilite}</p>
               )}
@@ -436,7 +428,8 @@ const labelClass = 'block text-sm font-semibold text-marine';
         </table>
       </div>
       <p class="mt-4 text-xs text-encre/70">
-        Détail complet des prestations dans les formules ci-dessus. Tarifs exprimés hors taxes.
+        Détail complet des prestations dans les formules ci-dessus. Contactez-nous pour recevoir
+        une proposition adaptée à votre participation.
       </p>
     </div>
   </section>
@@ -573,7 +566,6 @@ const labelClass = 'block text-sm font-semibold text-marine';
           optionsComplementaires.map((option) => (
             <article class="flex flex-col rounded-2xl border border-marine/15 bg-blanc p-6">
               <h3 class="font-titre text-xl font-bold uppercase leading-tight text-marine">{option.nom}</h3>
-              <p class="mt-2 font-titre text-xl font-bold text-village-dark">{option.tarif}</p>
               {option.disponibilite && (
                 <p class="mt-1 text-xs font-bold uppercase tracking-wide text-orange-dark">{option.disponibilite}</p>
               )}
@@ -902,8 +894,8 @@ const labelClass = 'block text-sm font-semibold text-marine';
         Pack commercial exposants 2026
       </h2>
       <p class="mx-auto mt-4 max-w-xl text-encre">
-        Retrouvez l'ensemble des formules, tarifs et modalités dans un document unique à
-        télécharger et partager en interne.
+        Retrouvez l'ensemble des formules et modalités dans un document unique à télécharger et
+        partager en interne.
       </p>
 
       <div class="mx-auto mt-8 flex max-w-md items-center justify-between gap-4 rounded-2xl border border-marine/15 bg-brume px-5 py-4">
