@@ -11,7 +11,7 @@ const { title, description, noindex: noindexForce = false } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const siteName = "Salon de l'Emploi & de la Formation 2026";
-const ogImage = new URL('/og-image.jpg', Astro.site);
+const ogImage = new URL('/og-image.png', Astro.site);
 
 /*
   Préproduction (PUBLIC_NOINDEX=true) : on bloque l'indexation sans casser le
@@ -32,8 +32,11 @@ const noindex = noindexForce || import.meta.env.PUBLIC_NOINDEX === 'true';
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonicalURL} />
 <meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
 <meta property="og:locale" content="fr_FR" />
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={`${title} | ${siteName}`} />
 <meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
