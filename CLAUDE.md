@@ -37,6 +37,15 @@
 > publiées et accessibles par URL directe et depuis la fiche de leur exposant démo, mais
 > n'apparaissent plus dans le catalogue.
 >
+>
+> **Amendements du 3 septembre 2026 (audit de sécurité, sections 9/12/14/16/17)** : audit complet du
+> site mené en deux passes (revue de code + vérification externe de la production). Quatre constats
+> corrigés et déployés en production — injection HTML dans les blocs `<script>` inline (PR #59),
+> validation des URL des campagnes Visibilité (PR #60), épinglage des actions GitHub par SHA
+> (PR #61), et levée du doute sur `$_SERVER['HTTPS']`. Le point 8 de la section 16 (vérification
+> OVH/DNS) est réglé. **État complet des constats, corrigés comme ouverts, dans `docs/SECURITE.md`**
+> — un seul chantier reste ouvert, les en-têtes de sécurité HTTP.
+>
 > **Amendement du 10 août 2026 (correction de conception, sections 15)** : le champ `demo` sur la
 > collection `offres` ne pilote plus la visibilité catalogue — deux champs désormais
 > indépendants, chacun une seule responsabilité (voir `docs/OFFRES.md` section 4bis) : `demo`
@@ -210,7 +219,7 @@ e2e/            → suite Playwright (voir section 13)
 ## 9. Workflow Git / PR / déploiement
 
 1. Développement sur une branche dédiée, PR ouverte vers `main`.
-2. Contrôle automatique bloquant : `pr-check.yml` (`npm run build` doit réussir) et `qa.yml` (suite Playwright, voir section 13) — fusion bloquée sinon (protection de branche sur `main`). Le check `qa-e2e` bloque via son propre statut mais ne devient "required" au sens de la protection de branche que si un humain l'ajoute dans Settings → Branches — action manuelle, pas automatisable depuis le code.
+2. Contrôle automatique bloquant : `pr-check.yml` (`npm run build` doit réussir) et `qa.yml` (suite Playwright, voir section 13) — fusion bloquée sinon. **Les deux checks (`build-check` ET `qa-e2e`) sont "required" au sens de la protection de branche sur `main` depuis le 3 septembre 2026** (l'action manuelle dans Settings → Branches, longtemps en attente, a été faite). La protection interdit aussi le force-push et la suppression de `main`. Ni la protection de branche ni le caractère requis d'un check ne sont pilotables depuis le code : toute modification passe par les paramètres du dépôt.
 3. Fusion une fois les contrôles verts.
 4. La fusion sur `main` déclenche **automatiquement** `deploy-preprod.yml` (build + FTP vers OVH). Délai observé : de l'ordre de la minute.
 5. Recette visuelle **après** la fusion, sur la préproduction.
@@ -219,6 +228,12 @@ e2e/            → suite Playwright (voir section 13)
 8. Passage en production **strictement manuel** : déclenchement de `deploy-production.yml` depuis l'onglet Actions.
 
 ⚠️ **Piège vérifié en pratique** : une Pull Request peut être fusionnée avant qu'une session Claude Code n'ait fini de pousser tous ses commits sur la branche (fusion en squash notamment). Un commit poussé après la fusion n'est **pas** automatiquement inclus dans `main`. **Avant d'affirmer qu'un commit est en production/préproduction, toujours vérifier directement sur le dépôt distant** (`git fetch origin main`, comparer les SHA) plutôt que de supposer qu'un `git push` réussi suffit.
+
+**Actions GitHub épinglées par SHA** (audit de sécurité, `docs/SECURITE.md`) : chaque `uses:` des
+4 workflows référence un commit précis, jamais un tag — un tag reste déplaçable par le mainteneur de
+l'action, et `deploy-production.yml` lui confie les identifiants FTP de production. Contrepartie : un
+SHA figé ne reçoit plus les correctifs, la mise à jour est un geste explicite. Relever un nouveau SHA
+avec `gh api repos/<depot>/commits/<tag> -q .sha` — ne jamais recopier une valeur vue ailleurs.
 
 Les secrets (clé Web3Forms, identifiants FTP) et variables (`PUBLIC_SITE_URL`, `PUBLIC_NOINDEX`, `PUBLIC_TALLY_CANDIDATURE_URL`, `VISIBILITES_AUTH_USER_FILE`, `VISIBILITES_DATA_DIR`) vivent exclusivement dans les environnements GitHub `preprod` et `production` — jamais dans le code, un commit, ou un fichier de documentation. `VISIBILITES_AUTH_USER_FILE`/`VISIBILITES_DATA_DIR` sont des chemins serveur (variables, pas des secrets) injectés dans `dist/` par chaque workflow de déploiement, en remplacement de placeholders commités — voir section 12 et `docs/VISIBILITE.md` section 15.9. `PUBLIC_TALLY_CANDIDATURE_URL` n'est volontairement pas encore câblée dans `deploy-production.yml` (voir `docs/CANDIDATURES_TALLY.md` section 7) : en attente de validation de la recette en préproduction par Philippe.
 
@@ -292,6 +307,12 @@ C'est un module fonctionnel, pas un chantier en cours. Fonctionnement réel au c
 - **Affichage dynamique sans rebuild Astro** : la section est toujours rendue dans le HTML statique mais masquée par défaut (`hidden`) ; c'est `src/lib/visibilite-ui.ts` (client) qui interroge l'API publique au chargement et révèle la section si un candidat est éligible.
 - **Tirage pondéré au chargement** : un seul tirage par chargement de page, basé sur le champ `poids` de chaque campagne. **Le bandeau reste stable pendant toute la consultation — pas de carrousel, pas de rotation automatique dans le temps.** Les dates de début/fin sont réévaluées à chaque chargement côté client (une campagne peut démarrer ou expirer sans nouveau build).
 - **Pas d'analytics impressions/clics en V1** — aucune trace de tracking dans le code à ce jour.
+- **URL validées à l'écriture ET à la lecture** (audit de sécurité, `docs/SECURITE.md`) : `lien`,
+  `visuel` et `visuelMobile` n'acceptent que `http://`, `https://` ou un chemin interne (`/…`) —
+  `estUrlVisibiliteSure()`, présent en PHP (`_visibilites-lib.php`) **et** côté client
+  (`src/lib/visibilites.ts`). Ce doublon n'est pas une redondance : la validation d'écriture ne
+  rejoue jamais les enregistrements déjà présents dans `visibilites.json`, seul le contrôle client
+  protège le visiteur d'une campagne saisie avant ce correctif. Ne pas retirer l'un des deux.
 - **Fail-safe** : toute erreur de l'API publique renvoie une liste vide avec statut 200 — jamais d'erreur visible, jamais de page bloquée pour le visiteur.
 - Le module ne remplace ni ne concurrence le pipeline Offres/Exposants/Programme (section 10) — c'est une chaîne de données entièrement distincte.
 
@@ -326,7 +347,7 @@ Le dashboard et les vues exposants/offres exposent des indicateurs utiles (badge
 
 **Commandes réelles :**
 - `npm run build` — build Astro, bloquant en CI (`pr-check.yml`).
-- `npm run content:test` — enchaîne `offres:test`, `exposants:test`, `programme:test`, `visibilites:test` (tests unitaires Node natifs sur la logique pure) puis `content:check` (recherche de mentions obsolètes dans les sources publiques).
+- `npm run content:test` — enchaîne `offres:test`, `exposants:test`, `programme:test`, `visibilites:test`, `json-inline:test` (tests unitaires Node natifs sur la logique pure) puis `content:check` (recherche de mentions obsolètes dans les sources publiques).
 - `npm run visibilites:api-test` — tests Node natifs sur `public/api/_visibilites-lib.php` et les deux endpoints PHP (nécessite `php` en local ou en CI).
 - `npm run qa` (= `npm run qa:e2e` = `playwright test`) — suite E2E complète, deux projets (`chromium-desktop`, `chromium-mobile`), serveur de prévisualisation démarré automatiquement (`webServer` dans `playwright.config.ts`).
 
@@ -358,11 +379,12 @@ La production est ouverte depuis le premier déploiement. Les points ci-dessous 
 3. **Alimentation du programme réel** — la collection `programme` est vide ; `/programme` n'a aucun contenu à montrer en l'état.
 4. **Remplacement progressif des offres TEST par des offres réelles** — via le pipeline habituel (section 11). Décision confirmée : les 18 offres TEST **restent publiées** en production comme démonstration pour les exposants (dont les 6 exposants de démonstration, voir section 15), clairement identifiées (`TEST —`, message « Offre fictive de démonstration », `demo: true`, noindex, exclues du sitemap).
 5. **Câblage Tally production** — volontairement non fait tant que la recette Tally n'est pas validée : `PUBLIC_TALLY_CANDIDATURE_URL` absente de l'environnement `production`, donc `/candidater` affiche proprement « Le formulaire de candidature sera prochainement disponible » (pas d'iframe morte). Ne pas câbler sans feu vert de Philippe.
-6. **Image Open Graph `public/og-image.jpg`** — référencée par `src/components/Seo.astro` (`og:image` de toutes les pages publiques) mais **absente du dépôt** : l'aperçu au partage sur les réseaux sociaux est cassé (404). Sans impact sur l'indexation Google. À fournir : une image `1200×630` (JPG) déposée dans `public/og-image.jpg` — décision de contenu/graphisme (Philippe/ChatGPT).
+6. ~~**Image Open Graph**~~ — **FAIT** (PR #57/#58) : le fichier livré est `public/og-image.png` (et non `.jpg` comme annoncé ici jusqu'au 3 septembre 2026), correctement référencé par `src/components/Seo.astro`. Vérifié en production : `https://salonemploi.nc/og-image.png` répond 200 (604 ko, `image/png`) et la balise `og:image` de l'accueil pointe dessus.
 7. **Résolution ou validation du warning `public/images/hall-formation.webp`** — le build signale cette image manquante (repli automatique géré par `Visuel.astro`, donc pas bloquant, mais à trancher : fournir l'image ou confirmer que le repli est le comportement voulu).
-8. **Vérification manuelle OVH/Apache/DNS** — non vérifiable depuis une session Claude Code : que `www.salonemploi.nc` existe en DNS et pointe vers `salonemploi-prod` (pour que la règle 301 de `public/.htaccess` s'applique), et que la protection `.htpasswd` production est bien active.
-9. **Soumission à Google Search Console** — déclarer `https://salonemploi.nc` et soumettre le sitemap (`https://salonemploi.nc/sitemap-index.xml`) pour accélérer l'indexation (action manuelle hors dépôt).
-10. **Recette visuelle** — après chaque fusion sur la préprod (`https://preprod.salonemploinc.com`), et recette complète avant chaque déclenchement manuel de `deploy-production.yml`.
+8. ~~**Vérification manuelle OVH/Apache/DNS**~~ — **FAIT** (3 septembre 2026, audit de sécurité) : `www.salonemploi.nc` redirige bien en 301 vers l'apex, `/admin` et `/admin-api` répondent 401, `visibilites.json` est hors webroot (404). Détail et commandes de contrôle dans `docs/SECURITE.md` section 4.
+9. **En-têtes de sécurité HTTP** — seul constat de sécurité encore ouvert : le site ne renvoie aucun `Content-Security-Policy`, `X-Frame-Options`, `Referrer-Policy` ni HSTS (vérifié en production). Chantier délicat, à traiter en deux temps et à recetter en préproduction — voir `docs/SECURITE.md` section 3.
+10. **Soumission à Google Search Console** — déclarer `https://salonemploi.nc` et soumettre le sitemap (`https://salonemploi.nc/sitemap-index.xml`) pour accélérer l'indexation (action manuelle hors dépôt).
+11. **Recette visuelle** — après chaque fusion sur la préprod (`https://preprod.salonemploinc.com`), et recette complète avant chaque déclenchement manuel de `deploy-production.yml`.
 
 ---
 
@@ -376,6 +398,7 @@ La production est ouverte depuis le premier déploiement. Les points ci-dessous 
 - **Signaler toute contradiction entre une nouvelle demande et l'état réel du dépôt avant de coder** — ne pas la résoudre silencieusement en supposant une intention.
 - **Dry-run avant toute opération de contenu sensible** (import, publication, suppression) lorsqu'un mécanisme de dry-run existe (`--dry-run` sur les trois pipelines d'import) — ne jamais écrire directement sur la première tentative.
 - **Ne jamais publier une donnée fictive comme réelle** — en particulier, ne jamais présenter les offres TEST comme du contenu événementiel réel.
+- **Ne jamais écrire `set:html={JSON.stringify(...)}` dans une balise `<script>`** — utiliser `jsonInline()` (`src/lib/json-inline.ts`). `JSON.stringify` n'échappe pas `<` : une donnée contenant `</script>` referme la balise et le reste devient du DOM exécuté. Les champs concernés viennent du formulaire rempli par les exposants (section 10), donc d'une source tierce. Un garde-fou dans `scripts/json-inline.test.mjs` refuse ce motif — ne pas le contourner.
 - **Ne jamais exposer de secret côté client** — les clés/URL de formulaires tiers et identifiants FTP restent dans les environnements GitHub, jamais dans le code, un commit, ou une réponse en clair destinée à être committée.
 - **Distinguer systématiquement source de vérité amont et données publiques** (section 10) — ne jamais écrire directement dans `src/content/` en contournant un pipeline d'import quand ce pipeline existe.
 - **Avant d'affirmer qu'un commit est en ligne (préprod/prod), vérifier directement sur le dépôt distant** (section 9) — ne jamais se fier à un `git push` réussi seul.
