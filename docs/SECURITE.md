@@ -103,6 +103,15 @@ touche le système de fichiers (pas de traversée de chemin) · écriture atomiq
 sauvegarde `.bak` · fail-safe de l'API publique (liste vide en 200) · échappement des attributs HTML
 par Astro (`"` → `&quot;`, testé) · aucun secret dans l'historique Git.
 
+**Dispositif GitHub, mis en place le 3 septembre 2026** : alertes Dependabot activées (elles ont
+immédiatement remonté le constat n°8), alertes malware, mises à jour de sécurité et regroupement des
+mises à jour activés. Protection de branche sur `main` : **`build-check` ET `qa-e2e` sont tous deux
+requis** — l'action manuelle longtemps en attente (CLAUDE.md section 9) a été faite ; force-push et
+suppression de `main` interdits. Le dépôt est **public** : aucune obscurité ne protège le code, ce
+qui est tenable ici puisque aucun secret n'y est commité (vérifié), mais impose que
+l'authentification et la validation serveur restent les seuls remparts — les affaiblir n'est jamais
+compensé par la discrétion.
+
 **Production, vérifié le 3 septembre 2026 par `curl`** :
 
 | Contrôle | Résultat |

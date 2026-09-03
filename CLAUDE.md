@@ -219,7 +219,7 @@ e2e/            → suite Playwright (voir section 13)
 ## 9. Workflow Git / PR / déploiement
 
 1. Développement sur une branche dédiée, PR ouverte vers `main`.
-2. Contrôle automatique bloquant : `pr-check.yml` (`npm run build` doit réussir) et `qa.yml` (suite Playwright, voir section 13) — fusion bloquée sinon (protection de branche sur `main`). Le check `qa-e2e` bloque via son propre statut mais ne devient "required" au sens de la protection de branche que si un humain l'ajoute dans Settings → Branches — action manuelle, pas automatisable depuis le code.
+2. Contrôle automatique bloquant : `pr-check.yml` (`npm run build` doit réussir) et `qa.yml` (suite Playwright, voir section 13) — fusion bloquée sinon. **Les deux checks (`build-check` ET `qa-e2e`) sont "required" au sens de la protection de branche sur `main` depuis le 3 septembre 2026** (l'action manuelle dans Settings → Branches, longtemps en attente, a été faite). La protection interdit aussi le force-push et la suppression de `main`. Ni la protection de branche ni le caractère requis d'un check ne sont pilotables depuis le code : toute modification passe par les paramètres du dépôt.
 3. Fusion une fois les contrôles verts.
 4. La fusion sur `main` déclenche **automatiquement** `deploy-preprod.yml` (build + FTP vers OVH). Délai observé : de l'ordre de la minute.
 5. Recette visuelle **après** la fusion, sur la préproduction.
