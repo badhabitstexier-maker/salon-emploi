@@ -13,6 +13,7 @@ import {
   type Exposant,
 } from '../../lib/exposants';
 import { getOffresPubliees } from '../../lib/offres';
+import { jsonInline } from '../../lib/json-inline';
 
 export async function getStaticPaths() {
   const exposants = await getExposantsPublies();
@@ -320,7 +321,7 @@ const dateMiseAJour = data.date_mise_a_jour ? formateurDate.format(data.date_mis
         <script
           type="application/json"
           id="offres-disponibles-donnees"
-          set:html={JSON.stringify(
+          set:html={jsonInline(
             offres.map((offre) => ({
               reference: offre.data.reference,
               intitule: offre.data.intitule,

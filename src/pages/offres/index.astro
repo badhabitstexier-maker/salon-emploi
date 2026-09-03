@@ -14,6 +14,7 @@ import {
   typesContratDisponibles,
   niveauxFormationDisponibles,
 } from '../../lib/offres';
+import { jsonInline } from '../../lib/json-inline';
 
 /*
   Catalogue public : n'affiche que les offres avec `afficherCatalogue: true`
@@ -111,7 +112,7 @@ const infosSalon = ['Hall Emploi', 'Hall Formation', '30 et 31 octobre 2026', 'N
       </div>
 
       <SelectionDrawer />
-      <script type="application/json" id="offres-disponibles-donnees" set:html={JSON.stringify(offresDisponibles)} />
+      <script type="application/json" id="offres-disponibles-donnees" set:html={jsonInline(offresDisponibles)} />
       <script>
         import { initSelectionUI } from '../../lib/selection-ui';
         initSelectionUI();

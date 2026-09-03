@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import OffreSelection from '../components/OffreSelection.astro';
 import { getOffresPubliees, offreSlug } from '../lib/offres';
+import { jsonInline } from '../lib/json-inline';
 
 const offres = await getOffresPubliees();
 
@@ -92,7 +93,7 @@ const offresDisponibles = offres.map((offre) => ({
   </section>
 
   <OffreSelection />
-  <script type="application/json" id="offres-disponibles-donnees" set:html={JSON.stringify(offresDisponibles)} />
+  <script type="application/json" id="offres-disponibles-donnees" set:html={jsonInline(offresDisponibles)} />
   <p id="annonce-selection" class="sr-only" role="status" aria-live="polite"></p>
   <script>
     import { initSelectionUI } from '../lib/selection-ui';
