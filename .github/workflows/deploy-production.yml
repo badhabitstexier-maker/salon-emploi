@@ -2,6 +2,18 @@ name: Déployer en production (manuel)
 
 # Déclenchement strictement manuel — tu décides quand la prod
 # reçoit ce qui a été validé sur la préprod.
+#
+# ACTIONS ÉPINGLÉES PAR SHA (audit sécurité, constat n°4). Chaque `uses:`
+# référence un commit précis, pas un tag : un tag - même `v4.3.5` - reste
+# déplaçable par le mainteneur de l'action, et une action compromise
+# recevrait ici les secrets du workflow. Le commentaire en fin de ligne
+# rappelle la version correspondante.
+#
+# CONTREPARTIE À CONNAÎTRE : un SHA figé ne reçoit plus les correctifs de
+# l'action. La mise à jour devient un geste explicite - relever le nouveau
+# SHA avec `gh api repos/<depot>/commits/<tag> -q .sha`, jamais recopier
+# une valeur vue ailleurs.
+
 on:
   workflow_dispatch:
 
@@ -12,12 +24,12 @@ jobs:
 
     steps:
       - name: Récupérer le code (main)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: main
 
       - name: Installer Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
 
@@ -52,7 +64,7 @@ jobs:
           VISIBILITES_DATA_DIR: ${{ vars.VISIBILITES_DATA_DIR }}
 
       - name: Déployer le contenu de dist/ vers OVH (FTP)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}

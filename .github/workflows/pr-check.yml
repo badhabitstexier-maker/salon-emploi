@@ -2,6 +2,18 @@ name: Vérifier le build (avant fusion)
 
 # Se déclenche sur chaque Pull Request vers main.
 # N'importe rien nulle part — vérifie seulement que le site compile.
+#
+# ACTIONS ÉPINGLÉES PAR SHA (audit sécurité, constat n°4). Chaque `uses:`
+# référence un commit précis, pas un tag : un tag - même `v4.3.5` - reste
+# déplaçable par le mainteneur de l'action, et une action compromise
+# recevrait ici les secrets du workflow. Le commentaire en fin de ligne
+# rappelle la version correspondante.
+#
+# CONTREPARTIE À CONNAÎTRE : un SHA figé ne reçoit plus les correctifs de
+# l'action. La mise à jour devient un geste explicite - relever le nouveau
+# SHA avec `gh api repos/<depot>/commits/<tag> -q .sha`, jamais recopier
+# une valeur vue ailleurs.
+
 on:
   pull_request:
     branches:
@@ -13,10 +25,10 @@ jobs:
 
     steps:
       - name: Récupérer le code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Installer Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
 
