@@ -284,3 +284,48 @@ export function estDansPeriodeResume(resume: Pick<VisibiliteResume, 'dateDebut' 
   const dateFin = resume.dateFin ? new Date(resume.dateFin) : undefined;
   return estDansPeriode(dateDebut, dateFin, maintenant);
 }
+
+// ---------------------------------------------------------------------------
+// Sûreté des URL (audit sécurité, constat n°1)
+//
+// `lien`, `visuel` et `visuelMobile` finissent dans le DOM du site public :
+// `lien` en `href` d'une balise <a>, les deux autres en `src` d'une <img>
+// (voir visibilite-ui.ts). Jusqu'ici, la validation serveur n'exigeait
+// qu'une chaîne non vide : un `lien` en `javascript:` s'exécutait donc dans
+// l'origine du site, pour tout visiteur cliquant le bandeau, sur les quatre
+// pages équipées.
+//
+// La règle ci-dessous est le MIROIR de estUrlVisibiliteSure() dans
+// public/api/_visibilites-lib.php - même convention que le reste de ce
+// module (PHP ne peut pas importer du TypeScript, la duplication est
+// assumée). Toute évolution doit être répercutée aux deux endroits.
+//
+// Elle est appliquée DEUX fois, volontairement :
+//   1. à l'écriture (PHP) - refuse d'enregistrer une valeur dangereuse ;
+//   2. à la lecture (client, visibilite-ui.ts) - parce que la validation
+//      d'écriture ne réexamine PAS les enregistrements déjà présents dans
+//      visibilites.json. Une campagne saisie avant ce correctif resterait
+//      servie telle quelle : seul le contrôle côté client protège le
+//      visiteur dans ce cas.
+// ---------------------------------------------------------------------------
+
+/**
+ * Vrai si `valeur` est une URL sûre à poser dans un `href`/`src` :
+ * `http://`, `https://`, ou un chemin interne au site (`/...`).
+ *
+ * Refuse notamment `javascript:`, `data:`, `vbscript:`, `file:`, ainsi que
+ * les URL protocol-relative (`//exemple.com`) - ces dernières ressemblent à
+ * un chemin interne mais désignent en réalité un domaine tiers.
+ *
+ * Les navigateurs ignorent espaces et caractères de contrôle à l'intérieur
+ * d'un schéma (un « javascript: » coupé par une tabulation est tout de même
+ * interprété comme tel) : ils sont donc retirés AVANT examen, jamais après.
+ */
+export function estUrlVisibiliteSure(valeur: string | undefined | null): boolean {
+  if (typeof valeur !== 'string') return false;
+  const nettoyee = valeur.replace(/[\u0000-\u0020]/g, '');
+  if (nettoyee === '') return false;
+  if (nettoyee.startsWith('//')) return false; // protocol-relative : domaine tiers déguisé
+  if (nettoyee.startsWith('/')) return true; // chemin interne au site
+  return /^https?:\/\//i.test(nettoyee);
+}

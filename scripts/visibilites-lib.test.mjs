@@ -26,6 +26,7 @@ import {
   estDansPeriodeResume,
   visibiliteResume,
   estResumePublicValide,
+  estUrlVisibiliteSure,
   selectionnerPonderee,
 } from '../src/lib/visibilites.ts';
 
@@ -309,4 +310,52 @@ test('calculerStatut : même résultat que statutVisibilite(v) — réutilisée 
 test('calculerStatut : actif=false prime sur des dates qui seraient sinon "actif" (indépendance du levier manuel)', () => {
   const maintenant = new Date('2026-08-09');
   assert.equal(calculerStatut(false, new Date('2020-01-01'), new Date('2099-01-01'), maintenant), 'desactive');
+});
+
+/*
+  Sûreté des URL de campagne (audit sécurité, constat n°1) - miroir testé de
+  estUrlVisibiliteSure(). La même règle existe en PHP
+  (public/api/_visibilites-lib.php), couverte par scripts/visibilites-api.test.mjs.
+*/
+test('estUrlVisibiliteSure accepte http, https et les chemins internes', () => {
+  for (const url of [
+    'https://exemple.nc/campagne',
+    'http://exemple.nc',
+    'HTTPS://EXEMPLE.NC',
+    '/visuels/banniere.png',
+    '/exposants?filtre=x#ancre',
+  ]) {
+    assert.equal(estUrlVisibiliteSure(url), true, url);
+  }
+});
+
+test('estUrlVisibiliteSure refuse les schémas exécutables', () => {
+  for (const url of [
+    'javascript:alert(1)',
+    'JaVaScRiPt:alert(1)',
+    'java\u0009script:alert(1)',
+    ' javascript:alert(1)',
+    '\u0001javascript:alert(1)',
+    'vbscript:msgbox(1)',
+    'data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==',
+    'file:///etc/passwd',
+  ]) {
+    assert.equal(estUrlVisibiliteSure(url), false, url);
+  }
+});
+
+test('estUrlVisibiliteSure refuse les URL protocol-relative (domaine tiers déguisé)', () => {
+  assert.equal(estUrlVisibiliteSure('//exemple-malveillant.tld/x'), false);
+  assert.equal(estUrlVisibiliteSure('/\/exemple-malveillant.tld'), false);
+});
+
+test('estUrlVisibiliteSure refuse le vide et les valeurs non-chaîne', () => {
+  for (const valeur of ['', '   ', undefined, null, 42, {}, []]) {
+    assert.equal(estUrlVisibiliteSure(valeur), false, String(valeur));
+  }
+});
+
+test('estUrlVisibiliteSure refuse une URL relative sans slash initial', () => {
+  // Ambigu et jamais produit par l'Admin : on exige un chemin absolu.
+  assert.equal(estUrlVisibiliteSure('exemple.nc/page'), false);
 });

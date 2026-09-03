@@ -182,6 +182,43 @@ test.describe('Visibilité — site public (Admin-2B, dynamique)', () => {
     await expect(page.getByRole('navigation').first()).toBeVisible();
     expect(erreursConsole).toEqual([]);
   });
+
+  /*
+    Audit sécurité, constat n°1. Ces trois cas visent la couche CLIENT, pas la
+    validation d'écriture : l'API PHP refuse désormais d'enregistrer une URL
+    dangereuse, mais elle ne rejoue jamais les enregistrements déjà présents
+    dans visibilites.json. Une campagne saisie AVANT le correctif serait donc
+    servie telle quelle par l'API publique - c'est exactement ce que ces
+    mocks simulent, et seul le contrôle côté client protège alors le visiteur.
+  */
+  test("un lien en javascript: reçu de l'API n'est jamais posé en href", async ({ page }) => {
+    await mockApiPublique(page, [
+      campagne({ id: 'xss-1', annonceur: 'Campagne héritée', alt: 'Bandeau', pages: ['accueil'], lien: 'javascript:window.__xss=1' }),
+    ]);
+    await page.goto('/');
+    const slot = page.locator('#visibilite-slot-accueil-principal');
+    await expect(slot).toBeVisible(); // le bandeau reste affiché...
+    await expect(slot.locator('img')).toBeVisible();
+    await expect(slot.locator('a')).toHaveCount(0); // ...mais n'est pas cliquable
+    expect(await page.evaluate(() => (window as unknown as { __xss?: number }).__xss)).toBeUndefined();
+  });
+
+  test('un lien http(s) ou interne légitime reste cliquable', async ({ page }) => {
+    await mockApiPublique(page, [
+      campagne({ id: 'lien-ok', annonceur: 'Campagne liee', alt: 'Bandeau', pages: ['accueil'], lien: 'https://exemple.nc/campagne' }),
+    ]);
+    await page.goto('/');
+    const slot = page.locator('#visibilite-slot-accueil-principal');
+    await expect(slot.locator('a')).toHaveAttribute('href', 'https://exemple.nc/campagne');
+  });
+
+  test('un visuel à schéma dangereux laisse l\'emplacement masqué, sans image cassée', async ({ page }) => {
+    await mockApiPublique(page, [
+      campagne({ id: 'visuel-ko', annonceur: 'Campagne héritée', alt: 'Bandeau', pages: ['accueil'], visuel: 'javascript:alert(1)' }),
+    ]);
+    await page.goto('/');
+    await expect(page.locator('#visibilite-slot-accueil-principal')).toBeHidden();
+  });
 });
 
 test.describe('Visibilité — Admin (Admin-2B, CRUD)', () => {

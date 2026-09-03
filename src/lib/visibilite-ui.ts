@@ -25,7 +25,14 @@
   du reste de la page. C'est exactement le même comportement que « aucune
   campagne éligible », qui existait déjà avant Admin-2B.
 */
-import { selectionnerPonderee, estDansPeriodeResume, type VisibiliteResume, type PageVisibilite, type EmplacementVisibilite } from './visibilites';
+import {
+  selectionnerPonderee,
+  estDansPeriodeResume,
+  estUrlVisibiliteSure,
+  type VisibiliteResume,
+  type PageVisibilite,
+  type EmplacementVisibilite,
+} from './visibilites';
 
 async function chargerCandidats(page: string, emplacement: string): Promise<VisibiliteResume[]> {
   try {
@@ -50,10 +57,21 @@ async function chargerCandidats(page: string, emplacement: string): Promise<Visi
 */
 const SEUIL_DESKTOP = '(min-width: 640px)';
 
-function remplir(visuel: HTMLElement, choisie: VisibiliteResume): void {
-  const lien = document.createElement(choisie.lien ? 'a' : 'div');
-  if (choisie.lien) {
-    (lien as HTMLAnchorElement).href = choisie.lien;
+/** Renvoie false si la campagne n'est pas rendable (visuel inutilisable) : l'emplacement reste alors masqué. */
+function remplir(visuel: HTMLElement, choisie: VisibiliteResume): boolean {
+  /*
+    Second contrôle de sûreté des URL, après celui fait à l'écriture par
+    l'API PHP (audit sécurité, constat n°1). Il n'est pas redondant : la
+    validation d'écriture ne rejoue jamais les enregistrements déjà
+    présents dans visibilites.json, donc une campagne saisie avant ce
+    correctif serait servie telle quelle. Un lien refusé n'est pas une
+    erreur visible - le bandeau s'affiche simplement sans être cliquable,
+    conformément au principe fail-safe du module.
+  */
+  const lienSur = estUrlVisibiliteSure(choisie.lien) ? choisie.lien : undefined;
+  const lien = document.createElement(lienSur ? 'a' : 'div');
+  if (lienSur) {
+    (lien as HTMLAnchorElement).href = lienSur;
   }
   lien.className = 'block w-full';
 
@@ -62,15 +80,25 @@ function remplir(visuel: HTMLElement, choisie: VisibiliteResume): void {
   // visuelMobile est optionnel : absent -> pas de <source> dédiée, l'<img>
   // (desktop) sert alors de visuel unique sur toutes les largeurs, comme
   // avant l'introduction du visuel mobile.
-  if (choisie.visuelMobile) {
+  // Même règle pour les visuels, posés en `src` : un schéma exécutable n'y
+  // est pas exploitable, mais une valeur non conforme n'a rien à y faire.
+  const visuelDesktop = estUrlVisibiliteSure(choisie.visuel) ? choisie.visuel : undefined;
+  const visuelMobile = estUrlVisibiliteSure(choisie.visuelMobile) ? choisie.visuelMobile : undefined;
+
+  if (visuelMobile && visuelDesktop) {
     const source = document.createElement('source');
     source.media = SEUIL_DESKTOP;
-    source.srcset = choisie.visuel;
+    source.srcset = visuelDesktop;
     picture.appendChild(source);
   }
 
+  // Aucun visuel exploitable : rien à afficher. On ne pose pas une <img>
+  // vide (image cassée visible par le visiteur), l'emplacement reste
+  // masqué - même comportement que « aucune campagne éligible ».
+  if (!visuelDesktop && !visuelMobile) return false;
+
   const img = document.createElement('img');
-  img.src = choisie.visuelMobile || choisie.visuel;
+  img.src = visuelMobile || visuelDesktop!;
   img.alt = choisie.alt;
   img.loading = 'lazy';
   // Ratio naturel du visuel, aucun crop : largeur fluide (100% du slot),
@@ -80,6 +108,7 @@ function remplir(visuel: HTMLElement, choisie: VisibiliteResume): void {
   lien.appendChild(picture);
 
   visuel.replaceChildren(lien);
+  return true;
 }
 
 /** Traite un seul emplacement (une <section data-visibility-page>). Idempotent. */
@@ -101,7 +130,7 @@ async function initVisibilitySlot(section: HTMLElement): Promise<void> {
   const visuel = section.querySelector<HTMLElement>('[data-visibility-visual]');
   if (!visuel) return;
 
-  remplir(visuel, choisie);
+  if (!remplir(visuel, choisie)) return; // visuel inutilisable : reste masqué
   section.classList.remove('hidden');
   section.dataset.annonceur = choisie.annonceur;
 }
