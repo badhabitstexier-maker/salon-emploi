@@ -79,6 +79,38 @@ const VISIBILITES_EXPOSANT_ID_REGEX = '/^EXP26-\d{3,}$/';
 /** Champs jamais renvoyés au public — voir resumePublicVisibilite(). Liste positive utilisée ailleurs, celle-ci sert de garde-fou de test. */
 const VISIBILITES_CHAMPS_INTERNES = ['nomInterne', 'typeAnnonceur', 'exposantId'];
 
+/**
+ * Vrai si $valeur est une URL sûre à poser dans un `href`/`src` :
+ * `http://`, `https://`, ou un chemin interne au site (`/...`).
+ *
+ * MIROIR de estUrlVisibiliteSure() dans src/lib/visibilites.ts (audit
+ * sécurité, constat n°1) - toute évolution doit être répercutée aux deux
+ * endroits, comme pour le reste des règles de ce module.
+ *
+ * Refuse `javascript:`, `data:`, `vbscript:`, `file:`, et les URL
+ * protocol-relative (`//exemple.com`), qui ressemblent à un chemin interne
+ * mais désignent un domaine tiers. Espaces et caractères de contrôle sont
+ * retirés AVANT examen : les navigateurs les ignorent à l'intérieur d'un
+ * schéma, un filtre appliqué à la chaîne brute serait donc contournable.
+ */
+function estUrlVisibiliteSure($valeur): bool
+{
+    if (!is_string($valeur)) {
+        return false;
+    }
+    $nettoyee = preg_replace('/[\x00-\x20]/', '', $valeur);
+    if ($nettoyee === null || $nettoyee === '') {
+        return false;
+    }
+    if (str_starts_with($nettoyee, '//')) {
+        return false; // protocol-relative : domaine tiers déguisé
+    }
+    if (str_starts_with($nettoyee, '/')) {
+        return true; // chemin interne au site
+    }
+    return (bool) preg_match('#^https?://#i', $nettoyee);
+}
+
 // ---------------------------------------------------------------------------
 // Lecture / écriture du fichier de données
 // ---------------------------------------------------------------------------
@@ -236,6 +268,8 @@ function validerVisibilite(array $entree): array
     $visuel = trim((string) ($entree['visuel'] ?? ''));
     if ($visuel === '') {
         $erreurs[] = 'visuel est obligatoire (chemin ou URL d\'une image déjà présente sur le serveur).';
+    } elseif (!estUrlVisibiliteSure($visuel)) {
+        $erreurs[] = 'visuel doit être un chemin interne (/...) ou une URL http(s).';
     }
     $valeurs['visuel'] = $visuel;
 
@@ -246,7 +280,11 @@ function validerVisibilite(array $entree): array
     // `lien`.
     $visuelMobile = $entree['visuelMobile'] ?? null;
     if ($visuelMobile !== null && trim((string) $visuelMobile) !== '') {
-        $valeurs['visuelMobile'] = trim((string) $visuelMobile);
+        $visuelMobile = trim((string) $visuelMobile);
+        if (!estUrlVisibiliteSure($visuelMobile)) {
+            $erreurs[] = 'visuelMobile doit être un chemin interne (/...) ou une URL http(s).';
+        }
+        $valeurs['visuelMobile'] = $visuelMobile;
     } else {
         $valeurs['visuelMobile'] = null;
     }
@@ -257,9 +295,17 @@ function validerVisibilite(array $entree): array
     }
     $valeurs['alt'] = $alt;
 
+    // `lien` finit en `href` d'une <a> sur le site public : une valeur en
+    // `javascript:` s'y exécuterait dans l'origine du site (audit sécurité,
+    // constat n°1). Whitelist de schémas, jamais une simple vérification de
+    // non-vacuité.
     $lien = $entree['lien'] ?? null;
     if ($lien !== null && trim((string) $lien) !== '') {
-        $valeurs['lien'] = trim((string) $lien);
+        $lien = trim((string) $lien);
+        if (!estUrlVisibiliteSure($lien)) {
+            $erreurs[] = 'lien doit être un chemin interne (/...) ou une URL http(s).';
+        }
+        $valeurs['lien'] = $lien;
     } else {
         $valeurs['lien'] = null;
     }

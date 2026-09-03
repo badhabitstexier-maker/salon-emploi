@@ -660,3 +660,71 @@ describe('Première écriture vs écritures suivantes (dossier vide, isolé)', (
     assert.notEqual(contenuApresDeuxiemeEcriture, contenuBak);
   });
 });
+
+/*
+  Sûreté des URL (audit sécurité, constat n°1) - `lien` finit en `href` d'une
+  <a> sur le site public, `visuel`/`visuelMobile` en `src` d'une <img>. La
+  validation n'exigeait qu'une chaîne non vide : un `lien` en `javascript:`
+  s'exécutait dans l'origine du site pour tout visiteur cliquant le bandeau.
+  Miroir PHP de estUrlVisibiliteSure() (src/lib/visibilites.ts), couvert côté
+  TypeScript par scripts/visibilites-lib.test.mjs.
+*/
+const URLS_DANGEREUSES = [
+  'javascript:alert(1)',
+  'JaVaScRiPt:alert(1)',
+  ' javascript:alert(1)',
+  'data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==',
+  'vbscript:msgbox(1)',
+  'file:///etc/passwd',
+  '//exemple-malveillant.tld/x',
+  'exemple.nc/sans-slash',
+];
+
+test('Validation : lien avec un schéma dangereux -> 422, jamais enregistré', async () => {
+  const session = await ouvrirSessionAdmin();
+  for (const lien of URLS_DANGEREUSES) {
+    const { statut, corps } = await creerViaAdmin(session, { lien });
+    assert.equal(statut, 422, `lien=${lien} devrait être rejeté`);
+    assert.ok(corps.details.some((d) => d.includes('lien')), `message attendu sur « lien » pour ${lien}`);
+  }
+  // Aucune de ces tentatives ne doit avoir laissé de trace.
+  const liste = await fetch(`${base}/admin-api/visibilites.php`, { headers: { Cookie: session.cookie } }).then((r) => r.json());
+  assert.equal(liste.visibilites.filter((v) => URLS_DANGEREUSES.includes(v.lien)).length, 0);
+});
+
+test('Validation : visuel et visuelMobile avec un schéma dangereux -> 422', async () => {
+  const session = await ouvrirSessionAdmin();
+  for (const url of URLS_DANGEREUSES) {
+    const r1 = await creerViaAdmin(session, { visuel: url });
+    assert.equal(r1.statut, 422, `visuel=${url} devrait être rejeté`);
+    assert.ok(r1.corps.details.some((d) => d.includes('visuel')));
+
+    const r2 = await creerViaAdmin(session, { visuelMobile: url });
+    assert.equal(r2.statut, 422, `visuelMobile=${url} devrait être rejeté`);
+    assert.ok(r2.corps.details.some((d) => d.includes('visuelMobile')));
+  }
+});
+
+test('Validation : les URL légitimes restent acceptées', async () => {
+  const session = await ouvrirSessionAdmin();
+  for (const lien of ['https://exemple.nc/campagne', 'http://exemple.nc', '/exposants', '/offres?filtre=x#a']) {
+    const { statut, corps } = await creerViaAdmin(session, { lien });
+    assert.equal(statut, 200, `lien=${lien} devrait être accepté`);
+    assert.equal(corps.visibilite.lien, lien);
+  }
+});
+
+test("Validation : une modification (PUT) ne peut pas introduire un lien dangereux", async () => {
+  const session = await ouvrirSessionAdmin();
+  const creation = await creerViaAdmin(session, { lien: '/exposants' });
+  assert.equal(creation.statut, 200);
+  const id = creation.corps.visibilite.id;
+
+  const { statut, corps } = await modifierViaAdmin(session, id, { lien: 'javascript:alert(1)' });
+  assert.equal(statut, 422);
+  assert.ok(corps.details.some((d) => d.includes('lien')));
+
+  // L'enregistrement existant doit être intact.
+  const liste = await fetch(`${base}/admin-api/visibilites.php`, { headers: { Cookie: session.cookie } }).then((r) => r.json());
+  assert.equal(liste.visibilites.find((v) => v.id === id).lien, '/exposants');
+});
