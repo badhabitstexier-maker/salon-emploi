@@ -7,6 +7,7 @@ import {
   pageLabels,
   statutLabels,
 } from '../../../lib/visibilites';
+import { jsonInline } from '../../../lib/json-inline';
 
 /*
   Vue Admin Visibilité — CRUD complet (Admin-2B, voir docs/VISIBILITE.md).
@@ -117,7 +118,7 @@ const exposantsParId = exposants.map((exposant) => ({
     (standard/silver/gold) de l'exposant éventuellement rattaché — voir docs/VISIBILITE.md, section 1.
   </p>
 
-  <script type="application/json" id="visibilite-exposants-donnees" set:html={JSON.stringify(exposantsParId)} />
+  <script type="application/json" id="visibilite-exposants-donnees" set:html={jsonInline(exposantsParId)} />
 </AdminLayout>
 
 <script>
