@@ -42,7 +42,7 @@
 > site mené en deux passes (revue de code + vérification externe de la production). Quatre constats
 > corrigés et déployés en production — injection HTML dans les blocs `<script>` inline (PR #59),
 > validation des URL des campagnes Visibilité (PR #60), épinglage des actions GitHub par SHA
-> (PR #61), et levée du doute sur `$_SERVER['HTTPS']`. Le point 8 de la section 16 (vérification
+> (PR #61), et levée du doute sur `$_SERVER['HTTPS']` ; un cinquième réglé depuis (`nanoid`, PR #63). Le point 8 de la section 16 (vérification
 > OVH/DNS) est réglé. **État complet des constats, corrigés comme ouverts, dans `docs/SECURITE.md`**
 > — un seul chantier reste ouvert, les en-têtes de sécurité HTTP.
 >

@@ -37,6 +37,19 @@ noire sur la production (commandes `curl` exécutées par Philippe).
 | 1 | `lien`, `visuel`, `visuelMobile` d'une campagne Visibilité n'étaient validés que sur leur non-vacuité. Un `lien: "javascript:…"` s'exécutait dans l'origine du site pour tout visiteur cliquant le bandeau. | Élevé | PR #60 — `estUrlVisibiliteSure()`, en PHP **et** côté client |
 | 4 | Actions GitHub référencées par tag mutable, alors que `deploy-production.yml` leur passe les identifiants FTP de production. | Moyen | PR #61 — 12 références épinglées par SHA |
 | 5 | Doute sur `$_SERVER['HTTPS']` derrière la terminaison TLS d'OVH (aurait rendu l'Admin inutilisable en écriture). | Faible | Écarté par recette : le CRUD Visibilité fonctionne en ligne. |
+| 8 | `nanoid < 3.3.18` (GHSA-2v37-7h3g-55p8), dépendance **transitive de build uniquement** (`@tailwindcss/vite` → `vite` → `postcss` → `nanoid`) : aucun code du projet ne l'appelle, elle n'atteint jamais le bundle client. Risque réel négligeable. | Faible | PR #63 — `npm audit fix`, `package-lock.json` seul. `npm audit` est revenu à **0 vulnérabilité**. |
+
+**Un échec Dependabot n'est pas un verdict.** Sur le constat n°8, Dependabot a conclu à
+`security_update_not_possible` en annonçant `latest-resolvable-version: 3.3.17` et en affirmant
+qu'`@tailwindcss/vite` et `astro` exigeaient une version vulnérable. C'était inexact :
+`nanoid@3.3.18` est publiée, et `postcss@8.5.25` déclare `nanoid: ^3.3.16`, qui l'accepte. Avant de
+conclure qu'un correctif est impossible, vérifier soi-même :
+
+```bash
+npm view <paquet> versions          # la version corrective existe-t-elle vraiment ?
+npm view <parent>@<version> dependencies.<paquet>   # la contrainte du parent l'accepte-t-elle ?
+npm audit fix --dry-run
+```
 
 ### Deux principes issus de ces correctifs, à ne pas défaire
 
@@ -84,12 +97,6 @@ Périmètre volontairement exclu du lot #60, pas un oubli. Correctif possible si
 `PUBLIC_WEB3FORMS_ACCESS_KEY` est nécessairement dans le bundle : c'est le fonctionnement de
 Web3Forms. Seule barrière anti-spam : le honeypot `botcheck` sur les deux formulaires de
 `/exposer`. À connaître, rien à corriger dans le dépôt.
-
-### n°8 — `nanoid < 3.3.18` (GHSA-2v37-7h3g-55p8) · faible
-
-Dépendance **transitive de build uniquement** (`@tailwindcss/vite` → `vite` → `postcss` → `nanoid`).
-Aucun code du projet n'appelle nanoid, elle n'atteint jamais le bundle client. Risque réel
-négligeable ; `npm audit fix` quand l'occasion se présente.
 
 ---
 
