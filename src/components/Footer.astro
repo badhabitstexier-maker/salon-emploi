@@ -1,4 +1,5 @@
 ---
+import { event } from '../config/event';
 const year = new Date().getFullYear();
 
 const liens = [
@@ -18,10 +19,10 @@ const liens = [
         <p class="font-titre text-sm font-bold uppercase leading-none text-blanc">
           <span class="block text-xl leading-none">Salon</span>
           <span class="mt-0.5 block leading-none">De l'Emploi <span class="text-orange">&amp;</span></span>
-          <span class="mt-0.5 block leading-none">De la Formation 2026</span>
+          <span class="mt-0.5 block leading-none">De la Formation {event.edition}</span>
         </p>
         <p class="mt-4 text-sm leading-relaxed">
-          30 et 31 octobre 2026 — Salle d'exposition de Nouville, Nouméa.<br />
+          {event.dateDetail} — {event.locationLabel}.<br />
           Entrée libre et gratuite.
         </p>
       </div>

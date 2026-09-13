@@ -126,7 +126,7 @@ Champs supplémentaires :
 orientation_labevents       = true | false                     (toujours transmis)
 orientation_labevents_label = <texte exact, section 15>         (transmis uniquement si orientation_labevents = true)
 source                       = salon-emploi.nc                  (toujours transmis)
-edition                      = 2026                              (toujours transmis)
+edition                      = 2027                              (toujours transmis)
 ```
 
 `orientation_labevents` est la valeur technique exploitée pour l'export et
@@ -250,7 +250,7 @@ exposants que vous avez sélectionnés.
 ```
 J'accepte que mes informations et mon CV soient transmis par LabEvents aux
 exposants correspondant aux offres que j'ai sélectionnées, dans le cadre du
-Salon de l'Emploi & de la Formation 2026.
+Salon de l'Emploi & de la Formation 2027.
 ```
 
 ## 14. Texte exact du consentement B (optionnel, non précoché)
@@ -299,15 +299,16 @@ tout (préféré à une valeur vide). Tally utilise cette valeur pour précocher
 automatiquement la case dans le formulaire ; le site ne pilote que le
 préremplissage, jamais l'affichage ni la présence de l'option elle-même.
 
-## 16. Mention de conservation jusqu'au 31 décembre 2026
+## 16. Mention de conservation jusqu'au 31 décembre 2027
 
-Cette date (deux mois maximum après la clôture du salon) doit apparaître
+Cette adaptation à l'édition 2027 doit être validée par le métier avant la
+mise en production du formulaire. Sous réserve de cette validation, la date
+doit apparaître
 partout où la conservation des données de candidature est mentionnée :
 `/confidentialite` (section « Candidatures aux offres du salon »), ce
 document, la mention légale du formulaire Tally (étape 7), et le futur
-tableau de transmission (section 20). **Ne jamais** utiliser le 31 octobre
-2026, une durée indéterminée, ou une conservation au-delà du 31 décembre
-2026.
+tableau de transmission (section 20). Ne pas inventer une autre échéance tant
+que la règle métier n'a pas été confirmée.
 
 ## 17. Message de confirmation (à paramétrer dans Tally)
 
@@ -321,8 +322,9 @@ dont les besoins correspondent à votre profil.
 La transmission de votre candidature ne garantit ni entretien, ni réponse,
 ni recrutement.
 
-Nous vous invitons à venir rencontrer directement les recruteurs les 30 et
-31 octobre 2026, de 9h à 17h, à la Salle d'exposition de Nouville, Nouméa.
+Nous vous invitons à venir rencontrer directement les recruteurs en avril
+2027, de 9h à 17h, à la Salle d'exposition de Nouville, Nouméa. Les dates
+précises seront annoncées prochainement.
 ```
 
 Ajouter, dans l'écran de confirmation Tally, un lien vers
@@ -364,7 +366,7 @@ consentement_offres_selectionnees, consentement_profils_compatibles,
 statut_dossier, date_suppression_prevue
 ```
 
-`date_suppression_prevue` vaut toujours `2026-12-31`.
+Sous réserve de validation métier, `date_suppression_prevue` vaut `2027-12-31`.
 
 Règles documentées pour le futur dispatch :
 
@@ -374,7 +376,8 @@ Règles documentées pour le futur dispatch :
   consentement aux profils compatibles (`consentement_profils_compatibles`) ;
 - seules les transmissions autorisées par les consentements donnés sont
   permises ;
-- les données doivent être supprimées au plus tard le 31 décembre 2026.
+- les données doivent être supprimées au plus tard le 31 décembre 2027, sous
+  réserve de validation métier de cette adaptation.
 
 ## 21. Limites connues
 
@@ -394,7 +397,7 @@ Règles documentées pour le futur dispatch :
 
 Ce lot ne développe ni dispatch automatique, ni envoi aux recruteurs. Les
 candidatures restent dans Tally jusqu'à un traitement manuel par LabEvents,
-après la clôture du salon (31 octobre 2026), conformément aux textes du
+après la clôture du salon, conformément aux textes du
 formulaire (section 13) et de la page `/candidater`.
 
 ## 23. Rappel — aucune garantie de réponse

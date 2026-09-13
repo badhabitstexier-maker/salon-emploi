@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { event, eventName } from '../config/event';
 
 const accessKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '';
 
@@ -14,13 +15,14 @@ const redirectExposant = new URL('/merci?type=exposant', Astro.site).toString();
 const redirectVisiteur = new URL('/merci?type=visiteur', Astro.site).toString();
 
 /*
-  Pack commercial exposants 2026 — fichier réel déposé dans
-  public/documents/Pack_commercial_exposants_2026.pdf : lien statique direct,
-  sans vérification au build.
+  Le seul fichier disponible est encore le pack 2026. Son chemin est gardé
+  comme repère technique, mais aucun lien public ne l'expose tant que la
+  version 2027 n'a pas été fournie.
 */
 const packCommercial = {
-  label: 'Pack commercial exposants 2026',
-  href: '/documents/Pack_commercial_exposants_2026.pdf',
+  label: 'Pack commercial exposants 2027',
+  legacyHref: '/documents/Pack_commercial_exposants_2026.pdf',
+  disponible: false,
 };
 
 const chiffresCles = [
@@ -216,7 +218,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
 
 <BaseLayout
   title="Exposer et devenir partenaire"
-  description="Découvrez l'offre exposants 2026 du Salon de l'Emploi & de la Formation à Nouméa : formules Standard, Silver et Gold, dispositif de candidatures et options complémentaires."
+  description={`Découvrez l'offre exposants ${event.edition} du Salon de l'Emploi & de la Formation à Nouméa : formules Standard, Silver et Gold, dispositif de candidatures et options complémentaires.`}
 >
   <!-- ============================== HERO ============================== -->
   <section class="bg-marine text-blanc">
@@ -237,11 +239,11 @@ const labelClass = 'block text-sm font-semibold text-marine';
         </li>
         <li class="flex items-center gap-2">
           <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
-          30 et 31 octobre 2026
+          {event.dateDetail}
         </li>
         <li class="flex items-center gap-2">
           <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
-          9 h à 17 h
+          {event.hoursLabel}
         </li>
         <li class="flex items-center gap-2">
           <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
@@ -256,14 +258,11 @@ const labelClass = 'block text-sm font-semibold text-marine';
         >
           Réserver mon emplacement
         </a>
-        <a
-          href={packCommercial.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center justify-center rounded-md border-2 border-blanc px-6 py-3.5 font-titre text-lg font-bold uppercase tracking-wide text-blanc transition-colors hover:bg-blanc hover:text-marine"
-        >
-          Télécharger le dossier exposant
-        </a>
+        {!packCommercial.disponible && (
+          <span class="inline-flex items-center justify-center rounded-md border-2 border-blanc/50 px-6 py-3.5 text-center font-titre text-lg font-bold uppercase tracking-wide text-brume">
+            Dossier exposant 2027 à venir
+          </span>
+        )}
       </div>
     </div>
   </section>
@@ -641,7 +640,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
           <input
             type="hidden"
             name="subject"
-            value="Salon Emploi Formation 2026 — Nouvelle demande exposant"
+            value="Salon Emploi Formation 2027 — Nouvelle demande exposant"
           />
           <input type="hidden" name="from_name" value="Formulaire exposant — salonemploi.nc" />
           <input type="hidden" name="form_type" value="exposant" />
@@ -820,7 +819,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
           <input
             type="hidden"
             name="subject"
-            value="Salon Emploi Formation 2026 — Nouvelle question visiteur"
+            value="Salon Emploi Formation 2027 — Nouvelle question visiteur"
           />
           <input type="hidden" name="from_name" value="Formulaire visiteur — salonemploi.nc" />
           <input type="hidden" name="form_type" value="visiteur" />
@@ -891,11 +890,11 @@ const labelClass = 'block text-sm font-semibold text-marine';
   <section class="border-t border-marine/10 bg-blanc">
     <div class="mx-auto max-w-2xl px-4 py-14 text-center sm:px-6 lg:py-16">
       <h2 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
-        Pack commercial exposants 2026
+        Pack commercial exposants 2027
       </h2>
       <p class="mx-auto mt-4 max-w-xl text-encre">
-        Retrouvez l'ensemble des formules et modalités dans un document unique à télécharger et
-        partager en interne.
+        Le document commercial de l'édition 2027 sera mis en ligne prochainement. Le pack 2026
+        n'est plus proposé au téléchargement afin d'éviter toute confusion.
       </p>
 
       <div class="mx-auto mt-8 flex max-w-md items-center justify-between gap-4 rounded-2xl border border-marine/15 bg-brume px-5 py-4">
@@ -911,14 +910,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
           />
           <span class="text-sm font-semibold text-marine">{packCommercial.label}</span>
         </span>
-        <a
-          href={packCommercial.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="flex-shrink-0 text-sm font-bold uppercase tracking-wide text-village-dark hover:underline"
-        >
-          Télécharger
-        </a>
+        <span class="flex-shrink-0 text-sm font-bold uppercase tracking-wide text-encre/60">À venir</span>
       </div>
     </div>
   </section>
@@ -928,7 +920,7 @@ const labelClass = 'block text-sm font-semibold text-marine';
     <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <h2 class="font-titre text-xl font-bold uppercase tracking-wide text-orange">LabEvents</h2>
       <p class="mt-1 text-sm text-brume">
-        Organisateur du Salon de l'Emploi &amp; de la Formation 2026
+        Organisateur du {eventName}
       </p>
       <ul class="mt-4 flex flex-col gap-2 text-sm text-brume sm:flex-row sm:flex-wrap sm:gap-x-8">
         <li>

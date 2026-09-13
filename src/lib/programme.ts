@@ -17,12 +17,20 @@ export const typeLabels: Record<ProgrammeItem['data']['type'], string> = {
   autre: 'Autre',
 };
 
-export const journeeLabels: Record<ProgrammeItem['data']['date'], string> = {
-  '2026-10-30': 'Vendredi 30 octobre',
-  '2026-10-31': 'Samedi 31 octobre',
-};
+/** Libellé public d'une date ISO, une fois les dates exactes validées. */
+export function journeeLabel(date: ProgrammeItem['data']['date']): string {
+  return new Intl.DateTimeFormat('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${date}T12:00:00Z`));
+}
 
-export const journees: ProgrammeItem['data']['date'][] = ['2026-10-30', '2026-10-31'];
+export function journeesDisponibles(liste: ProgrammeItem[]): ProgrammeItem['data']['date'][] {
+  return [...new Set(liste.map((item) => item.data.date))].sort();
+}
 
 /** Slug d'URL de l'entrée : `slug` en frontmatter si fourni, sinon l'id (nom de fichier). */
 export function programmeSlug(item: ProgrammeItem): string {

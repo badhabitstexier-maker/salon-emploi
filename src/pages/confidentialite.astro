@@ -1,16 +1,17 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { eventName } from '../config/event';
 ---
 
 <BaseLayout
   title="Politique de confidentialité"
-  description="Politique de confidentialité du site du Salon de l'Emploi & de la Formation 2026 : données collectées, prestataires, durées de conservation et droits."
+  description={`Politique de confidentialité du site du ${eventName} : données collectées, prestataires, durées de conservation et droits.`}
 >
   <section class="mx-auto max-w-3xl px-4 py-16 sm:px-6">
     <h1 class="font-titre text-3xl font-bold uppercase text-marine sm:text-4xl">
       Politique de confidentialité
     </h1>
-    <p class="mt-3 text-sm text-encre/70">Dernière mise à jour : 10 août 2026.</p>
+    <p class="mt-3 text-sm text-encre/70">Dernière mise à jour : 13 septembre 2026.</p>
 
     <div class="prose-salon mt-8 space-y-6 text-encre">
       <section>
@@ -19,7 +20,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           Le responsable des traitements de données personnelles réalisés via le site
           <strong>salonemploi.nc</strong> est <strong>Philippe Texier</strong>, entrepreneur
           individuel exerçant sous le nom commercial <strong>LabEvents</strong> (RIDET
-          0 504 530.003), organisateur du Salon de l'Emploi &amp; de la Formation 2026. Voir les
+          0 504 530.003), organisateur du Salon de l'Emploi &amp; de la Formation 2027. Voir les
           <a href="/mentions-legales" class="font-semibold text-marine underline hover:text-village"
             >mentions légales</a
           > pour les coordonnées complètes.
@@ -235,7 +236,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </li>
           <li>
             Candidatures (une fois le formulaire activé) : conservées jusqu'au
-            <strong>31 décembre 2026</strong> au plus tard, puis supprimées.
+            <strong>31 décembre 2027</strong> au plus tard, puis supprimées.
           </li>
           <li>
             Journaux techniques du serveur (voir point 10) : durée définie par les paramètres

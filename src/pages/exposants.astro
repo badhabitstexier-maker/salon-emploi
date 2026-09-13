@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { event, eventName } from '../config/event';
 import ExposantCard from '../components/ExposantCard.astro';
 import VisibilitySlot from '../components/VisibilitySlot.astro';
 import {
@@ -28,14 +29,14 @@ const secteurs = secteursDisponibles(exposantsPublies);
 const infosSalon = [
   'Hall Emploi',
   'Hall Formation',
-  '30 et 31 octobre 2026',
+  event.dateDetail,
   'Nouville — Nouméa',
 ];
 ---
 
 <BaseLayout
   title="Exposants"
-  description="Découvrez les entreprises, organismes de formation, institutions et acteurs présents au Salon de l'Emploi & de la Formation 2026 à Nouméa."
+  description={`Découvrez les entreprises, organismes de formation, institutions et acteurs présents au ${eventName} à Nouméa.`}
 >
   <!-- ============================== HERO ============================== -->
   <section class="bg-marine text-blanc">

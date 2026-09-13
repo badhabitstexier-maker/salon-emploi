@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { event, eventName } from '../config/event';
 
 /*
   Contenu source : docs/CONTENU_PREPARER_MA_VISITE.md (texte définitif validé
@@ -112,7 +113,7 @@ const profils = [
 const infosConfirmees = [
   {
     label: 'Dates',
-    valeur: 'Vendredi 30 et samedi 31 octobre 2026',
+    valeur: event.dateDetail,
     icone: `<rect x="3" y="5" width="18" height="16" rx="2" /><path stroke-linecap="round" d="M3 10h18M8 3v4M16 3v4" />`,
   },
   {
@@ -127,7 +128,7 @@ const infosConfirmees = [
   },
   {
     label: 'Horaires',
-    valeur: 'De 9 h à 17 h les deux jours',
+    valeur: event.hoursLabel,
     icone: `<circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3.5 2" />`,
   },
   {
@@ -183,7 +184,7 @@ const faq = [
 
 <BaseLayout
   title="Préparer ma visite"
-  description="Checklist, méthode et informations pratiques pour préparer votre visite au Salon de l'Emploi & de la Formation 2026 à Nouméa, les 30 et 31 octobre."
+  description={`Checklist, méthode et informations pratiques pour préparer votre visite au ${eventName} à Nouméa en ${event.dateLabel}.`}
 >
   <!-- ============================== HERO ==============================
        Exclu de l'impression : n'apporte rien sur une page papier.
@@ -204,7 +205,7 @@ const faq = [
       <ul class="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-semibold uppercase tracking-wide text-brume sm:flex sm:flex-wrap sm:gap-x-8">
         <li class="flex items-center gap-2">
           <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>
-          30 et 31 octobre 2026
+          {event.dateDetail}
         </li>
         <li class="flex items-center gap-2">
           <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange" aria-hidden="true"></span>

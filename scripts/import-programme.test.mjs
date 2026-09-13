@@ -22,7 +22,7 @@ function ligneValide(overrides = {}) {
     programmeId: 'PROG26-001',
     slug: 'exemple-atelier',
     titre: 'Exemple — Atelier fictif',
-    date: '2026-10-30',
+    date: '2000-01-01',
     heure_debut: '10:00',
     heure_fin: '10:45',
     univers: 'emploi',
@@ -45,19 +45,19 @@ function ligneValide(overrides = {}) {
   };
 }
 
-test('1. activité valide le 30 octobre', () => {
-  const r = validerLigne(ligneValide({ date: '2026-10-30' }), 2);
+test('1. activité avec date ISO valide', () => {
+  const r = validerLigne(ligneValide({ date: '2000-01-01' }), 2);
   assert.equal(r.ok, true);
-  assert.equal(r.activite.date, '2026-10-30');
+  assert.equal(r.activite.date, '2000-01-01');
 });
 
-test('2. activité valide le 31 octobre', () => {
-  const r = validerLigne(ligneValide({ date: '2026-10-31' }), 2);
+test('2. une autre date ISO valide est acceptée sans inventer les dates de l’événement', () => {
+  const r = validerLigne(ligneValide({ date: '2000-01-02' }), 2);
   assert.equal(r.ok, true);
 });
 
-test('3. date hors événement refusée', () => {
-  const r = validerLigne(ligneValide({ date: '2026-11-01' }), 2);
+test('3. date mal formée refusée', () => {
+  const r = validerLigne(ligneValide({ date: 'date-invalide' }), 2);
   assert.equal(r.ok, false);
   assert.ok(r.erreurs.some((e) => /date.*invalide/.test(e)));
 });
@@ -93,22 +93,22 @@ test('8. dépassement léger après 17h : avertissement, pas de rejet', () => {
 });
 
 test('9. conflit même lieu détecté', () => {
-  const a = { titre: 'A', date: '2026-10-30', lieu: 'Scène A', heure_debut: '10:00', heure_fin: '10:45' };
-  const b = { titre: 'B', date: '2026-10-30', lieu: 'Scène A', heure_debut: '10:30', heure_fin: '11:15' };
+  const a = { titre: 'A', date: '2000-01-01', lieu: 'Scène A', heure_debut: '10:00', heure_fin: '10:45' };
+  const b = { titre: 'B', date: '2000-01-01', lieu: 'Scène A', heure_debut: '10:30', heure_fin: '11:15' };
   const resultat = detecterConflits([a, b]);
   assert.equal(resultat.erreurs.length, 1);
   assert.match(resultat.erreurs[0], /Conflit de programmation/);
 });
 
 test('10. chevauchement dans deux lieux différents accepté', () => {
-  const a = { titre: 'A', date: '2026-10-30', lieu: 'Scène A', heure_debut: '10:00', heure_fin: '10:45' };
-  const b = { titre: 'B', date: '2026-10-30', lieu: 'Scène B', heure_debut: '10:30', heure_fin: '11:15' };
+  const a = { titre: 'A', date: '2000-01-01', lieu: 'Scène A', heure_debut: '10:00', heure_fin: '10:45' };
+  const b = { titre: 'B', date: '2000-01-01', lieu: 'Scène B', heure_debut: '10:30', heure_fin: '11:15' };
   assert.equal(detecterConflits([a, b]).erreurs.length, 0);
 });
 
 test('11. créneaux contigus acceptés (pas de chevauchement)', () => {
-  const a = { titre: 'A', date: '2026-10-30', lieu: 'Scène A', heure_debut: '10:00', heure_fin: '10:30' };
-  const b = { titre: 'B', date: '2026-10-30', lieu: 'Scène A', heure_debut: '10:30', heure_fin: '11:00' };
+  const a = { titre: 'A', date: '2000-01-01', lieu: 'Scène A', heure_debut: '10:00', heure_fin: '10:30' };
+  const b = { titre: 'B', date: '2000-01-01', lieu: 'Scène A', heure_debut: '10:30', heure_fin: '11:00' };
   assert.equal(detecterConflits([a, b]).erreurs.length, 0);
 });
 

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Socle QA — smoke tests', () => {
   test('accueil chargé avec le titre attendu', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/Salon de l'Emploi & de la Formation 2026/);
+    await expect(page).toHaveTitle(/Salon de l'Emploi & de la Formation 2027/);
     await expect(page.locator('h1').first()).toBeVisible();
   });
 

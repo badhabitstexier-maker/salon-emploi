@@ -27,7 +27,7 @@ entièrement fictives).
 | `programmeId` | non | Identifiant métier stable (voir section 3). Laisser vide pour une attribution automatique. |
 | `slug` | oui | Détermine l'adresse de la fiche et le nom du fichier (`src/content/programme/<slug>.md`). |
 | `titre` | oui | Titre affiché. |
-| `date` | oui | `2026-10-30` ou `2026-10-31` uniquement — voir section 4. |
+| `date` | oui | Date ISO `AAAA-MM-JJ`, à renseigner uniquement après validation des dates 2027 — voir section 4. |
 | `heure_debut` | oui | Format `HH:MM`. |
 | `heure_fin` | non | Format `HH:MM`, strictement postérieure à `heure_debut`. |
 | `univers` | oui | `emploi`, `formation` ou `transversal`. |
@@ -61,12 +61,14 @@ crée jamais une nouvelle activité : l'identifiant reste stable.
 
 ## 4. Dates et horaires
 
-Dates autorisées : `2026-10-30` et `2026-10-31` — toute autre valeur est
-rejetée (erreur bloquante). Horaires publics du salon : **09:00 → 17:00**.
+Les dates précises d'avril 2027 ne sont pas encore arrêtées. Ne renseigner
+aucune date fictive : l'import valide uniquement le format ISO `AAAA-MM-JJ`,
+et la publication reste désactivée dans `src/config/event.ts` tant que les
+dates officielles ne sont pas connues. Horaires publics : **09:00 → 17:00**.
 
 Le pipeline détecte :
 
-- une date hors événement (erreur) ;
+- une date mal formée (erreur) ;
 - un format d'heure invalide (erreur) ;
 - `heure_fin` inférieure ou égale à `heure_debut` (erreur) ;
 - une activité **entièrement** hors horaires du salon, c'est-à-dire qui
