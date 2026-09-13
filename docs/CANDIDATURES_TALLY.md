@@ -299,16 +299,15 @@ tout (préféré à une valeur vide). Tally utilise cette valeur pour précocher
 automatiquement la case dans le formulaire ; le site ne pilote que le
 préremplissage, jamais l'affichage ni la présence de l'option elle-même.
 
-## 16. Mention de conservation jusqu'au 31 décembre 2027
+## 16. Mention de conservation
 
-Cette adaptation à l'édition 2027 doit être validée par le métier avant la
-mise en production du formulaire. Sous réserve de cette validation, la date
-doit apparaître
-partout où la conservation des données de candidature est mentionnée :
+La règle métier à faire apparaître partout où la conservation des données de
+candidature est mentionnée est : **« Les données sont conservées au plus tard
+deux mois après la clôture du salon. »** Elle concerne :
 `/confidentialite` (section « Candidatures aux offres du salon »), ce
 document, la mention légale du formulaire Tally (étape 7), et le futur
-tableau de transmission (section 20). Ne pas inventer une autre échéance tant
-que la règle métier n'a pas été confirmée.
+tableau de transmission (section 20). Ne renseigner aucune date calendaire
+tant que les dates précises du salon n'ont pas été validées.
 
 ## 17. Message de confirmation (à paramétrer dans Tally)
 
@@ -366,7 +365,9 @@ consentement_offres_selectionnees, consentement_profils_compatibles,
 statut_dossier, date_suppression_prevue
 ```
 
-Sous réserve de validation métier, `date_suppression_prevue` vaut `2027-12-31`.
+`date_suppression_prevue` reste vide tant que les dates précises du salon ne
+sont pas validées. Elle devra ensuite respecter la règle suivante : **« Les
+données sont conservées au plus tard deux mois après la clôture du salon. »**
 
 Règles documentées pour le futur dispatch :
 
@@ -376,8 +377,7 @@ Règles documentées pour le futur dispatch :
   consentement aux profils compatibles (`consentement_profils_compatibles`) ;
 - seules les transmissions autorisées par les consentements donnés sont
   permises ;
-- les données doivent être supprimées au plus tard le 31 décembre 2027, sous
-  réserve de validation métier de cette adaptation.
+- les données sont conservées au plus tard deux mois après la clôture du salon.
 
 ## 21. Limites connues
 
