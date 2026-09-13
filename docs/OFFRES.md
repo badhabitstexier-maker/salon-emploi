@@ -174,7 +174,8 @@ renseignée, elle alimente le champ `validThrough` des données structurées
 `validThrough` n'est simplement pas généré.
 
 > Ce champ est indépendant de la **durée de conservation des données
-> candidat** (fixée au 31 décembre 2026), qui concerne les données
+> candidat** : « Les données sont conservées au plus tard deux mois après la
+> clôture du salon. » Cette règle concerne les données
 > personnelles collectées via le formulaire Tally de candidature — voir
 > `docs/CANDIDATURES_TALLY.md`. Les fiches offres ne portent aucune donnée
 > personnelle et ne sont donc pas concernées par cette règle de

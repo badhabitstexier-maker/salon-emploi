@@ -137,7 +137,7 @@ consulter cette page.
 
 | | |
 |---|---|
-| **Dates** | Vendredi 30 et samedi 31 octobre 2026 |
+| **Dates** | Avril 2027 — dates précises à venir |
 | **Lieu** | Salle d'exposition de Nouville — Nouméa |
 | **Entrée** | Libre et gratuite |
 | **Public** | Tout public |

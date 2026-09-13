@@ -4,6 +4,7 @@ import OffreSelection from '../components/OffreSelection.astro';
 import TallyCandidatureEmbed from '../components/TallyCandidatureEmbed.astro';
 import { getOffresPubliees, offreSlug } from '../lib/offres';
 import { jsonInline } from '../lib/json-inline';
+import { event, eventName } from '../config/event';
 
 const offresEligibles = (await getOffresPubliees()).filter((offre) => offre.data.accepteCandidaturesEnLigne);
 
@@ -19,7 +20,7 @@ const tallyBaseUrl = import.meta.env.PUBLIC_TALLY_CANDIDATURE_URL ?? '';
 
 <BaseLayout
   title="Candidater aux offres du salon"
-  description="Préparez votre candidature avant le Salon de l'Emploi & de la Formation 2026 et sélectionnez les offres qui vous intéressent."
+  description={`Préparez votre candidature avant le ${eventName} et sélectionnez les offres qui vous intéressent.`}
 >
   <!-- ============================== HERO ============================== -->
   <section class="bg-marine text-blanc">
@@ -29,8 +30,8 @@ const tallyBaseUrl = import.meta.env.PUBLIC_TALLY_CANDIDATURE_URL ?? '';
         Candidater aux offres du salon
       </h1>
       <p class="mt-6 max-w-2xl text-base text-brume sm:text-lg">
-        Préparez votre candidature avant le salon et venez rencontrer les recruteurs les 30 et 31
-        octobre 2026 à la Salle d'exposition de Nouville.
+        Préparez votre candidature avant le salon et venez rencontrer les recruteurs en {event.dateLabel}
+        à la Salle d'exposition de Nouville. Les dates précises seront annoncées prochainement.
       </p>
     </div>
   </section>
@@ -112,7 +113,7 @@ const tallyBaseUrl = import.meta.env.PUBLIC_TALLY_CANDIDATURE_URL ?? '';
         <p class="mt-3 text-sm text-encre">
           Vos informations, votre CV et vos consentements seront transmis aux exposants
           correspondant aux offres sélectionnées (et, selon votre choix, à d'autres exposants) après
-          la clôture du salon. Vos données sont conservées jusqu'au 31 décembre 2026. Pour en savoir
+          la clôture du salon. Les données sont conservées au plus tard deux mois après la clôture du salon. Pour en savoir
           plus, consultez notre{' '}
           <a href="/confidentialite" class="font-semibold text-marine underline hover:text-village-dark">
             politique de confidentialité

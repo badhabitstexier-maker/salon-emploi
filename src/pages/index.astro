@@ -3,24 +3,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Visuel from '../components/Visuel.astro';
 import VisibilitySlot from '../components/VisibilitySlot.astro';
 import { jsonInline } from '../lib/json-inline';
+import { event, eventName } from '../config/event';
 
-const eventSchema = {
+const eventSchema = event.exactDatesKnown && event.startDate && event.endDate ? {
   '@context': 'https://schema.org',
   '@type': 'Event',
-  name: "Salon de l'Emploi & de la Formation 2026",
+  name: eventName,
   // `url` manquait au schéma (Lot 4B-3) : ajouté, propriété attendue par
   // schema.org/Event et déjà disponible via Astro.site (voir Seo.astro).
   url: new URL('/', Astro.site).toString(),
-  startDate: '2026-10-30',
-  endDate: '2026-10-31',
+  startDate: event.startDate,
+  endDate: event.endDate,
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   eventStatus: 'https://schema.org/EventScheduled',
   location: {
     '@type': 'Place',
-    name: "Salle d'exposition de Nouville",
+    name: event.locationName,
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'Nouméa',
+      addressLocality: event.locationCity,
       addressCountry: 'NC',
     },
   },
@@ -29,7 +30,7 @@ const eventSchema = {
     '@type': 'Organization',
     name: 'LabEvents',
   },
-};
+} : null;
 
 /* ------------------------------------------------------------------------
    SECTION « ILS SERONT PRÉSENTS » — MASQUÉE PAR DÉFAUT
@@ -126,17 +127,17 @@ const chiffresCles = [
 const infosPratiques = [
   {
     label: 'Dates',
-    valeur: '30 et 31 octobre 2026',
+    valeur: event.dateDetail,
     icone: `<rect x="3" y="5" width="18" height="16" rx="2" /><path stroke-linecap="round" d="M3 10h18M8 3v4M16 3v4" />`,
   },
   {
     label: 'Horaires',
-    valeur: '9 h à 17 h',
+    valeur: event.hoursLabel,
     icone: `<circle cx="12" cy="12" r="9" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3.5 2" />`,
   },
   {
     label: 'Lieu',
-    valeur: "Salle d'exposition de Nouville, Nouméa",
+    valeur: event.locationLabel,
     icone: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" />`,
   },
   {
@@ -149,11 +150,13 @@ const infosPratiques = [
 
 <BaseLayout
   title="Accueil"
-  description="Salon de l'Emploi & de la Formation 2026 à Nouméa : 30 et 31 octobre, Salle d'exposition de Nouville. Entrée libre et gratuite."
+  description={`${eventName} à Nouméa : ${event.dateDetail}, ${event.locationName}. Entrée libre et gratuite.`}
 >
-  <Fragment slot="head">
-    <script type="application/ld+json" set:html={jsonInline(eventSchema)} />
-  </Fragment>
+  {eventSchema && (
+    <Fragment slot="head">
+      <script type="application/ld+json" set:html={jsonInline(eventSchema)} />
+    </Fragment>
+  )}
 
   <!-- ============================== HERO ==============================
        Aplat marine à gauche, visuel en découpe diagonale à droite à partir
@@ -190,11 +193,11 @@ const infosPratiques = [
         </h1>
 
         <p class="mt-6 font-titre text-3xl font-bold uppercase text-orange sm:text-4xl">
-          30 &amp; 31 octobre 2026
+          {event.dateDetail}
         </p>
 
         <p class="mt-4 text-sm font-bold uppercase leading-relaxed tracking-wide text-brume">
-          Salle d'exposition de Nouville, Nouméa<br />
+          {event.locationLabel}<br />
           Entrée libre et gratuite
         </p>
 

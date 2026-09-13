@@ -1,4 +1,6 @@
 ---
+import { eventName } from '../config/event';
+
 interface Props {
   title: string;
   description: string;
@@ -10,7 +12,7 @@ interface Props {
 const { title, description, noindex: noindexForce = false } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const siteName = "Salon de l'Emploi & de la Formation 2026";
+const siteName = eventName;
 const ogImage = new URL('/og-image.png', Astro.site);
 
 /*

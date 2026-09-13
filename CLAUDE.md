@@ -1,4 +1,4 @@
-# CLAUDE.md — Site du Salon de l'Emploi & de la Formation 2026
+# CLAUDE.md — Site du Salon de l'Emploi & de la Formation 2027
 
 > Constitution du projet pour Claude Code. À lire au début de **chaque** session.
 > Objectif de ce fichier : décrire l'état RÉEL du dépôt et les règles opérationnelles à suivre —
@@ -10,6 +10,10 @@
 > dépôt (code, `main` distant, PR GitHub), pas des comptes rendus de conversation antérieurs.
 > Commit de référence : `e8bacaf` (PR #46 fusionnée, module Visibilité CRUD). Remplace
 > intégralement la v4.2 — ne pas s'y référer comme source concurrente.
+>
+> **Amendement du 13 septembre 2026 (édition à venir)** : l'état courant est désormais l'édition
+> **2027**, prévue en **avril 2027**, avec des **dates précises à venir**. Le lieu reste inchangé :
+> **Salle d'exposition de Nouville, Nouméa**.
 >
 > **Amendements du 10 août 2026** (préparation production, sections 4/9/12/16) : domaine canonique
 > de production changé de `www.salonemploi.nc` à `salonemploi.nc` ; séparation préprod/production du
@@ -59,7 +63,7 @@
 
 ## 1. Projet en une phrase
 
-Site vitrine événementiel pour le **Salon de l'Emploi & de la Formation 2026**, organisé par **LabEvents** à Nouméa (Nouvelle-Calédonie). Deux fonctions, dans cet ordre de priorité :
+Site vitrine événementiel pour le **Salon de l'Emploi & de la Formation 2027**, organisé par **LabEvents** à Nouméa (Nouvelle-Calédonie). Deux fonctions, dans cet ordre de priorité :
 
 1. **V1 — commercialiser les stands** auprès des entreprises, organismes de formation et partenaires.
 2. **V2 — informer le public** (exposants, programme, infos pratiques, offres d'emploi).
@@ -70,7 +74,7 @@ Le site doit être **réutilisable pour les éditions futures**.
 
 ## 2. Faits fixes de l'événement (ne jamais inventer, ne jamais modifier sans instruction)
 
-- **Dates** : 30 et 31 octobre 2026.
+- **Dates** : Avril 2027 — dates précises à venir.
 - **Lieu** : Salle d'exposition de Nouville, Nouméa.
 - **Entrée** : libre et gratuite.
 - **Fréquentation cible** : ~3 000 visiteurs sur les deux jours.

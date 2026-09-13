@@ -8,24 +8,26 @@ import {
   publicsDisponibles,
   universLabels,
   typeLabels,
-  journeeLabels,
-  journees,
+  journeeLabel,
+  journeesDisponibles,
 } from '../lib/programme';
+import { event, eventName } from '../config/event';
 
-const items = trierProgramme(await getProgrammePublie());
+// Les contenus 2026 restent disponibles comme brouillons internes, mais ne
+// sont jamais exposés comme programme 2027 avant validation des dates.
+const items = event.exactDatesKnown ? trierProgramme(await getProgrammePublie()) : [];
 const total = items.length;
 
-const itemsParJour = journees.map((date) => ({
+const itemsParJour = journeesDisponibles(items).map((date) => ({
   date,
-  label: journeeLabels[date],
+  label: journeeLabel(date),
   items: items.filter((item) => item.data.date === date),
 }));
 
 const publics = publicsDisponibles(items);
 
 const infosSalon = [
-  'Vendredi 30 octobre 2026',
-  'Samedi 31 octobre 2026',
+  event.dateDetail,
   'Salle d’exposition de Nouville',
   'Entrée gratuite',
 ];
@@ -33,7 +35,7 @@ const infosSalon = [
 
 <BaseLayout
   title="Programme"
-  description="Consultez le programme du Salon de l'Emploi & de la Formation 2026, les 30 et 31 octobre à Nouville, Nouméa."
+  description={`Consultez le programme du ${eventName}, prévu en ${event.dateLabel} à Nouville, Nouméa. Les dates précises et le programme seront publiés prochainement.`}
 >
   <!-- ============================== HERO ============================== -->
   <section class="bg-marine text-blanc">
@@ -197,7 +199,7 @@ const infosSalon = [
           <!-- ========================= JOURNÉES ========================= -->
           {itemsParJour.map((jour) => (
             <div id={`jour-${jour.date}`} data-jour-wrapper data-date={jour.date} class="mt-12 scroll-mt-24">
-              <h2 class="font-titre text-2xl font-bold uppercase text-marine sm:text-3xl">{jour.label} 2026</h2>
+              <h2 class="font-titre text-2xl font-bold uppercase text-marine sm:text-3xl">{jour.label}</h2>
               {jour.items.length > 0 ? (
                 <div data-grille-jour class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {jour.items.map((item) => <ProgrammeCard item={item} />)}
@@ -276,11 +278,11 @@ const infosSalon = [
       <section class="bg-blanc">
         <div class="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6 lg:py-20">
           <h2 class="font-titre text-2xl font-bold uppercase text-marine sm:text-3xl">
-            Le programme sera publié prochainement
+            Programme et dates détaillées à venir
           </h2>
           <p class="mt-4 text-encre">
-            Rencontres, conférences et temps forts seront ajoutés progressivement à l'approche du
-            salon, journée par journée.
+            Le salon est prévu en {event.dateLabel}. Les dates précises, les journées et les temps
+            forts seront publiés dès qu'ils auront été validés.
           </p>
           <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <a

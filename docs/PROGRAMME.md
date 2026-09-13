@@ -2,7 +2,7 @@
 
 Ce document explique comment ajouter, modifier, publier ou masquer un
 élément du programme sur le site du Salon de l'Emploi & de la Formation
-2026. Aucune compétence en programmation n'est nécessaire.
+2027. Aucune compétence en programmation n'est nécessaire.
 
 > Rappel (CLAUDE.md, section 2) : ne jamais inventer de conférence,
 > d'atelier, de démonstration, d'intervenant, de salle ou d'horaire. Une
@@ -36,7 +36,7 @@ frontmatter, qui contient tous les champs. Rien n'est écrit après le second
 ---
 programmeId: "PROG26-001"
 titre: "Exemple non publié"
-date: "2026-10-30"
+date: "AAAA-MM-JJ" # à remplacer seulement après validation officielle
 heure_debut: "09:30"
 heure_fin: "10:15"
 univers: emploi
@@ -98,10 +98,9 @@ date_mise_a_jour: 2026-08-05
 
 ### `date`
 
-- `"2026-10-30"` → vendredi 30 octobre 2026
-- `"2026-10-31"` → samedi 31 octobre 2026
-
-Écrivez toujours la valeur entre guillemets (`date: "2026-10-30"`). Sans les
+Les dates précises d'avril 2027 ne sont pas encore validées. N'ajoutez aucune
+fiche datée avant leur confirmation. Une fois connues, écrivez toujours la
+valeur ISO entre guillemets (`date: "AAAA-MM-JJ"`). Sans les
 guillemets, le format YAML interprète la valeur comme une date technique
 plutôt que comme le texte attendu par le site, et le build échoue.
 
@@ -204,7 +203,7 @@ n'est simplement pas affiché sur la fiche — aucun lien mort n'est généré.
 
 Le tri du programme suit cette priorité :
 
-1. la `date` (30 octobre avant 31 octobre) ;
+1. la `date` (ordre chronologique ISO) ;
 2. à égalité, `heure_debut` (les entrées les plus tôt en premier) ;
 3. à égalité, la valeur `ordre` la plus basse passe en premier ;
 4. si `ordre` n'est pas renseigné, ou à égalité, le tri se fait par ordre

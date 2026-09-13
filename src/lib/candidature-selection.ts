@@ -1,3 +1,5 @@
+import { event } from '../config/event';
+
 /*
   Sélection de 0 à 5 offres — représentée exclusivement par les paramètres
   d'URL `offre1` à `offre5`, plus `orientation` pour la candidature sans
@@ -158,7 +160,7 @@ export function construireUrlTally(baseUrl: string, offres: OffreCandidature[], 
   url.searchParams.set('orientation_labevents', String(orientation));
   if (orientation) url.searchParams.set('orientation_labevents_label', ORIENTATION_LABEVENTS_LABEL);
   url.searchParams.set('source', 'salon-emploi.nc');
-  url.searchParams.set('edition', '2026');
+  url.searchParams.set('edition', event.edition);
   // Active le mécanisme officiel Tally de hauteur dynamique (voir
   // TallyCandidatureEmbed.astro, qui charge widgets/embed.js) : évite le
   // double scroll (page + iframe) en laissant Tally piloter la hauteur de

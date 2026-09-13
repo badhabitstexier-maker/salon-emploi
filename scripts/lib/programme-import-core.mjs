@@ -11,7 +11,6 @@
 */
 import { listeDepuisCellule, boolDepuisCellule, SLUG_REGEX, DATE_REGEX } from './import-shared.mjs';
 
-export const DATES = ['2026-10-30', '2026-10-31'];
 export const UNIVERS = ['emploi', 'formation', 'transversal'];
 export const TYPES = ['conference', 'atelier', 'demonstration', 'rencontre', 'information', 'autre'];
 
@@ -106,8 +105,8 @@ export function validerLigne(ligne, numeroLigne) {
   const titre = champTexte('titre');
 
   const date = champTexte('date');
-  if (date && !DATES.includes(date)) {
-    erreurs.push(`« date » « ${date} » invalide (valeurs autorisées : ${DATES.join(', ')} — hors dates de l'événement).`);
+  if (date && !DATE_REGEX.test(date)) {
+    erreurs.push(`« date » « ${date} » invalide (format attendu : AAAA-MM-JJ).`);
   }
 
   const heureDebut = champTexte('heure_debut');

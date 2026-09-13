@@ -1,5 +1,6 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { event } from './config/event.ts';
 
 /*
   Collection « exposants » — Lot 4 du CLAUDE.md.
@@ -189,30 +190,54 @@ const PROGRAMME_ID_REGEX = /^PROG26-\d{3,}$/;
 
 const programme = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/programme' }),
-  schema: z.object({
-    programmeId: z.string().regex(PROGRAMME_ID_REGEX, 'Format attendu : PROG26-XXX'),
-    titre: z.string(),
-    slug: z.string().optional(),
-    date: z.enum(['2026-10-30', '2026-10-31']),
-    heure_debut: z.string().regex(heureRegex, 'Format attendu : HH:MM (ex. 09:30)'),
-    heure_fin: z.string().regex(heureRegex, 'Format attendu : HH:MM (ex. 09:30)').optional(),
-    univers: z.enum(['emploi', 'formation', 'transversal']),
-    type: z.enum(['conference', 'atelier', 'demonstration', 'rencontre', 'information', 'autre']),
-    lieu: z.string().optional(),
-    accroche: z.string(),
-    description: z.string(),
-    publics: z.array(z.string()).optional(),
-    intervenants: z.array(intervenant).optional(),
-    organisateur: z.string().optional(),
-    exposant_lie: z.string().optional(),
-    inscription_requise: z.boolean().default(false),
-    lien_inscription: z.string().optional(),
-    capacite_limitee: z.boolean().default(false),
-    mise_en_avant: z.boolean().default(false),
-    publie: z.boolean().default(false),
-    ordre: z.number().optional(),
-    date_mise_a_jour: z.coerce.date().optional(),
-  }),
+  schema: z
+    .object({
+      programmeId: z.string().regex(PROGRAMME_ID_REGEX, 'Format attendu : PROG26-XXX'),
+      titre: z.string(),
+      slug: z.string().optional(),
+      // Le format ISO reste obligatoire. La validation métier ci-dessous
+      // empêche uniquement la publication hors des dates officielles.
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format attendu : AAAA-MM-JJ'),
+      heure_debut: z.string().regex(heureRegex, 'Format attendu : HH:MM (ex. 09:30)'),
+      heure_fin: z.string().regex(heureRegex, 'Format attendu : HH:MM (ex. 09:30)').optional(),
+      univers: z.enum(['emploi', 'formation', 'transversal']),
+      type: z.enum(['conference', 'atelier', 'demonstration', 'rencontre', 'information', 'autre']),
+      lieu: z.string().optional(),
+      accroche: z.string(),
+      description: z.string(),
+      publics: z.array(z.string()).optional(),
+      intervenants: z.array(intervenant).optional(),
+      organisateur: z.string().optional(),
+      exposant_lie: z.string().optional(),
+      inscription_requise: z.boolean().default(false),
+      lien_inscription: z.string().optional(),
+      capacite_limitee: z.boolean().default(false),
+      mise_en_avant: z.boolean().default(false),
+      publie: z.boolean().default(false),
+      ordre: z.number().optional(),
+      date_mise_a_jour: z.coerce.date().optional(),
+    })
+    .superRefine((activite, ctx) => {
+      if (!activite.publie) return;
+
+      const { exactDatesKnown, startDate, endDate } = event;
+      if (!exactDatesKnown || !startDate || !endDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['date'],
+          message: "Impossible de publier une activité tant que les dates exactes du salon ne sont pas connues.",
+        });
+        return;
+      }
+
+      if (activite.date < startDate || activite.date > endDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['date'],
+          message: `La date doit être comprise entre ${startDate} et ${endDate} pour cette édition.`,
+        });
+      }
+    }),
 });
 
 /*
@@ -273,7 +298,7 @@ const offres = defineCollection({
       // Date facultative de fin de validité de l'offre / fin de période de
       // candidature (ex. alimente `validThrough` du JSON-LD JobPosting sur la
       // fiche offre). Ne pas confondre avec la durée de conservation des
-      // données candidat au 31 décembre 2026 : celle-ci concerne les données
+      // données candidat au 31 décembre 2027 : celle-ci concerne les données
       // collectées via Tally (voir docs/CANDIDATURES_TALLY.md), pas les
       // fiches offres.
       dateCloture: z.coerce.date().optional(),

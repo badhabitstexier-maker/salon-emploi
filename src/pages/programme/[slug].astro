@@ -5,11 +5,13 @@ import {
   programmeSlug,
   universLabels,
   typeLabels,
-  journeeLabels,
+  journeeLabel,
 } from '../../lib/programme';
 import { getExposantsPublies, exposantSlug } from '../../lib/exposants';
+import { event } from '../../config/event';
 
 export async function getStaticPaths() {
+  if (!event.exactDatesKnown) return [];
   const items = await getProgrammePublie();
   return items.map((item) => ({
     params: { slug: programmeSlug(item) },
@@ -73,7 +75,7 @@ const dateMiseAJour = data.date_mise_a_jour ? formateurDate.format(data.date_mis
       </h1>
 
       <p class:list={['mt-4 font-titre text-xl font-bold', styleUnivers.accent]}>
-        {journeeLabels[data.date]} 2026 · {data.heure_debut}{data.heure_fin ? `–${data.heure_fin}` : ''}
+        {journeeLabel(data.date)} · {data.heure_debut}{data.heure_fin ? `–${data.heure_fin}` : ''}
       </p>
 
       {
